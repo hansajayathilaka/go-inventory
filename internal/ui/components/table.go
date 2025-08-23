@@ -1,6 +1,8 @@
 package components
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/v2/table"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"github.com/charmbracelet/lipgloss/v2"
@@ -54,17 +56,19 @@ func NewTable(title string, columns []Column) Table {
 		table.WithHeight(10),
 	)
 	
-	// Apply our custom styles
+	// Apply our custom clean styles
 	s := table.DefaultStyles()
 	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(styles.Primary).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
+		Bold(true).
 		Background(styles.Primary).
-		Bold(false)
+		Foreground(lipgloss.Color("#ffffff")).
+		Padding(0, 1)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color("#ffffff")).
+		Background(styles.Primary).
+		Bold(true)
+	s.Cell = s.Cell.
+		Padding(0, 1)
 	bubblesTable.SetStyles(s)
 	
 	return Table{
@@ -131,9 +135,11 @@ func (t Table) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	
 	// Handle selection before delegating to Bubbles
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		t.SetSize(msg.Width, msg.Height)
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "enter", " ":
+		case "enter":
 			cursor := t.bubblesTable.Cursor()
 			if cursor >= 0 && cursor < len(t.Rows) {
 				t.Selected = cursor
@@ -163,6 +169,11 @@ func (t Table) View() string {
 	// Add title if present
 	if t.Title != "" {
 		content = styles.TitleStyle.Render(t.Title) + "\n"
+	}
+	
+	// Add selection indicator
+	if len(t.Rows) > 0 && t.Selected >= 0 && t.Selected < len(t.Rows) {
+		content += styles.HelpStyle.Render(fmt.Sprintf("Row %d of %d selected", t.Selected+1, len(t.Rows))) + "\n"
 	}
 	
 	// Add the Bubbles table view

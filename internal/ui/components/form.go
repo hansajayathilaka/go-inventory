@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea/v2"
@@ -125,11 +126,60 @@ func (f Form) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					f.Values[field.Key] = f.Values[field.Key][:len(f.Values[field.Key])-1]
 				}
 			}
+		case "left", "right":
+			if f.Focused < len(f.Fields) && f.Fields[f.Focused].Type == SelectInput {
+				field := &f.Fields[f.Focused]
+				if len(field.Options) > 0 {
+					currentValue := f.Values[field.Key]
+					currentIndex := -1
+					for i, option := range field.Options {
+						if option == currentValue {
+							currentIndex = i
+							break
+						}
+					}
+					
+					if msg.String() == "left" && currentIndex > 0 {
+						f.Values[field.Key] = field.Options[currentIndex-1]
+					} else if msg.String() == "right" && currentIndex < len(field.Options)-1 {
+						f.Values[field.Key] = field.Options[currentIndex+1]
+					} else if currentIndex == -1 && len(field.Options) > 0 {
+						f.Values[field.Key] = field.Options[0]
+					}
+				}
+			}
+		case "space":
+			if f.Focused < len(f.Fields) {
+				field := &f.Fields[f.Focused]
+				if field.Type == TextInput || field.Type == PasswordInput {
+					f.Values[field.Key] += " "
+				} else if field.Type == SelectInput {
+					// Toggle through options with space
+					if len(field.Options) > 0 {
+						currentValue := f.Values[field.Key]
+						currentIndex := -1
+						for i, option := range field.Options {
+							if option == currentValue {
+								currentIndex = i
+								break
+							}
+						}
+						nextIndex := (currentIndex + 1) % len(field.Options)
+						f.Values[field.Key] = field.Options[nextIndex]
+					}
+				}
+			}
 		default:
 			if f.Focused < len(f.Fields) {
 				field := &f.Fields[f.Focused]
-				if field.Type == TextInput || field.Type == NumberInput || field.Type == PasswordInput {
-					if len(msg.String()) == 1 {
+				if field.Type == TextInput || field.Type == PasswordInput {
+					// Accept printable characters including spaces
+					if len(msg.String()) == 1 && msg.String() >= " " && msg.String() <= "~" {
+						f.Values[field.Key] += msg.String()
+					}
+				} else if field.Type == NumberInput {
+					// Only accept numbers and decimal point
+					if len(msg.String()) == 1 && ((msg.String() >= "0" && msg.String() <= "9") || msg.String() == ".") {
 						f.Values[field.Key] += msg.String()
 					}
 				}
@@ -335,12 +385,19 @@ func (f Form) getSelectDisplay(field Field, value string) string {
 	if len(field.Options) > 0 {
 		selectedOption := "Select..."
 		if value != "" {
-			for _, option := range field.Options {
+			for i, option := range field.Options {
 				if option == value {
 					selectedOption = option
+					// Show position in list for clarity
+					if len(field.Options) > 1 {
+						selectedOption = fmt.Sprintf("<%s> [%d/%d]", option, i+1, len(field.Options))
+					}
 					break
 				}
 			}
+		}
+		if value == "" && len(field.Options) > 0 {
+			selectedOption = fmt.Sprintf("Select... [0/%d] (←→ or space to choose)", len(field.Options))
 		}
 		return selectedOption
 	}
@@ -361,13 +418,25 @@ func (f Form) renderFooter() string {
 	
 	// Enhanced help text based on layout
 	var helpText string
+	currentField := ""
+	if f.Focused < len(f.Fields) {
+		switch f.Fields[f.Focused].Type {
+		case SelectInput:
+			currentField = " • ←→/Space: Select option"
+		case TextInput, PasswordInput:
+			currentField = " • Type: Enter text (spaces allowed)"
+		case NumberInput:
+			currentField = " • Type: Enter numbers only"
+		}
+	}
+	
 	switch f.Layout {
 	case CompactLayout:
-		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel • Compact Layout"
+		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel" + currentField
 	case TwoColumnLayout:
-		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel • Two-Column Layout"
+		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel" + currentField
 	default:
-		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel • Standard Layout"
+		helpText = "Tab/↑↓: Navigate • Enter: Submit • Esc: Cancel" + currentField
 	}
 	
 	help := styles.HelpStyle.Render(helpText)

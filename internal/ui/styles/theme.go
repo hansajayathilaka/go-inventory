@@ -23,79 +23,58 @@ var (
 )
 
 var (
-	// Enhanced base styles
+	// Clean minimal styles
 	BaseStyle = lipgloss.NewStyle().
-		Padding(1, 2).
 		Foreground(Foreground)
 	
 	TitleStyle = lipgloss.NewStyle().
 		Bold(true).
-		Foreground(Primary).
-		Padding(0, 1).
-		MarginBottom(1).
-		Align(lipgloss.Center)
+		Foreground(Primary)
 	
 	HeaderStyle = lipgloss.NewStyle().
 		Bold(true).
 		Foreground(Light).
 		Background(Primary).
-		Padding(1, 2).
-		MarginBottom(1).
-		Align(lipgloss.Center).
-		Border(lipgloss.DoubleBorder()).
-		BorderForeground(Primary)
-	
-	MenuStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(Primary).
-		Padding(2, 3).
-		Background(Light).
-		Align(lipgloss.Center)
-	
-	MenuItemStyle = lipgloss.NewStyle().
-		Padding(0, 2)
-	
-	MenuItemSelectedStyle = MenuItemStyle.Copy().
-		Background(Primary).
-		Foreground(Light).
-		Bold(true).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(Primary)
-	
-	InputStyle = lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder()).
-		BorderForeground(Border).
 		Padding(0, 1)
 	
-	InputFocusedStyle = InputStyle.Copy().
-		BorderForeground(Primary)
+	MenuStyle = lipgloss.NewStyle()
+	
+	MenuItemStyle = lipgloss.NewStyle().
+		Padding(0, 1)
+	
+	MenuItemSelectedStyle = lipgloss.NewStyle().
+		Padding(0, 1).
+		Background(Primary).
+		Foreground(Light)
+	
+	InputStyle = lipgloss.NewStyle().
+		Padding(0, 1)
+	
+	InputFocusedStyle = lipgloss.NewStyle().
+		Padding(0, 1).
+		Foreground(Primary)
 	
 	ButtonStyle = lipgloss.NewStyle().
 		Background(Primary).
 		Foreground(Light).
-		Padding(0, 2).
-		Bold(true).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(Primary)
+		Padding(0, 2)
 	
-	ButtonSelectedStyle = ButtonStyle.Copy().
+	ButtonSelectedStyle = lipgloss.NewStyle().
 		Background(Dark).
-		BorderForeground(Dark)
+		Foreground(Light).
+		Padding(0, 2)
 	
 	TableHeaderStyle = lipgloss.NewStyle().
 		Bold(true).
 		Background(Light).
 		Foreground(Dark).
-		Padding(0, 1).
-		Border(lipgloss.NormalBorder()).
-		BorderForeground(Border)
+		Padding(0, 1)
 	
 	TableCellStyle = lipgloss.NewStyle().
-		Padding(0, 1).
-		Border(lipgloss.NormalBorder()).
-		BorderForeground(Border)
+		Padding(0, 1)
 	
-	TableSelectedRowStyle = TableCellStyle.Copy().
+	TableSelectedRowStyle = lipgloss.NewStyle().
+		Padding(0, 1).
 		Background(Primary).
 		Foreground(Light)
 	
@@ -121,30 +100,20 @@ var (
 		Bold(true)
 	
 	HelpStyle = lipgloss.NewStyle().
-		Foreground(Subtle).
-		Italic(true)
+		Foreground(Subtle)
 	
 	BreadcrumbStyle = lipgloss.NewStyle().
 		Foreground(Subtle).
-		Padding(0, 1).
-		Italic(true)
+		Padding(0, 1)
 	
-	// New enhanced styles
+	// Clean card and layout styles
 	CardStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(Border).
-		Padding(2).
-		Background(Light).
-		Margin(1)
+		Padding(1)
 	
-	LayoutStyle = lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
-		BorderForeground(Primary)
+	LayoutStyle = lipgloss.NewStyle()
 	
 	FooterStyle = lipgloss.NewStyle().
 		Background(Dark).
 		Foreground(Light).
-		Padding(0, 2).
-		Align(lipgloss.Center).
-		Bold(true)
+		Padding(0, 1)
 )

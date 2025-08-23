@@ -31,7 +31,6 @@ func NewMainMenuWithContext(appCtx *app.Context, sessionMgr *app.SessionManager)
 	menu.ShowHelp = true
 	
 	layout := components.NewLayout("Main Menu", menu)
-	layout = layout.WithBreadcrumbs([]string{"Home", "Main Menu"})
 	layout = layout.WithHelp("↑/↓: Navigate • Enter: Select • q: Quit • Ctrl+C: Exit")
 	
 	return MainMenu{

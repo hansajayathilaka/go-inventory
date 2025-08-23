@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"tui-inventory/internal/repository/interfaces"
 	"tui-inventory/internal/repository/models"
+
+	"github.com/google/uuid"
 )
 
 var (

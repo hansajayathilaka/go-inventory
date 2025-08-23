@@ -35,7 +35,7 @@ func NewMenu(title string, items []MenuItem) Menu {
 		Title:    title,
 		Items:    items,
 		Selected: 0,
-		Width:    60,
+		Width:    80,
 		Height:   len(items) + 5,
 		ShowHelp: false,
 	}
@@ -47,6 +47,9 @@ func (m Menu) Init() tea.Cmd {
 
 func (m Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
@@ -57,7 +60,7 @@ func (m Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.Selected < len(m.Items)-1 {
 				m.Selected++
 			}
-		case "enter", " ":
+		case "enter":
 			if m.Selected < len(m.Items) && !m.Items[m.Selected].Disabled {
 				return m, func() tea.Msg {
 					return MenuMsg{
@@ -74,73 +77,56 @@ func (m Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Menu) View() string {
 	var content strings.Builder
 	
-	// Enhanced menu styling
-	menuStyle := lipgloss.NewStyle().
-		Width(m.Width).
-		Padding(2, 3).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(styles.Primary).
-		Align(lipgloss.Center)
-	
 	if m.Title != "" {
 		titleStyle := lipgloss.NewStyle().
 			Bold(true).
 			Foreground(styles.Primary).
 			Align(lipgloss.Center).
-			Width(m.Width - 6).
-			MarginBottom(2)
-		content.WriteString(titleStyle.Render("🏠 " + m.Title))
+			Width(m.Width).
+			MarginBottom(1)
+		content.WriteString(titleStyle.Render(m.Title))
 		content.WriteString("\n")
 	}
 	
 	for i, item := range m.Items {
-		itemStyle := lipgloss.NewStyle().
-			Width(m.Width - 6).
-			Padding(0, 2).
-			MarginBottom(1)
-		
 		if item.Disabled {
-			itemStyle = itemStyle.
-				Foreground(styles.Subtle).
-				Strikethrough(true)
-			content.WriteString(itemStyle.Render(fmt.Sprintf("  🚫 %s", item.Label)))
+			itemStyle := lipgloss.NewStyle().
+				Width(m.Width).
+				Foreground(styles.Subtle)
+			content.WriteString(itemStyle.Render(fmt.Sprintf("  %s (disabled)", item.Label)))
 		} else if i == m.Selected {
-			itemStyle = itemStyle.
+			itemStyle := lipgloss.NewStyle().
+				Width(m.Width).
 				Background(styles.Primary).
-				Foreground(lipgloss.Color("#ffffff")).
-				Bold(true).
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(styles.Primary)
-			content.WriteString(itemStyle.Render(fmt.Sprintf("👉 %s", item.Label)))
+				Foreground(lipgloss.Color("#ffffff"))
+			content.WriteString(itemStyle.Render(fmt.Sprintf("> %s", item.Label)))
 		} else {
-			itemStyle = itemStyle.
+			itemStyle := lipgloss.NewStyle().
+				Width(m.Width).
 				Foreground(styles.Dark)
-			content.WriteString(itemStyle.Render(fmt.Sprintf("   %s", item.Label)))
+			content.WriteString(itemStyle.Render(fmt.Sprintf("  %s", item.Label)))
 		}
 		
 		if item.Description != "" && i == m.Selected {
 			content.WriteString("\n")
 			descStyle := lipgloss.NewStyle().
-				Width(m.Width - 6).
+				Width(m.Width).
 				Foreground(styles.Subtle).
-				Italic(true).
-				Align(lipgloss.Center).
-				Padding(0, 2)
-			content.WriteString(descStyle.Render("💭 " + item.Description))
+				Align(lipgloss.Center)
+			content.WriteString(descStyle.Render(item.Description))
 		}
 		content.WriteString("\n")
 	}
 	
 	if m.ShowHelp {
+		content.WriteString("\n")
 		helpStyle := lipgloss.NewStyle().
-			Width(m.Width - 6).
+			Width(m.Width).
 			Align(lipgloss.Center).
-			Foreground(styles.Subtle).
-			Italic(true).
-			MarginTop(2)
-		help := helpStyle.Render("⌨️  Use ↑/↓ to navigate • Enter to select")
+			Foreground(styles.Subtle)
+		help := helpStyle.Render("Use ↑/↓ to navigate • Enter to select")
 		content.WriteString(help)
 	}
 	
-	return menuStyle.Render(content.String())
+	return content.String()
 }

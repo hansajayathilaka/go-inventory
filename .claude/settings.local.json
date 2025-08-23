@@ -11,7 +11,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:pkg.go.dev)",
       "Bash(go mod:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(go vet:*)",
+      "Bash(go install:*)"
     ],
     "deny": [],
     "ask": []

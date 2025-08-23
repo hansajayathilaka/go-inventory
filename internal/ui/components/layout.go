@@ -1,8 +1,6 @@
 package components
 
 import (
-	"strings"
-
 	"github.com/charmbracelet/lipgloss/v2"
 	tea "github.com/charmbracelet/bubbletea/v2"
 	"tui-inventory/internal/ui/styles"
@@ -62,81 +60,52 @@ func (l Layout) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (l Layout) View() string {
-	if l.Width < 40 || l.Height < 10 {
-		return "Terminal too small. Please resize."
+	if l.Width < 20 || l.Height < 5 {
+		return "Terminal too small"
 	}
 
-	// Calculate available space
-	headerHeight := 3
-	footerHeight := 3
-	contentHeight := l.Height - headerHeight - footerHeight - 2 // -2 for borders
+	// Calculate available space for full screen
+	headerHeight := 1
+	footerHeight := 1
+	contentHeight := l.Height - headerHeight - footerHeight - 1
 
-	// Header with application name
+	// Header 
 	header := l.renderHeader()
 	
-	// Navigation breadcrumbs
-	nav := l.renderBreadcrumbs()
-	
-	// Content area
+	// Content area takes most space
 	content := l.renderContent(contentHeight)
 	
-	// Footer with instructions
+	// Footer 
 	footer := l.renderFooter()
 
-	// Main container with full screen border
-	mainStyle := lipgloss.NewStyle().
-		Width(l.Width - 2).
-		Height(l.Height - 2).
-		Border(lipgloss.DoubleBorder()).
-		BorderForeground(styles.Primary)
-
-	// Combine all sections
+	// Full screen layout
 	fullContent := lipgloss.JoinVertical(lipgloss.Left,
 		header,
-		nav,
 		content,
 		footer,
 	)
 
-	return mainStyle.Render(fullContent)
+	return fullContent
 }
 
 func (l Layout) renderHeader() string {
-	appName := "📦 TUI INVENTORY MANAGEMENT SYSTEM"
+	appName := "TUI INVENTORY MANAGEMENT SYSTEM"
 	
 	headerStyle := lipgloss.NewStyle().
-		Width(l.Width - 4).
+		Width(l.Width).
 		Align(lipgloss.Center).
 		Bold(true).
 		Foreground(lipgloss.Color("#ffffff")).
-		Background(styles.Primary).
-		Padding(0, 1).
-		MarginBottom(1)
+		Background(styles.Primary)
 
 	return headerStyle.Render(appName)
 }
 
-func (l Layout) renderBreadcrumbs() string {
-	if len(l.Breadcrumbs) == 0 {
-		l.Breadcrumbs = []string{"Home"}
-	}
-	
-	breadcrumbText := strings.Join(l.Breadcrumbs, " > ")
-	
-	breadcrumbStyle := lipgloss.NewStyle().
-		Width(l.Width - 4).
-		Foreground(styles.Subtle).
-		Padding(0, 1).
-		MarginBottom(1)
-
-	return breadcrumbStyle.Render("📍 " + breadcrumbText)
-}
 
 func (l Layout) renderContent(height int) string {
 	contentStyle := lipgloss.NewStyle().
-		Width(l.Width - 4).
-		Height(height).
-		Padding(1)
+		Width(l.Width).
+		Height(height)
 
 	if l.Content != nil {
 		contentView := ""
@@ -157,14 +126,12 @@ func (l Layout) renderFooter() string {
 	}
 
 	footerStyle := lipgloss.NewStyle().
-		Width(l.Width - 4).
+		Width(l.Width).
 		Align(lipgloss.Center).
 		Foreground(lipgloss.Color("#ffffff")).
-		Background(styles.Dark).
-		Padding(0, 1).
-		MarginTop(1)
+		Background(styles.Dark)
 
-	return footerStyle.Render("💡 " + helpText)
+	return footerStyle.Render(helpText)
 }
 
 func (l Layout) WithBreadcrumbs(breadcrumbs []string) Layout {
