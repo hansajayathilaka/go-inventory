@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(go build:*)",
+      "Bash(go get:*)",
+      "Bash(./tui-inventory:*)",
+      "Bash(timeout:*)",
+      "Bash(go run:*)",
+      "Bash(go test:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:pkg.go.dev)",
+      "Bash(go mod:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

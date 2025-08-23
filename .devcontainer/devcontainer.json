@@ -1,0 +1,48 @@
+{
+  "name": "TUI Inventory System",
+  "image": "mcr.microsoft.com/devcontainers/go:1.23",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node": {},
+		"ghcr.io/itsmechlark/features/postgresql:1": {},
+		"ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-vscode.vscode-json",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.hexeditor",
+        "ms-vscode-remote.remote-containers",
+        "cweijan.vscode-postgresql-client2"
+      ],
+      "settings": {
+        "go.toolsManagement.checkForUpdates": "local",
+        "go.useLanguageServer": true,
+        "go.gopath": "/go",
+        "go.goroot": "/usr/local/go",
+        "go.lintTool": "golangci-lint",
+        "go.formatTool": "goimports",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Application Port",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "runArgs": ["-p", "5434:5432"],
+
+  "postCreateCommand": "go version && sudo service postgresql start",
+  
+  "remoteUser": "vscode"
+}
