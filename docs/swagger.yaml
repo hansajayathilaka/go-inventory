@@ -1,0 +1,466 @@
+basePath: /api/v1
+definitions:
+  internal_api_router.HealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  inventory-api_internal_api_dto.BaseResponse:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/inventory-api_internal_api_dto.ErrorInfo'
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  inventory-api_internal_api_dto.CreateUserRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      role:
+        enum:
+        - admin
+        - manager
+        - staff
+        - viewer
+        example: manager
+        type: string
+      username:
+        example: john_doe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - role
+    - username
+    type: object
+  inventory-api_internal_api_dto.ErrorInfo:
+    properties:
+      code:
+        example: VALIDATION_ERROR
+        type: string
+      details:
+        example: Name field is required
+        type: string
+      message:
+        example: Invalid input parameters
+        type: string
+    type: object
+  inventory-api_internal_api_dto.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: john_doe
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  inventory-api_internal_api_dto.LoginResponse:
+    properties:
+      expires_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+      refresh_token:
+        example: refresh_token_here
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+    type: object
+  inventory-api_internal_api_dto.PaginatedResponse:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/inventory-api_internal_api_dto.ErrorInfo'
+      message:
+        example: Operation completed successfully
+        type: string
+      pagination:
+        $ref: '#/definitions/inventory-api_internal_api_dto.PaginationInfo'
+      success:
+        example: true
+        type: boolean
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  inventory-api_internal_api_dto.PaginationInfo:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 100
+        type: integer
+      total_pages:
+        example: 10
+        type: integer
+    type: object
+  inventory-api_internal_api_dto.UpdateUserRequest:
+    properties:
+      email:
+        example: john_updated@example.com
+        type: string
+      role:
+        enum:
+        - admin
+        - manager
+        - staff
+        - viewer
+        example: staff
+        type: string
+      username:
+        example: john_doe_updated
+        maxLength: 50
+        minLength: 3
+        type: string
+    type: object
+  inventory-api_internal_api_dto.UserResponse:
+    properties:
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      last_login:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      role:
+        enum:
+        - admin
+        - manager
+        - staff
+        - viewer
+        example: manager
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A comprehensive inventory management system API with multi-location
+    support
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Inventory Management API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return login information
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/inventory-api_internal_api_dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/inventory-api_internal_api_dto.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: User login
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: User logout
+      tags:
+      - Authentication
+  /health:
+    get:
+      description: Returns the health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_router.HealthResponse'
+      summary: Health check
+      tags:
+      - System
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of users with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by role
+        enum:
+        - admin
+        - manager
+        - staff
+        - viewer
+        in: query
+        name: role
+        type: string
+      - description: Search by username or email
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/inventory-api_internal_api_dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: List users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User creation request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/inventory-api_internal_api_dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by their ID
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get a specific user by their ID
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: Get user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user's information
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/inventory-api_internal_api_dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+      summary: Update a user
+      tags:
+      - Users
+swagger: "2.0"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/models"
 
 	"github.com/google/uuid"
 )

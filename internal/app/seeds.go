@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/models"
 )
 
 func (ctx *Context) SeedDatabase() error {

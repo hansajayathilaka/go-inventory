@@ -3,13 +3,13 @@ package app
 import (
 	"fmt"
 
-	"tui-inventory/internal/business/audit"
-	"tui-inventory/internal/business/hierarchy"
-	"tui-inventory/internal/business/inventory"
-	"tui-inventory/internal/business/user"
-	"tui-inventory/internal/config"
-	"tui-inventory/internal/repository"
-	"tui-inventory/internal/repository/interfaces"
+	"inventory-api/internal/business/audit"
+	"inventory-api/internal/business/hierarchy"
+	"inventory-api/internal/business/inventory"
+	"inventory-api/internal/business/user"
+	"inventory-api/internal/config"
+	"inventory-api/internal/repository"
+	"inventory-api/internal/repository/interfaces"
 )
 
 type Context struct {

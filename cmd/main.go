@@ -1,3 +1,18 @@
+// @title Inventory Management API
+// @version 1.0
+// @description A comprehensive inventory management system API with multi-location support
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /api/v1
+
 package main
 
 import (
@@ -5,10 +20,9 @@ import (
 	"log"
 	"os"
 
-	"tui-inventory/internal/app"
-	"tui-inventory/internal/ui/models"
-
-	tea "github.com/charmbracelet/bubbletea/v2"
+	_ "inventory-api/docs" // Import generated docs
+	"inventory-api/internal/app"
+	"inventory-api/internal/api/router"
 )
 
 func main() {
@@ -19,20 +33,8 @@ func main() {
 	}
 	defer appCtx.Close()
 
-	// Initialize session manager
-	sessionMgr := app.NewSessionManager(appCtx)
-
-	if len(os.Getenv("DEBUG")) > 0 {
-		f, err := tea.LogToFile("debug.log", "debug")
-		if err != nil {
-			fmt.Println("fatal:", err)
-			os.Exit(1)
-		}
-		defer f.Close()
-	}
-
-	fmt.Println("TUI Inventory Management System")
-	fmt.Println("===============================")
+	fmt.Println("Inventory Management API")
+	fmt.Println("=======================")
 	fmt.Printf("Database: Connected to %s:%d/%s\n",
 		appCtx.Config.Database.Host,
 		appCtx.Config.Database.Port,
@@ -48,14 +50,14 @@ func main() {
 		return
 	}
 
-	fmt.Println("Starting application...")
+	// Initialize router with all routes and middleware
+	r := router.SetupRouter(appCtx)
+
+	fmt.Println("Starting web server...")
+	fmt.Println("Server running on :8080")
+	fmt.Println("Swagger UI: http://localhost:8080/docs/index.html")
+	fmt.Println("API Base: http://localhost:8080/api/v1")
 	fmt.Println()
 
-	// Create main menu with application context
-	mainMenu := models.NewMainMenuWithContext(appCtx, sessionMgr)
-	p := tea.NewProgram(mainMenu)
-
-	if _, err := p.Run(); err != nil {
-		log.Fatal("Error running program:", err)
-	}
+	log.Fatal(r.Run(":8080"))
 }

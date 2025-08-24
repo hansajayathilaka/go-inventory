@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"tui-inventory/internal/repository/interfaces"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/interfaces"
+	"inventory-api/internal/repository/models"
 
 	"github.com/google/uuid"
 )

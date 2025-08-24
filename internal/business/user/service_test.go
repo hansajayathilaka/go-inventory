@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/models"
 )
 
 // Mock user repository for testing

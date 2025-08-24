@@ -13,7 +13,10 @@
       "Bash(go mod:*)",
       "Bash(find:*)",
       "Bash(go vet:*)",
-      "Bash(go install:*)"
+      "Bash(go install:*)",
+      "Bash(grep:*)",
+      "Bash(swag init:*)",
+      "Bash(swag:*)"
     ],
     "deny": [],
     "ask": []

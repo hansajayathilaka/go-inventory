@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"tui-inventory/internal/repository/interfaces"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/interfaces"
+	"inventory-api/internal/repository/models"
 )
 
 // Mock audit log repository for testing
