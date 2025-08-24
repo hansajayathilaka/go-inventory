@@ -1,3 +1,14 @@
 {
-    "claudeCodeChat.permissions.yoloMode": false
+    "claudeCodeChat.permissions.yoloMode": false,
+    "go.testExplorer.enable": true,
+    "go.testExplorer.showOutput": true,
+    "go.toolsManagement.autoUpdate": true,
+    "go.lintTool": "golint",
+    "go.formatTool": "goimports",
+    "go.useLanguageServer": true,
+    "go.buildOnSave": "package",
+    "go.lintOnSave": "package",
+    "go.vetOnSave": "package",
+    "go.coverOnSave": false,
+    "go.testTimeout": "30s"
 }

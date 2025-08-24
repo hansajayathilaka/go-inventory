@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/models"
 )
 
 type InventoryRepository interface {

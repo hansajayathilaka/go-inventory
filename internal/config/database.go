@@ -7,7 +7,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"tui-inventory/internal/repository/models"
+	"inventory-api/internal/repository/models"
 )
 
 type Database struct {
