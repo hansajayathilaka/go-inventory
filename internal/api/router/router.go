@@ -39,6 +39,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		// Initialize handlers
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
+		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 
 		// Authentication routes
 		auth := v1.Group("/auth")
@@ -71,6 +72,18 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			categories.GET("/:id/hierarchy", categoryHandler.GetCategoryHierarchy)   // GET /api/v1/categories/:id/hierarchy
 			categories.GET("/:id/path", categoryHandler.GetCategoryPath)             // GET /api/v1/categories/:id/path
 			categories.PUT("/:id/move", categoryHandler.MoveCategory)                // PUT /api/v1/categories/:id/move
+		}
+
+		// Product management routes
+		products := v1.Group("/products")
+		{
+			products.GET("", productHandler.GetProducts)                             // GET /api/v1/products
+			products.POST("", productHandler.CreateProduct)                          // POST /api/v1/products
+			products.GET("/search", productHandler.SearchProducts)                   // GET /api/v1/products/search
+			products.GET("/:id", productHandler.GetProduct)                          // GET /api/v1/products/:id
+			products.PUT("/:id", productHandler.UpdateProduct)                       // PUT /api/v1/products/:id
+			products.DELETE("/:id", productHandler.DeleteProduct)                    // DELETE /api/v1/products/:id
+			products.GET("/:id/inventory", productHandler.GetProductInventory)       // GET /api/v1/products/:id/inventory
 		}
 	}
 

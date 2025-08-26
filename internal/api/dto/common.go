@@ -86,6 +86,14 @@ type PaginationResponse struct {
 	Total    int `json:"total" example:"100"`
 } // @name PaginationResponse
 
+// ApiResponse represents a simple API response structure used by handlers
+// @Description Simple API response with success status, message and data
+type ApiResponse struct {
+	Success bool        `json:"success" example:"true"`
+	Message string      `json:"message" example:"Operation completed successfully"`
+	Data    interface{} `json:"data,omitempty"`
+} // @name ApiResponse
+
 // CreatePaginatedResponse creates a standardized paginated response
 func CreatePaginatedResponse(data interface{}, pagination *PaginationInfo, message string) PaginatedResponse {
 	return PaginatedResponse{

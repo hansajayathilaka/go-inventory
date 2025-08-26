@@ -20,7 +20,8 @@
       "Bash(mkdir:*)",
       "Bash(./bin/inventory-api)",
       "Bash(curl:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

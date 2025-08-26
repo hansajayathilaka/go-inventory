@@ -1,5 +1,16 @@
 basePath: /api/v1
 definitions:
+  ApiResponse:
+    description: Simple API response with success status, message and data
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
   CategoryHierarchyResponse:
     description: Hierarchical representation of categories
     properties:
@@ -185,6 +196,30 @@ definitions:
         example: Invalid input parameters
         type: string
     type: object
+  dto.InventoryResponse:
+    properties:
+      available_quantity:
+        example: 45
+        type: integer
+      location_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      location_name:
+        example: Main Warehouse
+        type: string
+      max_level:
+        example: 100
+        type: integer
+      quantity:
+        example: 50
+        type: integer
+      reorder_level:
+        example: 10
+        type: integer
+      reserved_quantity:
+        example: 5
+        type: integer
+    type: object
   dto.LoginRequest:
     properties:
       password:
@@ -242,6 +277,184 @@ definitions:
       total_pages:
         example: 10
         type: integer
+    type: object
+  dto.ProductCreateRequest:
+    properties:
+      barcode:
+        example: "1234567890123"
+        type: string
+      category_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      cost_price:
+        example: 10.5
+        type: number
+      description:
+        example: A sample product for demonstration
+        type: string
+      dimensions:
+        example: 10x5x2 cm
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Sample Product
+        type: string
+      retail_price:
+        example: 15.99
+        type: number
+      sku:
+        example: PROD-001
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      weight:
+        example: 0.5
+        type: number
+      wholesale_price:
+        example: 12.5
+        type: number
+    required:
+    - category_id
+    - name
+    - sku
+    type: object
+  dto.ProductListResponse:
+    properties:
+      page:
+        example: 1
+        type: integer
+      per_page:
+        example: 20
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/dto.ProductResponse'
+        type: array
+      total:
+        example: 150
+        type: integer
+      total_pages:
+        example: 8
+        type: integer
+    type: object
+  dto.ProductResponse:
+    properties:
+      barcode:
+        example: "1234567890123"
+        type: string
+      category:
+        $ref: '#/definitions/CategoryResponse'
+      category_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      cost_price:
+        example: 10.5
+        type: number
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      description:
+        example: A sample product for demonstration
+        type: string
+      dimensions:
+        example: 10x5x2 cm
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      inventory:
+        items:
+          $ref: '#/definitions/dto.InventoryResponse'
+        type: array
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Sample Product
+        type: string
+      retail_price:
+        example: 15.99
+        type: number
+      sku:
+        example: PROD-001
+        type: string
+      supplier:
+        $ref: '#/definitions/dto.SupplierResponse'
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      total_stock:
+        example: 100
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      weight:
+        example: 0.5
+        type: number
+      wholesale_price:
+        example: 12.5
+        type: number
+    type: object
+  dto.ProductUpdateRequest:
+    properties:
+      barcode:
+        example: "1234567890124"
+        type: string
+      category_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      cost_price:
+        example: 11
+        type: number
+      description:
+        example: Updated description
+        type: string
+      dimensions:
+        example: 11x5x2 cm
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Updated Product Name
+        type: string
+      retail_price:
+        example: 16.99
+        type: number
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      weight:
+        example: 0.6
+        type: number
+      wholesale_price:
+        example: 13.5
+        type: number
+    type: object
+  dto.SupplierResponse:
+    properties:
+      code:
+        example: SUP-001
+        type: string
+      email:
+        example: supplier@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Supplier Name
+        type: string
+      phone:
+        example: +1-555-0123
+        type: string
     type: object
   dto.UpdateUserRequest:
     properties:
@@ -318,6 +531,296 @@ info:
   title: Inventory Management API
   version: "1.0"
 paths:
+  /api/v1/products:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of products with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by category ID
+        in: query
+        name: category_id
+        type: string
+      - description: Filter by supplier ID
+        in: query
+        name: supplier_id
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Products retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product in the system
+      parameters:
+      - description: Product creation data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Product already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new product
+      tags:
+      - products
+  /api/v1/products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product from the system
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product deleted successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete product
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Get a specific product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product update data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict with existing data
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update product
+      tags:
+      - products
+  /api/v1/products/{id}/inventory:
+    get:
+      consumes:
+      - application/json
+      description: Get inventory information for a specific product across all locations
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product inventory retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get product inventory
+      tags:
+      - products
+  /api/v1/products/search:
+    get:
+      consumes:
+      - application/json
+      description: Search products by name, SKU, or other criteria
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Products found
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Search products
+      tags:
+      - products
   /auth/login:
     post:
       consumes:
