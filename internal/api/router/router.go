@@ -38,6 +38,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 	{
 		// Initialize handlers
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
+		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 
 		// Authentication routes
 		auth := v1.Group("/auth")
@@ -54,6 +55,22 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+		}
+
+		// Category management routes
+		categories := v1.Group("/categories")
+		{
+			categories.GET("", categoryHandler.ListCategories)                        // GET /api/v1/categories
+			categories.POST("", categoryHandler.CreateCategory)                      // POST /api/v1/categories
+			categories.GET("/roots", categoryHandler.GetRootCategories)              // GET /api/v1/categories/roots
+			categories.GET("/hierarchy", categoryHandler.GetCategoryHierarchy)       // GET /api/v1/categories/hierarchy
+			categories.GET("/:id", categoryHandler.GetCategory)                      // GET /api/v1/categories/:id
+			categories.PUT("/:id", categoryHandler.UpdateCategory)                   // PUT /api/v1/categories/:id
+			categories.DELETE("/:id", categoryHandler.DeleteCategory)                // DELETE /api/v1/categories/:id
+			categories.GET("/:id/children", categoryHandler.GetCategoryChildren)     // GET /api/v1/categories/:id/children
+			categories.GET("/:id/hierarchy", categoryHandler.GetCategoryHierarchy)   // GET /api/v1/categories/:id/hierarchy
+			categories.GET("/:id/path", categoryHandler.GetCategoryPath)             // GET /api/v1/categories/:id/path
+			categories.PUT("/:id/move", categoryHandler.MoveCategory)                // PUT /api/v1/categories/:id/move
 		}
 	}
 

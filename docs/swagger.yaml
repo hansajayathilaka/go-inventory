@@ -1,5 +1,135 @@
 basePath: /api/v1
 definitions:
+  CategoryHierarchyResponse:
+    description: Hierarchical representation of categories
+    properties:
+      category:
+        $ref: '#/definitions/CategoryResponse'
+      children:
+        items:
+          $ref: '#/definitions/CategoryHierarchyResponse'
+        type: array
+    type: object
+  CategoryListResponse:
+    description: Paginated list of categories
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/CategoryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/PaginationResponse'
+    type: object
+  CategoryPathResponse:
+    description: Category path from root to target category
+    properties:
+      path:
+        items:
+          $ref: '#/definitions/CategoryResponse'
+        type: array
+    type: object
+  CategoryResponse:
+    description: Category information in API responses
+    properties:
+      children_count:
+        example: 5
+        type: integer
+      created_at:
+        example: "2024-01-15T09:30:00Z"
+        type: string
+      description:
+        example: Electronic devices and accessories
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      level:
+        example: 1
+        type: integer
+      name:
+        example: Electronics
+        type: string
+      parent_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      path:
+        example: Electronics/Computers
+        type: string
+      updated_at:
+        example: "2024-01-15T09:30:00Z"
+        type: string
+    type: object
+  CreateCategoryRequest:
+    description: Request payload for creating a new category
+    properties:
+      description:
+        example: Electronic devices and accessories
+        maxLength: 500
+        type: string
+      name:
+        example: Electronics
+        maxLength: 100
+        minLength: 1
+        type: string
+      parent_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - name
+    type: object
+  ErrorResponse:
+    description: Standard error API response structure
+    properties:
+      error:
+        example: Invalid request
+        type: string
+      message:
+        example: Detailed error message
+        type: string
+    type: object
+  MoveCategoryRequest:
+    description: Request payload for moving a category to a different parent
+    properties:
+      new_parent_id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+    type: object
+  PaginationResponse:
+    description: Pagination information for list responses
+    properties:
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 20
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  SuccessResponse:
+    description: Standard successful API response structure
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+    type: object
+  UpdateCategoryRequest:
+    description: Request payload for updating an existing category
+    properties:
+      description:
+        example: Electronic devices and accessories
+        maxLength: 500
+        type: string
+      name:
+        example: Electronics
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
   dto.BaseResponse:
     properties:
       data: {}
@@ -242,6 +372,434 @@ paths:
       summary: User logout
       tags:
       - Authentication
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of categories with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by category level (0-5)
+        in: query
+        name: level
+        type: integer
+      - description: Filter by parent category ID
+        in: query
+        name: parent_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category
+      parameters:
+      - description: Category information
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category (must not have products or subcategories)
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Get category details by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get category
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update category information
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Category information
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update category
+      tags:
+      - categories
+  /categories/{id}/children:
+    get:
+      consumes:
+      - application/json
+      description: Get all child categories of a category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/CategoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get category children
+      tags:
+      - categories
+  /categories/{id}/hierarchy:
+    get:
+      consumes:
+      - application/json
+      description: Get the complete hierarchical tree of categories from a root category
+      parameters:
+      - description: Root category ID (optional, if not provided returns all root
+          categories)
+        in: path
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryHierarchyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get category hierarchy
+      tags:
+      - categories
+  /categories/{id}/move:
+    put:
+      consumes:
+      - application/json
+      description: Move a category to a different parent (or root level)
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Move information
+        in: body
+        name: move
+        required: true
+        schema:
+          $ref: '#/definitions/MoveCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Move category
+      tags:
+      - categories
+  /categories/{id}/path:
+    get:
+      consumes:
+      - application/json
+      description: Get the path from root to the specified category
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryPathResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get category path
+      tags:
+      - categories
+  /categories/hierarchy:
+    get:
+      consumes:
+      - application/json
+      description: Get the complete hierarchical tree of categories from a root category
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryHierarchyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get category hierarchy
+      tags:
+      - categories
+  /categories/roots:
+    get:
+      consumes:
+      - application/json
+      description: Get all root-level categories (categories with no parent)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/CategoryResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get root categories
+      tags:
+      - categories
   /health:
     get:
       description: Returns the health status of the API

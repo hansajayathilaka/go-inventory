@@ -64,6 +64,28 @@ func CreateErrorResponse(code, message, details string) BaseResponse {
 	}
 }
 
+// SuccessResponse represents a successful API response
+// @Description Standard successful API response structure
+type SuccessResponse struct {
+	Message string      `json:"message" example:"Operation completed successfully"`
+	Data    interface{} `json:"data,omitempty"`
+} // @name SuccessResponse
+
+// ErrorResponse represents an error API response
+// @Description Standard error API response structure
+type ErrorResponse struct {
+	Error   string `json:"error" example:"Invalid request"`
+	Message string `json:"message" example:"Detailed error message"`
+} // @name ErrorResponse
+
+// PaginationResponse represents pagination metadata
+// @Description Pagination information for list responses
+type PaginationResponse struct {
+	Page     int `json:"page" example:"1"`
+	PageSize int `json:"page_size" example:"20"`
+	Total    int `json:"total" example:"100"`
+} // @name PaginationResponse
+
 // CreatePaginatedResponse creates a standardized paginated response
 func CreatePaginatedResponse(data interface{}, pagination *PaginationInfo, message string) PaginatedResponse {
 	return PaginatedResponse{

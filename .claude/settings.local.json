@@ -19,7 +19,8 @@
       "Bash(swag:*)",
       "Bash(mkdir:*)",
       "Bash(./bin/inventory-api)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": [],
     "ask": []

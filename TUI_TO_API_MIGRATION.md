@@ -3,8 +3,8 @@
 ## Overview
 Converting the TUI-based inventory management system to a REST API with Swagger documentation. Prioritizing Swagger-first development for immediate API testing capability.
 
-## Current Status: ✅ PHASE 3 & USER APIs COMPLETE
-**Next Step:** Implement categories and hierarchy APIs
+## Current Status: ✅ CATEGORIES & HIERARCHY APIs COMPLETE
+**Next Step:** Implement products API
 
 ## Migration Plan with Swagger Priority
 
@@ -44,14 +44,19 @@ Each API module will be developed with immediate Swagger documentation:
 - ✅ DELETE /api/v1/users/{id} - Delete user
 - ✅ **TEST:** All user endpoints via Swagger UI
 
-#### 4.2 Categories & Hierarchy API 📁
-- [ ] GET /api/v1/categories - List categories (hierarchical)
-- [ ] POST /api/v1/categories - Create category
-- [ ] GET /api/v1/categories/{id} - Get category details
-- [ ] PUT /api/v1/categories/{id} - Update category
-- [ ] DELETE /api/v1/categories/{id} - Delete category
-- [ ] GET /api/v1/categories/{id}/children - Get child categories
-- [ ] **TEST:** All category endpoints via Swagger UI
+#### 4.2 Categories & Hierarchy API 📁 ✅ COMPLETE
+- ✅ GET /api/v1/categories - List categories (hierarchical)
+- ✅ POST /api/v1/categories - Create category
+- ✅ GET /api/v1/categories/roots - Get root categories
+- ✅ GET /api/v1/categories/hierarchy - Get full hierarchy tree
+- ✅ GET /api/v1/categories/{id} - Get category details
+- ✅ PUT /api/v1/categories/{id} - Update category
+- ✅ DELETE /api/v1/categories/{id} - Delete category
+- ✅ GET /api/v1/categories/{id}/children - Get child categories
+- ✅ GET /api/v1/categories/{id}/hierarchy - Get category hierarchy from root
+- ✅ GET /api/v1/categories/{id}/path - Get path from root to category
+- ✅ PUT /api/v1/categories/{id}/move - Move category to new parent
+- ✅ **TEST:** All 11 category endpoints working via REST API
 
 #### 4.3 Products API 📦
 - [ ] GET /api/v1/products - List products (filtered, paginated)
@@ -157,10 +162,10 @@ http://localhost:8080/docs/index.html
 
 ## Progress Tracking
 - **Started:** 2025-08-24
-- **Current Phase:** Phase 4.2 - Categories & Hierarchy API
+- **Current Phase:** Phase 4.3 - Products API (Next)
 - **Swagger UI Available:** ✅ http://localhost:8080/docs/index.html
-- **APIs Implemented:** 8/30+ (Health + Complete User Management)
-- **Tests Passed:** 8/30+ (Health + User APIs all working)
+- **APIs Implemented:** 19/30+ (Health + User Management + Complete Categories)
+- **Tests Passed:** 19/30+ (Health + User + Category APIs all working)
 
 ## Server Status
 - **Port:** 8080
