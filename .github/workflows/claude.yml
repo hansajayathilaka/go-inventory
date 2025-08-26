@@ -19,8 +19,8 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
       issues: read
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
@@ -73,9 +73,11 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-          # This is an optional setting that allows Claude to read CI results on PRs
+          # Additional permissions for Claude to create PRs and commit changes
           additional_permissions: |
             actions: read
+            contents: write
+            pull-requests: write
           
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4.1)
           # model: "claude-opus-4-1-20250805"
@@ -86,8 +88,8 @@ jobs:
           # Optional: Trigger when specific user is assigned to an issue
           # assignee_trigger: "claude-bot"
           
-          # Allow Claude to run Go-specific commands for this project
-          allowed_tools: "Bash(go build:*),Bash(go get:*),Bash(./tui-inventory:*),Bash(timeout:*),Bash(go run:*),Bash(go test:*),WebFetch(domain:github.com),WebFetch(domain:pkg.go.dev),Bash(go mod:*),Bash(find:*),Bash(go vet:*),Bash(go install:*),Bash(grep:*),Bash(swag init:*),Bash(swag:*)"
+          # Allow Claude to run Go-specific commands and git operations for this project
+          allowed_tools: "Bash(go build:*),Bash(go get:*),Bash(./tui-inventory:*),Bash(timeout:*),Bash(go run:*),Bash(go test:*),WebFetch(domain:github.com),WebFetch(domain:pkg.go.dev),Bash(go mod:*),Bash(find:*),Bash(go vet:*),Bash(go install:*),Bash(grep:*),Bash(swag init:*),Bash(swag:*),Bash(git *),Bash(gh *)"
           
           # Custom instructions for this Go API inventory project
           custom_instructions: |
@@ -95,6 +97,9 @@ jobs:
             Follow the clean architecture pattern with 3-layer separation.
             Use the repository pattern for all database operations.
             Maintain audit trails for all data modifications.
+            
+            IMPORTANT: When you make changes to files, always create a pull request to preserve your work.
+            Use git commands to create branches, commit changes, and create PRs via gh CLI.
             
             Available custom slash commands:
             - /api-migration - TUI to REST API migration workflow with steps: setup, swagger, users, products, inventory, suppliers, locations, audit, test, status
