@@ -38,7 +38,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -48,13 +48,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/inventory-api_internal_api_dto.LoginResponse"
+                                            "$ref": "#/definitions/dto.LoginResponse"
                                         }
                                     }
                                 }
@@ -64,19 +64,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -99,7 +99,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -119,7 +119,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_router.HealthResponse"
+                            "$ref": "#/definitions/router.HealthResponse"
                         }
                     }
                 }
@@ -178,7 +178,7 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/inventory-api_internal_api_dto.PaginatedResponse"
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
@@ -186,7 +186,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/inventory-api_internal_api_dto.UserResponse"
+                                                "$ref": "#/definitions/dto.UserResponse"
                                             }
                                         }
                                     }
@@ -197,13 +197,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -227,7 +227,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.CreateUserRequest"
+                            "$ref": "#/definitions/dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -237,13 +237,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/inventory-api_internal_api_dto.UserResponse"
+                                            "$ref": "#/definitions/dto.UserResponse"
                                         }
                                     }
                                 }
@@ -253,19 +253,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -300,13 +300,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/inventory-api_internal_api_dto.UserResponse"
+                                            "$ref": "#/definitions/dto.UserResponse"
                                         }
                                     }
                                 }
@@ -316,19 +316,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -360,7 +360,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.UpdateUserRequest"
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
                         }
                     }
                 ],
@@ -370,13 +370,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/inventory-api_internal_api_dto.UserResponse"
+                                            "$ref": "#/definitions/dto.UserResponse"
                                         }
                                     }
                                 }
@@ -386,19 +386,19 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -429,25 +429,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/inventory-api_internal_api_dto.BaseResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -455,29 +455,12 @@
         }
     },
     "definitions": {
-        "internal_api_router.HealthResponse": {
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "example": "ok"
-                },
-                "timestamp": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
-                },
-                "version": {
-                    "type": "string",
-                    "example": "1.0.0"
-                }
-            }
-        },
-        "inventory-api_internal_api_dto.BaseResponse": {
+        "dto.BaseResponse": {
             "type": "object",
             "properties": {
                 "data": {},
                 "error": {
-                    "$ref": "#/definitions/inventory-api_internal_api_dto.ErrorInfo"
+                    "$ref": "#/definitions/dto.ErrorInfo"
                 },
                 "message": {
                     "type": "string",
@@ -493,7 +476,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.CreateUserRequest": {
+        "dto.CreateUserRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -529,7 +512,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.ErrorInfo": {
+        "dto.ErrorInfo": {
             "type": "object",
             "properties": {
                 "code": {
@@ -546,7 +529,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.LoginRequest": {
+        "dto.LoginRequest": {
             "type": "object",
             "required": [
                 "password",
@@ -563,7 +546,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.LoginResponse": {
+        "dto.LoginResponse": {
             "type": "object",
             "properties": {
                 "expires_at": {
@@ -579,23 +562,23 @@
                     "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "user": {
-                    "$ref": "#/definitions/inventory-api_internal_api_dto.UserResponse"
+                    "$ref": "#/definitions/dto.UserResponse"
                 }
             }
         },
-        "inventory-api_internal_api_dto.PaginatedResponse": {
+        "dto.PaginatedResponse": {
             "type": "object",
             "properties": {
                 "data": {},
                 "error": {
-                    "$ref": "#/definitions/inventory-api_internal_api_dto.ErrorInfo"
+                    "$ref": "#/definitions/dto.ErrorInfo"
                 },
                 "message": {
                     "type": "string",
                     "example": "Operation completed successfully"
                 },
                 "pagination": {
-                    "$ref": "#/definitions/inventory-api_internal_api_dto.PaginationInfo"
+                    "$ref": "#/definitions/dto.PaginationInfo"
                 },
                 "success": {
                     "type": "boolean",
@@ -607,7 +590,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.PaginationInfo": {
+        "dto.PaginationInfo": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -628,7 +611,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.UpdateUserRequest": {
+        "dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -653,7 +636,7 @@
                 }
             }
         },
-        "inventory-api_internal_api_dto.UserResponse": {
+        "dto.UserResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -689,6 +672,23 @@
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "router.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ok"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
                 }
             }
         }

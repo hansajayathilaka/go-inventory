@@ -1,22 +1,10 @@
 basePath: /api/v1
 definitions:
-  internal_api_router.HealthResponse:
-    properties:
-      status:
-        example: ok
-        type: string
-      timestamp:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      version:
-        example: 1.0.0
-        type: string
-    type: object
-  inventory-api_internal_api_dto.BaseResponse:
+  dto.BaseResponse:
     properties:
       data: {}
       error:
-        $ref: '#/definitions/inventory-api_internal_api_dto.ErrorInfo'
+        $ref: '#/definitions/dto.ErrorInfo'
       message:
         example: Operation completed successfully
         type: string
@@ -27,7 +15,7 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
     type: object
-  inventory-api_internal_api_dto.CreateUserRequest:
+  dto.CreateUserRequest:
     properties:
       email:
         example: john@example.com
@@ -55,7 +43,7 @@ definitions:
     - role
     - username
     type: object
-  inventory-api_internal_api_dto.ErrorInfo:
+  dto.ErrorInfo:
     properties:
       code:
         example: VALIDATION_ERROR
@@ -67,7 +55,7 @@ definitions:
         example: Invalid input parameters
         type: string
     type: object
-  inventory-api_internal_api_dto.LoginRequest:
+  dto.LoginRequest:
     properties:
       password:
         example: password123
@@ -79,7 +67,7 @@ definitions:
     - password
     - username
     type: object
-  inventory-api_internal_api_dto.LoginResponse:
+  dto.LoginResponse:
     properties:
       expires_at:
         example: "2023-01-02T12:00:00Z"
@@ -91,18 +79,18 @@ definitions:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
       user:
-        $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+        $ref: '#/definitions/dto.UserResponse'
     type: object
-  inventory-api_internal_api_dto.PaginatedResponse:
+  dto.PaginatedResponse:
     properties:
       data: {}
       error:
-        $ref: '#/definitions/inventory-api_internal_api_dto.ErrorInfo'
+        $ref: '#/definitions/dto.ErrorInfo'
       message:
         example: Operation completed successfully
         type: string
       pagination:
-        $ref: '#/definitions/inventory-api_internal_api_dto.PaginationInfo'
+        $ref: '#/definitions/dto.PaginationInfo'
       success:
         example: true
         type: boolean
@@ -110,7 +98,7 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
     type: object
-  inventory-api_internal_api_dto.PaginationInfo:
+  dto.PaginationInfo:
     properties:
       limit:
         example: 10
@@ -125,7 +113,7 @@ definitions:
         example: 10
         type: integer
     type: object
-  inventory-api_internal_api_dto.UpdateUserRequest:
+  dto.UpdateUserRequest:
     properties:
       email:
         example: john_updated@example.com
@@ -144,7 +132,7 @@ definitions:
         minLength: 3
         type: string
     type: object
-  inventory-api_internal_api_dto.UserResponse:
+  dto.UserResponse:
     properties:
       created_at:
         example: "2023-01-01T12:00:00Z"
@@ -173,6 +161,18 @@ definitions:
         example: john_doe
         type: string
     type: object
+  router.HealthResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+      timestamp:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -199,7 +199,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/inventory-api_internal_api_dto.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -207,23 +207,23 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/inventory-api_internal_api_dto.LoginResponse'
+                  $ref: '#/definitions/dto.LoginResponse'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: User login
       tags:
       - Authentication
@@ -238,7 +238,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: User logout
       tags:
       - Authentication
@@ -251,7 +251,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_router.HealthResponse'
+            $ref: '#/definitions/router.HealthResponse'
       summary: Health check
       tags:
       - System
@@ -291,21 +291,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/inventory-api_internal_api_dto.PaginatedResponse'
+            - $ref: '#/definitions/dto.PaginatedResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+                    $ref: '#/definitions/dto.UserResponse'
                   type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: List users
       tags:
       - Users
@@ -319,7 +319,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/inventory-api_internal_api_dto.CreateUserRequest'
+          $ref: '#/definitions/dto.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -327,23 +327,23 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+                  $ref: '#/definitions/dto.UserResponse'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Create a new user
       tags:
       - Users
@@ -365,19 +365,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Delete a user
       tags:
       - Users
@@ -399,23 +399,23 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+                  $ref: '#/definitions/dto.UserResponse'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get user by ID
       tags:
       - Users
@@ -435,7 +435,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/inventory-api_internal_api_dto.UpdateUserRequest'
+          $ref: '#/definitions/dto.UpdateUserRequest'
       produces:
       - application/json
       responses:
@@ -443,23 +443,23 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/inventory-api_internal_api_dto.UserResponse'
+                  $ref: '#/definitions/dto.UserResponse'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/inventory-api_internal_api_dto.BaseResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Update a user
       tags:
       - Users

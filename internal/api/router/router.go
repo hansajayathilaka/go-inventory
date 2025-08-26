@@ -17,9 +17,8 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 	router := gin.New()
 
 	// Add middleware
-	router.Use(middleware.Logger())
+	router.Use(middleware.RequestLogger())
 	router.Use(middleware.ErrorHandler())
-	router.Use(middleware.ValidationErrorHandler())
 
 	// Add CORS middleware
 	config := cors.DefaultConfig()

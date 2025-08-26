@@ -16,7 +16,10 @@
       "Bash(go install:*)",
       "Bash(grep:*)",
       "Bash(swag init:*)",
-      "Bash(swag:*)"
+      "Bash(swag:*)",
+      "Bash(mkdir:*)",
+      "Bash(./bin/inventory-api)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
