@@ -22,7 +22,8 @@
       "Bash(curl:*)",
       "WebFetch(domain:localhost)",
       "Bash(pkill:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(./main)"
     ],
     "deny": [],
     "ask": []

@@ -39,6 +39,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		// Initialize handlers
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
+		locationHandler := handlers.NewLocationHandler(appCtx.LocationService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
@@ -68,6 +69,17 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.GET("/:id", supplierHandler.GetSupplier)                          // GET /api/v1/suppliers/:id
 			suppliers.PUT("/:id", supplierHandler.UpdateSupplier)                       // PUT /api/v1/suppliers/:id
 			suppliers.DELETE("/:id", supplierHandler.DeleteSupplier)                    // DELETE /api/v1/suppliers/:id
+		}
+
+		// Location management routes
+		locations := v1.Group("/locations")
+		{
+			locations.GET("", locationHandler.ListLocations)                            // GET /api/v1/locations
+			locations.POST("", locationHandler.CreateLocation)                          // POST /api/v1/locations
+			locations.GET("/:id", locationHandler.GetLocation)                          // GET /api/v1/locations/:id
+			locations.PUT("/:id", locationHandler.UpdateLocation)                       // PUT /api/v1/locations/:id
+			locations.DELETE("/:id", locationHandler.DeleteLocation)                    // DELETE /api/v1/locations/:id
+			locations.GET("/:id/inventory", locationHandler.GetLocationInventory)       // GET /api/v1/locations/:id/inventory
 		}
 
 		// Category management routes
