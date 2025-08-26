@@ -1,36 +1,51 @@
-# TUI Inventory System - Development Guide
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# Inventory Management API - Development Guide
 
 ## Project Overview
-A comprehensive TUI-based inventory management system built with Go and Bubble Tea, designed for point of sale integration with proper architectural separation.
+A comprehensive REST API inventory management system built with Go and Gin, evolved from a TUI-based system. Features complete Swagger documentation, JWT authentication, role-based access control, and production-ready deployment configurations.
 
 ## Technology Stack
-- **Language**: Go
-- **TUI Framework**: Bubble Tea v2
+- **Language**: Go 1.23+
+- **Web Framework**: Gin
 - **ORM**: GORM
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL 16
 - **Configuration**: Viper
-- **Architecture**: Clean Architecture with 3-layer separation
+- **Authentication**: JWT with golang-jwt/jwt/v5
+- **Documentation**: Swagger/OpenAPI with gin-swagger
+- **Architecture**: Clean Architecture with API/Business/Repository layers
 
 ## Project Structure
 ```
-tui-inventory/
+inventory-api/
 ├── cmd/
-│   └── main.go                 # Application entry point
+│   └── main.go                 # Web server entry point
 ├── internal/
-│   ├── ui/                     # TUI layer (Bubble Tea)
-│   │   ├── models/            # TUI models/pages
-│   │   ├── components/        # Reusable UI components
-│   │   └── styles/            # UI styling
-│   ├── business/              # Business logic layer
-│   │   ├── inventory/         # Inventory management
-│   │   ├── user/              # User management
-│   │   ├── audit/             # Audit logging
-│   │   └── hierarchy/         # Item hierarchy
-│   ├── repository/            # Data access layer
+│   ├── api/                    # REST API layer
+│   │   ├── handlers/          # HTTP request handlers
+│   │   ├── middleware/        # Authentication, CORS, validation
+│   │   ├── router/            # Route definitions
+│   │   └── dto/               # Data Transfer Objects
+│   ├── business/              # Business logic layer (unchanged)
+│   │   ├── inventory/         # Inventory management services
+│   │   ├── user/              # User management services
+│   │   ├── product/           # Product management services
+│   │   ├── supplier/          # Supplier management services
+│   │   ├── location/          # Location management services
+│   │   ├── audit/             # Audit logging services
+│   │   └── hierarchy/         # Category hierarchy services
+│   ├── repository/            # Data access layer (unchanged)
 │   │   ├── models/            # GORM models
 │   │   └── interfaces/        # Repository interfaces
+│   ├── app/                   # Application context and initialization
 │   └── config/                # Configuration management
-├── migrations/                # Database migrations
+├── docs/                      # Swagger documentation (auto-generated)
+├── tests/                     # Test suites
+│   ├── integration/           # API integration tests
+│   └── performance/           # Benchmarks and load tests
+├── tools/                     # Performance monitoring utilities
 ├── go.mod
 └── go.sum
 ```
@@ -90,61 +105,101 @@ tui-inventory/
 ### Audit Logs Table
 - id, table_name, record_id, action, old_values, new_values, user_id, timestamp
 
-## Development Status - COMPLETED ✅
+## Common Development Commands
 
-1. ✅ Create CLAUDE.md with project plan and knowledge
-2. ✅ Initialize Go module and project structure
-3. ✅ Set up dependencies (Bubble Tea, GORM, PostgreSQL driver, Viper)
-4. ✅ Create database models with GORM
-5. ✅ Implement repository layer with interfaces
-6. ✅ Create business logic layer for core operations
-7. ✅ Build TUI components and models with Bubble Tea
-8. ✅ Implement user management system (TUI integration complete)
-9. ✅ Create product management with hierarchy (TUI integration complete)
-10. ✅ Build stock management functionality (TUI integration complete)
-11. ✅ Implement audit logging system (service layer complete)
-12. ✅ Create main application entry point
-13. ✅ Add configuration management
-14. ✅ Test core functionality and create example data
+### Building and Running
+```bash
+# Build the application
+go build -o inventory-api ./cmd/main.go
 
-### Testing Results (2025-08-22):
-- ✅ Database connection and seeding
-- ✅ 4 test users created with different roles
-- ✅ 4 test products with proper categorization
-- ✅ 7-level category hierarchy functioning correctly
-- ✅ 4 inventory records with stock tracking
-- ✅ Stock adjustment business logic working
-- ✅ All database operations and business services operational
+# Run the web server
+go run cmd/main.go
+
+# Seed database with test data (first run only)
+go run cmd/main.go --seed
+# OR
+./inventory-api --seed
+
+# Generate Swagger documentation
+swag init -g cmd/main.go -o ./docs
+```
+
+### Testing
+```bash
+# Run all tests
+go test ./...
+
+# Run business logic tests
+go test -v ./internal/business/...
+
+# Run integration tests (requires running server)
+INTEGRATION_TESTS=1 go test -v ./tests/integration/ -timeout=30m
+
+# Run performance benchmarks
+go test -bench=. ./tests/performance/
+```
+
+### Database Operations
+```bash
+# Test database connection
+go run cmd/main.go --seed
+
+# Access PostgreSQL (dev container)
+psql -h postgres -U inventory_user -d inventory_db
+```
+
+## API Development Status - COMPLETED ✅
+
+### Migration from TUI to REST API (2025-08-26)
+- ✅ Complete TUI to REST API migration
+- ✅ 48+ REST API endpoints implemented
+- ✅ Full Swagger/OpenAPI documentation
+- ✅ JWT authentication with role-based access control
+- ✅ Comprehensive middleware (CORS, rate limiting, validation)
+- ✅ Integration test suite
+- ✅ Performance testing and monitoring
 
 ## Architecture Principles
 
 ### Clean Architecture
-- **Presentation Layer**: TUI components using Bubble Tea
-- **Business Logic Layer**: Core domain logic, independent of UI and database
-- **Data Access Layer**: Repository pattern with GORM
+- **API Layer**: REST endpoints, middleware, DTOs (internal/api/)
+- **Business Logic Layer**: Core domain services, independent of HTTP and database (internal/business/)
+- **Data Access Layer**: Repository pattern with GORM (internal/repository/)
 
 ### Dependency Injection
 - Use interfaces for all external dependencies
 - Repository interfaces for data access
 - Service interfaces for business logic
 
-### Error Handling
-- Structured error handling with custom error types
-- Graceful error display in TUI
-- Comprehensive logging for debugging
+### API Architecture Patterns
+- RESTful resource-based URLs (/api/v1/{resource})
+- Consistent HTTP status codes and error responses
+- JWT bearer token authentication
+- Role-based access control with hierarchical permissions
+- Request validation with structured error messages
+- Rate limiting with response headers
+- CORS enabled for cross-origin requests
 
-## Point of Sale Integration Requirements
+## Key API Endpoints
 
-### API Endpoints (Future)
-- Product lookup by SKU/barcode
-- Real-time stock checking
-- Stock deduction on sale
-- Returns and refunds handling
+### Authentication & Authorization
+- `POST /api/v1/auth/login` - JWT login
+- `POST /api/v1/auth/logout` - Token invalidation
+- Middleware enforces role hierarchy: viewer < staff < manager < admin
 
-### Real-time Features
-- Live inventory updates
-- Stock alerts and notifications
-- Multi-user concurrent access
+### Core Resources (Full CRUD)
+- `/api/v1/users` - User management with RBAC
+- `/api/v1/categories` - Category hierarchy with tree operations
+- `/api/v1/products` - Product catalog with search/filtering
+- `/api/v1/inventory` - Stock management and adjustments
+- `/api/v1/suppliers` - Supplier information
+- `/api/v1/locations` - Storage locations
+- `/api/v1/audit-logs` - Audit trail and reporting
+
+### API Documentation
+- **Swagger UI**: `http://localhost:8080/docs/index.html`
+- **Health Check**: `GET /api/v1/health`
+- **Base URL**: `http://localhost:8080/api/v1`
 
 ## Development Environment Setup
 
@@ -156,12 +211,17 @@ tui-inventory/
 
 ### Manual Setup (Alternative)
 ```bash
-go mod init tui-inventory
-go get github.com/charmbracelet/bubbletea/v2
+go mod init inventory-api
+go get github.com/gin-gonic/gin
+go get github.com/swaggo/gin-swagger
+go get github.com/swaggo/files
+go get github.com/swaggo/swag/cmd/swag
 go get gorm.io/gorm
 go get gorm.io/driver/postgres
 go get github.com/spf13/viper
 go get github.com/google/uuid
+go get github.com/golang-jwt/jwt/v5
+go get golang.org/x/crypto
 ```
 
 ### Database Setup
@@ -172,26 +232,35 @@ createdb inventory_db
 psql inventory_db -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
 ```
 
-### Testing
-```bash
-go test ./...
-go test -v ./internal/...
-```
+### Default Test Credentials (After Seeding)
+- **Admin**: `admin` / `admin123`
+- **Manager**: `manager` / `manager123`  
+- **Staff**: `staff` / `staff123`
+- **Viewer**: `viewer` / `viewer123`
 
-### Running
-```bash
-go run cmd/main.go
-```
+## Development Guidelines
 
-## Notes for Future Sessions
-
-- Always maintain the 3-layer architecture separation
-- Use repository pattern for all database operations
+### Architecture Principles
+- Maintain clean 3-layer separation (API → Business → Repository)
+- Use dependency injection with interfaces
 - Follow Go naming conventions and best practices
-- Implement proper error handling and logging
-- Ensure TUI is responsive and user-friendly
-- Maintain audit trails for all data modifications
-- Focus on performance for large inventory datasets
+- Implement proper HTTP status codes and error handling
+- Maintain comprehensive audit trails for all data modifications
+- Use JWT authentication with role-based access control
+
+### API Development Patterns
+- Generate Swagger documentation for all new endpoints
+- Implement request validation with structured error responses
+- Follow RESTful resource naming conventions
+- Use appropriate HTTP methods (GET, POST, PUT, DELETE)
+- Implement pagination for list endpoints
+- Add rate limiting for production endpoints
+
+### Testing Requirements
+- Write unit tests for business logic (internal/business/)
+- Create integration tests for API endpoints (tests/integration/)
+- Run performance benchmarks for critical operations
+- Test role-based access control for all protected endpoints
 
 ## Business Logic Requirements
 
@@ -206,8 +275,11 @@ go run cmd/main.go
 - Supplier performance tracking
 - Inventory turnover analysis
 
-### Reporting
-- Stock levels by location
-- Movement history reports
-- Audit trail exports
-- Cost analysis reports
+### Reporting APIs
+- GET /api/v1/reports/inventory-summary - Stock levels by location
+- GET /api/v1/reports/stock-movements - Movement history reports  
+- GET /api/v1/audit-logs - Audit trail exports with filtering
+- Performance monitoring endpoints for system health
+
+## Migration Notes
+This project was successfully migrated from a TUI-based application to a REST API while preserving all business logic and database operations. The migration details are documented in `TUI_TO_API_MIGRATION.md`.

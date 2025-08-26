@@ -23,7 +23,12 @@
       "WebFetch(domain:localhost)",
       "Bash(pkill:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(./main)"
+      "Bash(./main)",
+      "Bash(chmod:*)",
+      "Bash(dos2unix:*)",
+      "Bash(sed:*)",
+      "Bash(./scripts/run-performance-tests.sh:*)",
+      "Bash(INTEGRATION_TESTS=1 go test -v ./tests/integration/ -timeout=30m)"
     ],
     "deny": [],
     "ask": []
