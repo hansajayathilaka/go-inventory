@@ -54,6 +54,7 @@ func main() {
 		return
 	}
 
+	
 	// Initialize router with all routes and middleware
 	r := router.SetupRouter(appCtx)
 
