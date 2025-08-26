@@ -21,7 +21,8 @@
       "Bash(./bin/inventory-api)",
       "Bash(curl:*)",
       "WebFetch(domain:localhost)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

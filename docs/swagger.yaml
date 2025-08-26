@@ -126,6 +126,133 @@ definitions:
         example: Operation completed successfully
         type: string
     type: object
+  SupplierCreateRequest:
+    description: Request body for creating a new supplier
+    properties:
+      address:
+        example: 123 Business St, City, State 12345
+        maxLength: 500
+        type: string
+      code:
+        example: ACME001
+        maxLength: 20
+        minLength: 1
+        type: string
+      contact_name:
+        example: John Smith
+        maxLength: 100
+        type: string
+      email:
+        example: contact@acme.com
+        maxLength: 100
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: ACME Corporation
+        maxLength: 100
+        minLength: 1
+        type: string
+      notes:
+        example: Primary supplier for widgets
+        maxLength: 1000
+        type: string
+      phone:
+        example: +1-555-123-4567
+        maxLength: 20
+        type: string
+    required:
+    - code
+    - name
+    type: object
+  SupplierDetailResponse:
+    description: Detailed supplier information returned by the API
+    properties:
+      address:
+        example: 123 Business St, City, State 12345
+        type: string
+      code:
+        example: ACME001
+        type: string
+      contact_name:
+        example: John Smith
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      email:
+        example: contact@acme.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: ACME Corporation
+        type: string
+      notes:
+        example: Primary supplier for widgets
+        type: string
+      phone:
+        example: +1-555-123-4567
+        type: string
+      updated_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+    type: object
+  SupplierListResponse:
+    description: Paginated list of suppliers with metadata
+    properties:
+      pagination:
+        $ref: '#/definitions/PaginationResponse'
+      suppliers:
+        items:
+          $ref: '#/definitions/SupplierDetailResponse'
+        type: array
+    type: object
+  SupplierUpdateRequest:
+    description: Request body for updating an existing supplier
+    properties:
+      address:
+        example: 123 Business St, City, State 12345
+        maxLength: 500
+        type: string
+      code:
+        example: ACME001
+        maxLength: 20
+        minLength: 1
+        type: string
+      contact_name:
+        example: John Smith
+        maxLength: 100
+        type: string
+      email:
+        example: contact@acme.com
+        maxLength: 100
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: ACME Corporation
+        maxLength: 100
+        minLength: 1
+        type: string
+      notes:
+        example: Primary supplier for widgets
+        maxLength: 1000
+        type: string
+      phone:
+        example: +1-555-123-4567
+        maxLength: 20
+        type: string
+    required:
+    - code
+    - name
+    type: object
   UpdateCategoryRequest:
     description: Request payload for updating an existing category
     properties:
@@ -1253,6 +1380,204 @@ paths:
       summary: Search products
       tags:
       - products
+  /api/v1/suppliers:
+    get:
+      description: Get a paginated list of suppliers
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Suppliers list
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List suppliers
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      description: Create a new supplier in the system
+      parameters:
+      - description: Supplier creation data
+        in: body
+        name: supplier
+        required: true
+        schema:
+          $ref: '#/definitions/SupplierCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Supplier created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Supplier already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new supplier
+      tags:
+      - suppliers
+  /api/v1/suppliers/{id}:
+    delete:
+      description: Delete a supplier from the system
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier deleted successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Invalid supplier ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete a supplier
+      tags:
+      - suppliers
+    get:
+      description: Get a specific supplier by its ID
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier details
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid supplier ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get supplier by ID
+      tags:
+      - suppliers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing supplier's information
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated supplier data
+        in: body
+        name: supplier
+        required: true
+        schema:
+          $ref: '#/definitions/SupplierUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Supplier code already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update a supplier
+      tags:
+      - suppliers
   /auth/login:
     post:
       consumes:

@@ -38,6 +38,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 	{
 		// Initialize handlers
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
+		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
@@ -57,6 +58,16 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)
 			users.DELETE("/:id", userHandler.DeleteUser)
+		}
+
+		// Supplier management routes
+		suppliers := v1.Group("/suppliers")
+		{
+			suppliers.GET("", supplierHandler.GetSuppliers)                              // GET /api/v1/suppliers
+			suppliers.POST("", supplierHandler.CreateSupplier)                          // POST /api/v1/suppliers
+			suppliers.GET("/:id", supplierHandler.GetSupplier)                          // GET /api/v1/suppliers/:id
+			suppliers.PUT("/:id", supplierHandler.UpdateSupplier)                       // PUT /api/v1/suppliers/:id
+			suppliers.DELETE("/:id", supplierHandler.DeleteSupplier)                    // DELETE /api/v1/suppliers/:id
 		}
 
 		// Category management routes
