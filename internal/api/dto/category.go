@@ -66,8 +66,8 @@ type CategoryPathResponse struct {
 // CategoryQueryParams represents query parameters for listing categories
 // @Description Query parameters for category listing and filtering
 type CategoryQueryParams struct {
-	Page     int  `form:"page" binding:"min=1" example:"1"`
-	PageSize int  `form:"page_size" binding:"min=1,max=100" example:"20"`
+	Page     int  `form:"page" example:"1"`
+	PageSize int  `form:"page_size" example:"20"`
 	Level    *int `form:"level" binding:"omitempty,min=0,max=5" example:"1"`
 	ParentID *uuid.UUID `form:"parent_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 } // @name CategoryQueryParams

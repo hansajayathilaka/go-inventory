@@ -33,7 +33,7 @@ func NewSupplierHandler(supplierService supplierBusiness.Service) *SupplierHandl
 // @Failure 400 {object} dto.ErrorResponse "Invalid request"
 // @Failure 409 {object} dto.ErrorResponse "Supplier already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/suppliers [post]
+// @Router /suppliers [post]
 func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 	var req dto.SupplierCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -109,7 +109,7 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid supplier ID"
 // @Failure 404 {object} dto.ErrorResponse "Supplier not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/suppliers/{id} [get]
+// @Router /suppliers/{id} [get]
 func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -164,7 +164,7 @@ func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 // @Failure 404 {object} dto.ErrorResponse "Supplier not found"
 // @Failure 409 {object} dto.ErrorResponse "Supplier code already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/suppliers/{id} [put]
+// @Router /suppliers/{id} [put]
 func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -258,7 +258,7 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid supplier ID"
 // @Failure 404 {object} dto.ErrorResponse "Supplier not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/suppliers/{id} [delete]
+// @Router /suppliers/{id} [delete]
 func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -303,7 +303,7 @@ func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=dto.SupplierListResponse} "Suppliers list"
 // @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/suppliers [get]
+// @Router /suppliers [get]
 func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	page := 1
 	pageSize := 20

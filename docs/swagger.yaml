@@ -381,6 +381,61 @@ definitions:
     required:
     - name
     type: object
+  audit.UserActivity:
+    properties:
+      log_count:
+        type: integer
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.AuditLogResponse:
+    properties:
+      action:
+        $ref: '#/definitions/models.AuditAction'
+      audit_table:
+        type: string
+      id:
+        type: string
+      ip_address:
+        type: string
+      new_values: {}
+      old_values: {}
+      record_id:
+        type: string
+      timestamp:
+        type: string
+      user_agent:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.AuditStatisticsResponse:
+    properties:
+      logs_by_action:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      logs_by_table:
+        additionalProperties:
+          format: int64
+          type: integer
+        type: object
+      recent_activity:
+        items:
+          $ref: '#/definitions/dto.AuditLogResponse'
+        type: array
+      top_users:
+        items:
+          $ref: '#/definitions/audit.UserActivity'
+        type: array
+      total_logs:
+        type: integer
+    type: object
   dto.BaseResponse:
     properties:
       data: {}
@@ -395,6 +450,17 @@ definitions:
       timestamp:
         example: "2023-01-01T12:00:00Z"
         type: string
+    type: object
+  dto.CategoryStockSummary:
+    properties:
+      category_id:
+        type: string
+      category_name:
+        type: string
+      total_items:
+        type: integer
+      total_value:
+        type: number
     type: object
   dto.CreateInventoryRequest:
     properties:
@@ -479,6 +545,63 @@ definitions:
         type: integer
       reserved_quantity:
         type: integer
+    type: object
+  dto.InventorySummaryItem:
+    properties:
+      category:
+        type: string
+      product_id:
+        type: string
+      product_name:
+        type: string
+      product_sku:
+        type: string
+      reorder_level:
+        type: integer
+      stock_value:
+        type: number
+      total_stock:
+        type: integer
+    type: object
+  dto.InventorySummaryResponse:
+    properties:
+      low_stock_items:
+        items:
+          $ref: '#/definitions/dto.InventorySummaryItem'
+        type: array
+      stock_by_category:
+        items:
+          $ref: '#/definitions/dto.CategoryStockSummary'
+        type: array
+      stock_by_location:
+        items:
+          $ref: '#/definitions/dto.LocationStockSummary'
+        type: array
+      top_products:
+        items:
+          $ref: '#/definitions/dto.InventorySummaryItem'
+        type: array
+      total_locations:
+        type: integer
+      total_products:
+        type: integer
+      total_stock_value:
+        type: number
+      zero_stock_items:
+        items:
+          $ref: '#/definitions/dto.InventorySummaryItem'
+        type: array
+    type: object
+  dto.LocationStockSummary:
+    properties:
+      location_id:
+        type: string
+      location_name:
+        type: string
+      total_items:
+        type: integer
+      total_value:
+        type: number
     type: object
   dto.LoginRequest:
     properties:
@@ -933,6 +1056,43 @@ definitions:
       product_sku:
         type: string
     type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handlers.LoginResponse:
+    properties:
+      expires_in:
+        example: 86400
+        type: integer
+      token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  models.AuditAction:
+    enum:
+    - CREATE
+    - UPDATE
+    - DELETE
+    - LOGIN
+    - LOGOUT
+    type: string
+    x-enum-varnames:
+    - ActionCreate
+    - ActionUpdate
+    - ActionDelete
+    - ActionLogin
+    - ActionLogout
   router.HealthResponse:
     properties:
       status:
@@ -952,7 +1112,7 @@ info:
     name: API Support
     url: http://www.swagger.io/support
   description: A comprehensive inventory management system API with multi-location
-    support
+    support, JWT authentication, and role-based access control
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -960,975 +1120,83 @@ info:
   title: Inventory Management API
   version: "1.0"
 paths:
-  /api/v1/inventory:
+  /audit-logs:
     get:
       consumes:
       - application/json
-      description: Get a paginated list of inventory records with optional filtering
+      description: Get audit logs with optional filtering
       parameters:
-      - default: 1
-        description: Page number
+      - description: Filter by table name
         in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by location ID
-        in: query
-        name: location_id
+        name: table
         type: string
-      - description: Filter by product ID
+      - description: Filter by record ID
         in: query
-        name: product_id
+        name: record_id
         type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.InventoryResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: List inventory records
-      tags:
-      - inventory
-    post:
-      consumes:
-      - application/json
-      description: Create a new inventory record for a product at a location
-      parameters:
-      - description: Inventory data
-        in: body
-        name: inventory
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateInventoryRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/dto.InventoryResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Create inventory record
-      tags:
-      - inventory
-  /api/v1/inventory/adjust:
-    post:
-      consumes:
-      - application/json
-      description: Adjust stock levels for a product (increase or decrease)
-      parameters:
-      - description: Stock adjustment data
-        in: body
-        name: adjustment
-        required: true
-        schema:
-          $ref: '#/definitions/dto.StockAdjustmentRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.StockMovementResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Adjust stock levels
-      tags:
-      - inventory
-  /api/v1/inventory/low-stock:
-    get:
-      consumes:
-      - application/json
-      description: Get items that are at or below their reorder level
-      parameters:
-      - description: Filter by location ID
+      - description: Filter by action (CREATE, UPDATE, DELETE, LOGIN, LOGOUT)
         in: query
-        name: location_id
+        name: action
         type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.LowStockItemResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get low stock items
-      tags:
-      - inventory
-  /api/v1/inventory/reorder-levels:
-    put:
-      consumes:
-      - application/json
-      description: Update reorder levels for multiple inventory records
-      parameters:
-      - description: Reorder levels data
-        in: body
-        name: levels
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateReorderLevelsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Update reorder levels
-      tags:
-      - inventory
-  /api/v1/inventory/transfer:
-    post:
-      consumes:
-      - application/json
-      description: Transfer stock from one location to another
-      parameters:
-      - description: Stock transfer data
-        in: body
-        name: transfer
-        required: true
-        schema:
-          $ref: '#/definitions/dto.StockTransferRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.StockTransferResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Transfer stock between locations
-      tags:
-      - inventory
-  /api/v1/inventory/zero-stock:
-    get:
-      consumes:
-      - application/json
-      description: Get items that are completely out of stock
-      parameters:
-      - description: Filter by location ID
+      - description: Filter by user ID
         in: query
-        name: location_id
+        name: user_id
         type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.ZeroStockItemResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get zero stock items
-      tags:
-      - inventory
-  /api/v1/locations:
-    get:
-      description: Get a paginated list of all locations
-      parameters:
-      - default: 1
-        description: 'Page number (default: 1)'
+      - description: Start date (YYYY-MM-DD)
         in: query
-        name: page
-        type: integer
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
       - default: 50
-        description: 'Items per page (default: 50, max: 100)'
+        description: Limit results
         in: query
         name: limit
         type: integer
-      - description: Filter by location type
-        enum:
-        - warehouse
-        - store
-        - online
+      - default: 0
+        description: Offset for pagination
         in: query
-        name: type
-        type: string
-      - description: Filter by active status
-        in: query
-        name: active
-        type: boolean
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: Locations retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationListResponse'
-              type: object
-        "400":
-          description: Invalid query parameters
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: List all locations
-      tags:
-      - locations
-    post:
-      consumes:
-      - application/json
-      description: Create a new location in the system
-      parameters:
-      - description: Location creation data
-        in: body
-        name: location
-        required: true
-        schema:
-          $ref: '#/definitions/LocationCreateRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Location created successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Location already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Create a new location
-      tags:
-      - locations
-  /api/v1/locations/{id}:
-    delete:
-      description: Delete an existing location from the system
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location deleted successfully
+          description: OK
           schema:
             $ref: '#/definitions/ApiResponse'
         "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
+          description: Bad Request
           schema:
             $ref: '#/definitions/ErrorResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/ErrorResponse'
-      summary: Delete a location
+      summary: Get audit logs
       tags:
-      - locations
-    get:
-      description: Get detailed information about a specific location
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get a location by ID
-      tags:
-      - locations
-    put:
-      consumes:
-      - application/json
-      description: Update an existing location's information
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Location update data
-        in: body
-        name: location
-        required: true
-        schema:
-          $ref: '#/definitions/LocationUpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location updated successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Location code already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Update a location
-      tags:
-      - locations
-  /api/v1/locations/{id}/inventory:
-    get:
-      description: Get all inventory records for a specific location
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location inventory retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.InventoryResponse'
-                  type: array
-              type: object
-        "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get inventory for a location
-      tags:
-      - locations
-  /api/v1/products:
+      - audit
+  /audit-logs/statistics:
     get:
       consumes:
       - application/json
-      description: Get a paginated list of products with optional filtering
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Items per page
-        in: query
-        name: per_page
-        type: integer
-      - description: Filter by category ID
-        in: query
-        name: category_id
-        type: string
-      - description: Filter by supplier ID
-        in: query
-        name: supplier_id
-        type: string
-      - description: Filter by active status
-        in: query
-        name: is_active
-        type: boolean
+      description: Get comprehensive audit statistics including activity summaries
       produces:
       - application/json
       responses:
         "200":
-          description: Products retrieved successfully
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.ProductListResponse'
-              type: object
-        "400":
-          description: Invalid parameters
-          schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.AuditStatisticsResponse'
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/ErrorResponse'
-      summary: List products
+      summary: Get audit statistics
       tags:
-      - products
-    post:
-      consumes:
-      - application/json
-      description: Create a new product in the system
-      parameters:
-      - description: Product creation data
-        in: body
-        name: product
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ProductCreateRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Product created successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.ProductResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Product already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Create a new product
-      tags:
-      - products
-  /api/v1/products/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a product from the system
-      parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Product deleted successfully
-          schema:
-            $ref: '#/definitions/ApiResponse'
-        "400":
-          description: Invalid product ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Product not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Delete product
-      tags:
-      - products
-    get:
-      consumes:
-      - application/json
-      description: Get a specific product by its ID
-      parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Product retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.ProductResponse'
-              type: object
-        "400":
-          description: Invalid product ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Product not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get product by ID
-      tags:
-      - products
-    put:
-      consumes:
-      - application/json
-      description: Update an existing product
-      parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Product update data
-        in: body
-        name: product
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ProductUpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Product updated successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.ProductResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Product not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Conflict with existing data
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Update product
-      tags:
-      - products
-  /api/v1/products/{id}/inventory:
-    get:
-      consumes:
-      - application/json
-      description: Get inventory information for a specific product across all locations
-      parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Product inventory retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.ProductInventoryResponse'
-                  type: array
-              type: object
-        "400":
-          description: Invalid product ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Product not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get product inventory
-      tags:
-      - products
-  /api/v1/products/search:
-    get:
-      consumes:
-      - application/json
-      description: Search products by name, SKU, or other criteria
-      parameters:
-      - description: Search query
-        in: query
-        name: q
-        required: true
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Items per page
-        in: query
-        name: per_page
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Products found
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.ProductListResponse'
-              type: object
-        "400":
-          description: Invalid parameters
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Search products
-      tags:
-      - products
-  /api/v1/suppliers:
-    get:
-      description: Get a paginated list of suppliers
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        minimum: 1
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        in: query
-        maximum: 100
-        minimum: 1
-        name: page_size
-        type: integer
-      - description: Filter by active status
-        in: query
-        name: active
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Suppliers list
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/SupplierListResponse'
-              type: object
-        "400":
-          description: Invalid parameters
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: List suppliers
-      tags:
-      - suppliers
-    post:
-      consumes:
-      - application/json
-      description: Create a new supplier in the system
-      parameters:
-      - description: Supplier creation data
-        in: body
-        name: supplier
-        required: true
-        schema:
-          $ref: '#/definitions/SupplierCreateRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Supplier created successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/SupplierDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Supplier already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Create a new supplier
-      tags:
-      - suppliers
-  /api/v1/suppliers/{id}:
-    delete:
-      description: Delete a supplier from the system
-      parameters:
-      - description: Supplier ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Supplier deleted successfully
-          schema:
-            $ref: '#/definitions/ApiResponse'
-        "400":
-          description: Invalid supplier ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Supplier not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Delete a supplier
-      tags:
-      - suppliers
-    get:
-      description: Get a specific supplier by its ID
-      parameters:
-      - description: Supplier ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Supplier details
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/SupplierDetailResponse'
-              type: object
-        "400":
-          description: Invalid supplier ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Supplier not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get supplier by ID
-      tags:
-      - suppliers
-    put:
-      consumes:
-      - application/json
-      description: Update an existing supplier's information
-      parameters:
-      - description: Supplier ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Updated supplier data
-        in: body
-        name: supplier
-        required: true
-        schema:
-          $ref: '#/definitions/SupplierUpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Supplier updated successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/SupplierDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Supplier not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Supplier code already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Update a supplier
-      tags:
-      - suppliers
+      - audit
   /auth/login:
     post:
       consumes:
@@ -1981,6 +1249,66 @@ paths:
           schema:
             $ref: '#/definitions/dto.BaseResponse'
       summary: User logout
+      tags:
+      - Authentication
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current authenticated user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user info
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generate a new JWT token using current token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/handlers.LoginResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Refresh JWT token
       tags:
       - Authentication
   /categories:
@@ -2424,6 +1752,1048 @@ paths:
       summary: Health check
       tags:
       - System
+  /inventory:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of inventory records with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      - description: Filter by product ID
+        in: query
+        name: product_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List inventory records
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Create a new inventory record for a product at a location
+      parameters:
+      - description: Inventory data
+        in: body
+        name: inventory
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInventoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.InventoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create inventory record
+      tags:
+      - inventory
+  /inventory/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Adjust stock levels for a product (increase or decrease)
+      parameters:
+      - description: Stock adjustment data
+        in: body
+        name: adjustment
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StockAdjustmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StockMovementResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Adjust stock levels
+      tags:
+      - inventory
+  /inventory/low-stock:
+    get:
+      consumes:
+      - application/json
+      description: Get items that are at or below their reorder level
+      parameters:
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.LowStockItemResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get low stock items
+      tags:
+      - inventory
+  /inventory/reorder-levels:
+    put:
+      consumes:
+      - application/json
+      description: Update reorder levels for multiple inventory records
+      parameters:
+      - description: Reorder levels data
+        in: body
+        name: levels
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateReorderLevelsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update reorder levels
+      tags:
+      - inventory
+  /inventory/transfer:
+    post:
+      consumes:
+      - application/json
+      description: Transfer stock from one location to another
+      parameters:
+      - description: Stock transfer data
+        in: body
+        name: transfer
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StockTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StockTransferResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Transfer stock between locations
+      tags:
+      - inventory
+  /inventory/zero-stock:
+    get:
+      consumes:
+      - application/json
+      description: Get items that are completely out of stock
+      parameters:
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ZeroStockItemResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get zero stock items
+      tags:
+      - inventory
+  /locations:
+    get:
+      description: Get a paginated list of all locations
+      parameters:
+      - default: 1
+        description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - default: 50
+        description: 'Items per page (default: 50, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by location type
+        enum:
+        - warehouse
+        - store
+        - online
+        in: query
+        name: type
+        type: string
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Locations retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/LocationListResponse'
+              type: object
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List all locations
+      tags:
+      - locations
+    post:
+      consumes:
+      - application/json
+      description: Create a new location in the system
+      parameters:
+      - description: Location creation data
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/LocationCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Location created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/LocationDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Location already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new location
+      tags:
+      - locations
+  /locations/{id}:
+    delete:
+      description: Delete an existing location from the system
+      parameters:
+      - description: Location ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Location deleted successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Invalid location ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Location not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete a location
+      tags:
+      - locations
+    get:
+      description: Get detailed information about a specific location
+      parameters:
+      - description: Location ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Location retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/LocationDetailResponse'
+              type: object
+        "400":
+          description: Invalid location ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Location not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get a location by ID
+      tags:
+      - locations
+    put:
+      consumes:
+      - application/json
+      description: Update an existing location's information
+      parameters:
+      - description: Location ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Location update data
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/LocationUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Location updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/LocationDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Location not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Location code already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update a location
+      tags:
+      - locations
+  /locations/{id}/inventory:
+    get:
+      description: Get all inventory records for a specific location
+      parameters:
+      - description: Location ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Location inventory retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid location ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Location not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get inventory for a location
+      tags:
+      - locations
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of products with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by category ID
+        in: query
+        name: category_id
+        type: string
+      - description: Filter by supplier ID
+        in: query
+        name: supplier_id
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Products retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product in the system
+      parameters:
+      - description: Product creation data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Product already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a product from the system
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product deleted successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete product
+      tags:
+      - products
+    get:
+      consumes:
+      - application/json
+      description: Get a specific product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product update data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict with existing data
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update product
+      tags:
+      - products
+  /products/{id}/inventory:
+    get:
+      consumes:
+      - application/json
+      description: Get inventory information for a specific product across all locations
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product inventory retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProductInventoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid product ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get product inventory
+      tags:
+      - products
+  /products/search:
+    get:
+      consumes:
+      - application/json
+      description: Search products by name, SKU, or other criteria
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Products found
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Search products
+      tags:
+      - products
+  /reports/inventory-summary:
+    get:
+      consumes:
+      - application/json
+      description: Get comprehensive inventory summary with statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.InventorySummaryResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get inventory summary
+      tags:
+      - reports
+  /reports/stock-movements:
+    get:
+      consumes:
+      - application/json
+      description: Get stock movement report with filtering options
+      parameters:
+      - description: Filter by product ID
+        in: query
+        name: product_id
+        type: string
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      - description: Filter by movement type (IN, OUT, TRANSFER, ADJUSTMENT)
+        in: query
+        name: movement_type
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - default: 100
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get stock movement report
+      tags:
+      - reports
+  /suppliers:
+    get:
+      description: Get a paginated list of suppliers
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Suppliers list
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierListResponse'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List suppliers
+      tags:
+      - suppliers
+    post:
+      consumes:
+      - application/json
+      description: Create a new supplier in the system
+      parameters:
+      - description: Supplier creation data
+        in: body
+        name: supplier
+        required: true
+        schema:
+          $ref: '#/definitions/SupplierCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Supplier created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Supplier already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new supplier
+      tags:
+      - suppliers
+  /suppliers/{id}:
+    delete:
+      description: Delete a supplier from the system
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier deleted successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+        "400":
+          description: Invalid supplier ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete a supplier
+      tags:
+      - suppliers
+    get:
+      description: Get a specific supplier by its ID
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier details
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid supplier ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get supplier by ID
+      tags:
+      - suppliers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing supplier's information
+      parameters:
+      - description: Supplier ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated supplier data
+        in: body
+        name: supplier
+        required: true
+        schema:
+          $ref: '#/definitions/SupplierUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supplier updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/SupplierDetailResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Supplier not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Supplier code already exists
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update a supplier
+      tags:
+      - suppliers
   /users:
     get:
       consumes:
@@ -2632,4 +3002,10 @@ paths:
       summary: Update a user
       tags:
       - Users
+securityDefinitions:
+  ApiKeyAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

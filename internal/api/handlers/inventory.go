@@ -54,7 +54,7 @@ func parseStringToUUID(s string) *uuid.UUID {
 // @Success 200 {object} dto.PaginatedResponse{data=[]dto.InventoryResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory [get]
+// @Router /inventory [get]
 func (h *InventoryHandler) GetInventoryRecords(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
@@ -188,7 +188,7 @@ func (h *InventoryHandler) GetInventoryRecords(c *gin.Context) {
 // @Success 201 {object} dto.InventoryResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory [post]
+// @Router /inventory [post]
 func (h *InventoryHandler) CreateInventoryRecord(c *gin.Context) {
 	var req dto.CreateInventoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -255,7 +255,7 @@ func (h *InventoryHandler) CreateInventoryRecord(c *gin.Context) {
 // @Success 200 {object} dto.StockMovementResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory/adjust [post]
+// @Router /inventory/adjust [post]
 func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 	var req dto.StockAdjustmentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -321,7 +321,7 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 // @Success 200 {object} dto.StockTransferResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory/transfer [post]
+// @Router /inventory/transfer [post]
 func (h *InventoryHandler) TransferStock(c *gin.Context) {
 	var req dto.StockTransferRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -390,7 +390,7 @@ func (h *InventoryHandler) TransferStock(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=[]dto.LowStockItemResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory/low-stock [get]
+// @Router /inventory/low-stock [get]
 func (h *InventoryHandler) GetLowStockItems(c *gin.Context) {
 	ctx := c.Request.Context()
 	// TODO: Implement location filtering when service supports it
@@ -434,7 +434,7 @@ func (h *InventoryHandler) GetLowStockItems(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=[]dto.ZeroStockItemResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory/zero-stock [get]
+// @Router /inventory/zero-stock [get]
 func (h *InventoryHandler) GetZeroStockItems(c *gin.Context) {
 	ctx := c.Request.Context()
 	// TODO: Implement location filtering when service supports it
@@ -476,7 +476,7 @@ func (h *InventoryHandler) GetZeroStockItems(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=string}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
-// @Router /api/v1/inventory/reorder-levels [put]
+// @Router /inventory/reorder-levels [put]
 func (h *InventoryHandler) UpdateReorderLevels(c *gin.Context) {
 	var req dto.UpdateReorderLevelsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

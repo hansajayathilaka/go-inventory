@@ -33,7 +33,7 @@ func NewLocationHandler(locationService locationBusiness.Service) *LocationHandl
 // @Failure 400 {object} dto.ErrorResponse "Invalid request"
 // @Failure 409 {object} dto.ErrorResponse "Location already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations [post]
+// @Router /locations [post]
 func (h *LocationHandler) CreateLocation(c *gin.Context) {
 	var req dto.LocationCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -105,7 +105,7 @@ func (h *LocationHandler) CreateLocation(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid location ID"
 // @Failure 404 {object} dto.ErrorResponse "Location not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations/{id} [get]
+// @Router /locations/{id} [get]
 func (h *LocationHandler) GetLocation(c *gin.Context) {
 	idStr := c.Param("id")
 	locationID, err := uuid.Parse(idStr)
@@ -158,7 +158,7 @@ func (h *LocationHandler) GetLocation(c *gin.Context) {
 // @Failure 404 {object} dto.ErrorResponse "Location not found"
 // @Failure 409 {object} dto.ErrorResponse "Location code already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations/{id} [put]
+// @Router /locations/{id} [put]
 func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 	idStr := c.Param("id")
 	locationID, err := uuid.Parse(idStr)
@@ -248,7 +248,7 @@ func (h *LocationHandler) UpdateLocation(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid location ID"
 // @Failure 404 {object} dto.ErrorResponse "Location not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations/{id} [delete]
+// @Router /locations/{id} [delete]
 func (h *LocationHandler) DeleteLocation(c *gin.Context) {
 	idStr := c.Param("id")
 	locationID, err := uuid.Parse(idStr)
@@ -293,7 +293,7 @@ func (h *LocationHandler) DeleteLocation(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=dto.LocationListResponse} "Locations retrieved successfully"
 // @Failure 400 {object} dto.ErrorResponse "Invalid query parameters"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations [get]
+// @Router /locations [get]
 func (h *LocationHandler) ListLocations(c *gin.Context) {
 	// Parse pagination parameters
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -384,7 +384,7 @@ func (h *LocationHandler) ListLocations(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid location ID"
 // @Failure 404 {object} dto.ErrorResponse "Location not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/locations/{id}/inventory [get]
+// @Router /locations/{id}/inventory [get]
 func (h *LocationHandler) GetLocationInventory(c *gin.Context) {
 	idStr := c.Param("id")
 	locationID, err := uuid.Parse(idStr)

@@ -1,6 +1,9 @@
 package router
 
 import (
+	"os"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
 	swaggerFiles "github.com/swaggo/files"
@@ -16,9 +19,16 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 	// Create Gin router
 	router := gin.New()
 
+	// JWT Secret
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key" // Default for development
+	}
+
 	// Add middleware
 	router.Use(middleware.RequestLogger())
 	router.Use(middleware.ErrorHandler())
+	router.Use(middleware.RateLimitMiddleware(100, time.Minute)) // 100 requests per minute
 
 	// Add CORS middleware
 	config := cors.DefaultConfig()
@@ -37,89 +47,122 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		// Initialize handlers
+		authHandler := handlers.NewAuthHandler(appCtx.UserService)
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
 		locationHandler := handlers.NewLocationHandler(appCtx.LocationService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
+		auditHandler := handlers.NewAuditHandler(
+			appCtx.AuditService,
+			appCtx.InventoryService,
+			appCtx.UserRepo,
+			appCtx.ProductRepo,
+			appCtx.LocationRepo,
+			appCtx.StockMovementRepo,
+			appCtx.CategoryRepo,
+		)
 
-		// Authentication routes
+		// Authentication routes (public)
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/login", userHandler.Login)
-			auth.POST("/logout", userHandler.Logout)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/logout", middleware.AuthMiddleware(jwtSecret), authHandler.Logout)
+			auth.POST("/refresh", middleware.AuthMiddleware(jwtSecret), authHandler.RefreshToken)
+			auth.GET("/me", middleware.AuthMiddleware(jwtSecret), authHandler.Me)
 		}
 
-		// User management routes
+		// User management routes (protected)
 		users := v1.Group("/users")
+		users.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			users.GET("", userHandler.GetUsers)
-			users.POST("", userHandler.CreateUser)
-			users.GET("/:id", userHandler.GetUser)
-			users.PUT("/:id", userHandler.UpdateUser)
-			users.DELETE("/:id", userHandler.DeleteUser)
+			users.GET("", middleware.RequireMinimumRole("staff"), userHandler.GetUsers)
+			users.POST("", middleware.RequireMinimumRole("admin"), userHandler.CreateUser)
+			users.GET("/:id", middleware.RequireMinimumRole("staff"), userHandler.GetUser)
+			users.PUT("/:id", middleware.RequireMinimumRole("manager"), userHandler.UpdateUser)
+			users.DELETE("/:id", middleware.RequireRole("admin"), userHandler.DeleteUser)
 		}
 
-		// Supplier management routes
+		// Supplier management routes (protected)
 		suppliers := v1.Group("/suppliers")
+		suppliers.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			suppliers.GET("", supplierHandler.GetSuppliers)                              // GET /api/v1/suppliers
-			suppliers.POST("", supplierHandler.CreateSupplier)                          // POST /api/v1/suppliers
-			suppliers.GET("/:id", supplierHandler.GetSupplier)                          // GET /api/v1/suppliers/:id
-			suppliers.PUT("/:id", supplierHandler.UpdateSupplier)                       // PUT /api/v1/suppliers/:id
-			suppliers.DELETE("/:id", supplierHandler.DeleteSupplier)                    // DELETE /api/v1/suppliers/:id
+			suppliers.GET("", middleware.RequireMinimumRole("viewer"), supplierHandler.GetSuppliers)
+			suppliers.POST("", middleware.RequireMinimumRole("manager"), supplierHandler.CreateSupplier)
+			suppliers.GET("/:id", middleware.RequireMinimumRole("viewer"), supplierHandler.GetSupplier)
+			suppliers.PUT("/:id", middleware.RequireMinimumRole("manager"), supplierHandler.UpdateSupplier)
+			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
 		}
 
-		// Location management routes
+		// Location management routes (protected)
 		locations := v1.Group("/locations")
+		locations.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			locations.GET("", locationHandler.ListLocations)                            // GET /api/v1/locations
-			locations.POST("", locationHandler.CreateLocation)                          // POST /api/v1/locations
-			locations.GET("/:id", locationHandler.GetLocation)                          // GET /api/v1/locations/:id
-			locations.PUT("/:id", locationHandler.UpdateLocation)                       // PUT /api/v1/locations/:id
-			locations.DELETE("/:id", locationHandler.DeleteLocation)                    // DELETE /api/v1/locations/:id
-			locations.GET("/:id/inventory", locationHandler.GetLocationInventory)       // GET /api/v1/locations/:id/inventory
+			locations.GET("", middleware.RequireMinimumRole("viewer"), locationHandler.ListLocations)
+			locations.POST("", middleware.RequireMinimumRole("manager"), locationHandler.CreateLocation)
+			locations.GET("/:id", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocation)
+			locations.PUT("/:id", middleware.RequireMinimumRole("manager"), locationHandler.UpdateLocation)
+			locations.DELETE("/:id", middleware.RequireRole("admin"), locationHandler.DeleteLocation)
+			locations.GET("/:id/inventory", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocationInventory)
 		}
 
-		// Category management routes
+		// Category management routes (protected)
 		categories := v1.Group("/categories")
+		categories.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			categories.GET("", categoryHandler.ListCategories)                        // GET /api/v1/categories
-			categories.POST("", categoryHandler.CreateCategory)                      // POST /api/v1/categories
-			categories.GET("/roots", categoryHandler.GetRootCategories)              // GET /api/v1/categories/roots
-			categories.GET("/hierarchy", categoryHandler.GetCategoryHierarchy)       // GET /api/v1/categories/hierarchy
-			categories.GET("/:id", categoryHandler.GetCategory)                      // GET /api/v1/categories/:id
-			categories.PUT("/:id", categoryHandler.UpdateCategory)                   // PUT /api/v1/categories/:id
-			categories.DELETE("/:id", categoryHandler.DeleteCategory)                // DELETE /api/v1/categories/:id
-			categories.GET("/:id/children", categoryHandler.GetCategoryChildren)     // GET /api/v1/categories/:id/children
-			categories.GET("/:id/hierarchy", categoryHandler.GetCategoryHierarchy)   // GET /api/v1/categories/:id/hierarchy
-			categories.GET("/:id/path", categoryHandler.GetCategoryPath)             // GET /api/v1/categories/:id/path
-			categories.PUT("/:id/move", categoryHandler.MoveCategory)                // PUT /api/v1/categories/:id/move
+			categories.GET("", middleware.RequireMinimumRole("viewer"), categoryHandler.ListCategories)
+			categories.POST("", middleware.RequireMinimumRole("manager"), categoryHandler.CreateCategory)
+			categories.GET("/roots", middleware.RequireMinimumRole("viewer"), categoryHandler.GetRootCategories)
+			categories.GET("/hierarchy", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategoryHierarchy)
+			categories.GET("/:id", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategory)
+			categories.PUT("/:id", middleware.RequireMinimumRole("manager"), categoryHandler.UpdateCategory)
+			categories.DELETE("/:id", middleware.RequireRole("admin"), categoryHandler.DeleteCategory)
+			categories.GET("/:id/children", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategoryChildren)
+			categories.GET("/:id/hierarchy", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategoryHierarchy)
+			categories.GET("/:id/path", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategoryPath)
+			categories.PUT("/:id/move", middleware.RequireMinimumRole("manager"), categoryHandler.MoveCategory)
 		}
 
-		// Product management routes
+		// Product management routes (protected)
 		products := v1.Group("/products")
+		products.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			products.GET("", productHandler.GetProducts)                             // GET /api/v1/products
-			products.POST("", productHandler.CreateProduct)                          // POST /api/v1/products
-			products.GET("/search", productHandler.SearchProducts)                   // GET /api/v1/products/search
-			products.GET("/:id", productHandler.GetProduct)                          // GET /api/v1/products/:id
-			products.PUT("/:id", productHandler.UpdateProduct)                       // PUT /api/v1/products/:id
-			products.DELETE("/:id", productHandler.DeleteProduct)                    // DELETE /api/v1/products/:id
-			products.GET("/:id/inventory", productHandler.GetProductInventory)       // GET /api/v1/products/:id/inventory
+			products.GET("", middleware.RequireMinimumRole("viewer"), productHandler.GetProducts)
+			products.POST("", middleware.RequireMinimumRole("staff"), productHandler.CreateProduct)
+			products.GET("/search", middleware.RequireMinimumRole("viewer"), productHandler.SearchProducts)
+			products.GET("/:id", middleware.RequireMinimumRole("viewer"), productHandler.GetProduct)
+			products.PUT("/:id", middleware.RequireMinimumRole("staff"), productHandler.UpdateProduct)
+			products.DELETE("/:id", middleware.RequireMinimumRole("manager"), productHandler.DeleteProduct)
+			products.GET("/:id/inventory", middleware.RequireMinimumRole("viewer"), productHandler.GetProductInventory)
 		}
 
-		// Inventory management routes
+		// Inventory management routes (protected)
 		inventory := v1.Group("/inventory")
+		inventory.Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			inventory.GET("", inventoryHandler.GetInventoryRecords)                  // GET /api/v1/inventory
-			inventory.POST("", inventoryHandler.CreateInventoryRecord)               // POST /api/v1/inventory
-			inventory.POST("/adjust", inventoryHandler.AdjustStock)                  // POST /api/v1/inventory/adjust
-			inventory.POST("/transfer", inventoryHandler.TransferStock)              // POST /api/v1/inventory/transfer
-			inventory.GET("/low-stock", inventoryHandler.GetLowStockItems)           // GET /api/v1/inventory/low-stock
-			inventory.GET("/zero-stock", inventoryHandler.GetZeroStockItems)         // GET /api/v1/inventory/zero-stock
-			inventory.PUT("/reorder-levels", inventoryHandler.UpdateReorderLevels)   // PUT /api/v1/inventory/reorder-levels
+			inventory.GET("", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetInventoryRecords)
+			inventory.POST("", middleware.RequireMinimumRole("staff"), inventoryHandler.CreateInventoryRecord)
+			inventory.POST("/adjust", middleware.RequireMinimumRole("staff"), inventoryHandler.AdjustStock)
+			inventory.POST("/transfer", middleware.RequireMinimumRole("staff"), inventoryHandler.TransferStock)
+			inventory.GET("/low-stock", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetLowStockItems)
+			inventory.GET("/zero-stock", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetZeroStockItems)
+			inventory.PUT("/reorder-levels", middleware.RequireMinimumRole("manager"), inventoryHandler.UpdateReorderLevels)
+		}
+
+		// Audit and reporting routes (protected)
+		auditLogs := v1.Group("/audit-logs")
+		auditLogs.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			auditLogs.GET("", middleware.RequireMinimumRole("manager"), auditHandler.GetAuditLogs)
+			auditLogs.GET("/statistics", middleware.RequireMinimumRole("manager"), auditHandler.GetAuditStatistics)
+		}
+
+		reports := v1.Group("/reports")
+		reports.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			reports.GET("/stock-movements", middleware.RequireMinimumRole("staff"), auditHandler.GetStockMovementReport)
+			reports.GET("/inventory-summary", middleware.RequireMinimumRole("staff"), auditHandler.GetInventorySummary)
 		}
 	}
 

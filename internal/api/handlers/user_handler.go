@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	"inventory-api/internal/api/dto"
@@ -90,14 +91,15 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 // @Failure 500 {object} dto.BaseResponse
 // @Router /users/{id} [get]
 func (h *UserHandler) GetUser(c *gin.Context) {
-	var req dto.IDRequest
-	if err := c.ShouldBindUri(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID", err.Error())
+	idStr := c.Param("id")
+	userID, err := uuid.Parse(idStr)
+	if err != nil {
+		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	user, err := h.userService.GetUserByID(c.Request.Context(), req.ID)
+	user, err := h.userService.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
 		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)
@@ -157,9 +159,10 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Failure 500 {object} dto.BaseResponse
 // @Router /users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
-	var idReq dto.IDRequest
-	if err := c.ShouldBindUri(&idReq); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID", err.Error())
+	idStr := c.Param("id")
+	userID, err := uuid.Parse(idStr)
+	if err != nil {
+		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -172,7 +175,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	// Get existing user
-	existingUser, err := h.userService.GetUserByID(c.Request.Context(), idReq.ID)
+	existingUser, err := h.userService.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
 		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)
@@ -216,14 +219,15 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 // @Failure 500 {object} dto.BaseResponse
 // @Router /users/{id} [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	var req dto.IDRequest
-	if err := c.ShouldBindUri(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID", err.Error())
+	idStr := c.Param("id")
+	userID, err := uuid.Parse(idStr)
+	if err != nil {
+		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	err := h.userService.DeleteUser(c.Request.Context(), req.ID)
+	err = h.userService.DeleteUser(c.Request.Context(), userID)
 	if err != nil {
 		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)

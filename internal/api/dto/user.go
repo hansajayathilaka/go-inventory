@@ -55,8 +55,8 @@ type LoginResponse struct {
 
 // UserListRequest represents parameters for listing users
 type UserListRequest struct {
-	Page   int    `form:"page,default=1" binding:"min=1" example:"1"`
-	Limit  int    `form:"limit,default=10" binding:"min=1,max=100" example:"10"`
+	Page   int    `form:"page" example:"1"`
+	Limit  int    `form:"limit" example:"10"`
 	Role   string `form:"role,omitempty" binding:"omitempty,oneof=admin manager staff viewer" example:"manager"`
 	Search string `form:"search,omitempty" example:"john"`
 }

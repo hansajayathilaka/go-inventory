@@ -36,7 +36,7 @@ func NewProductHandler(productService productBusiness.Service, inventoryService 
 // @Failure 400 {object} dto.ErrorResponse "Invalid request"
 // @Failure 409 {object} dto.ErrorResponse "Product already exists"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products [post]
+// @Router /products [post]
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	var req dto.ProductCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -119,7 +119,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=dto.ProductListResponse} "Products retrieved successfully"
 // @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products [get]
+// @Router /products [get]
 func (h *ProductHandler) GetProducts(c *gin.Context) {
 	page := 1
 	perPage := 20
@@ -211,7 +211,7 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
 // @Failure 404 {object} dto.ErrorResponse "Product not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products/{id} [get]
+// @Router /products/{id} [get]
 func (h *ProductHandler) GetProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -274,7 +274,7 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 // @Failure 404 {object} dto.ErrorResponse "Product not found"
 // @Failure 409 {object} dto.ErrorResponse "Conflict with existing data"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products/{id} [put]
+// @Router /products/{id} [put]
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -397,7 +397,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
 // @Failure 404 {object} dto.ErrorResponse "Product not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products/{id} [delete]
+// @Router /products/{id} [delete]
 func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -443,7 +443,7 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 // @Success 200 {object} dto.ApiResponse{data=dto.ProductListResponse} "Products found"
 // @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products/search [get]
+// @Router /products/search [get]
 func (h *ProductHandler) SearchProducts(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
@@ -509,7 +509,7 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 // @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
 // @Failure 404 {object} dto.ErrorResponse "Product not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
-// @Router /api/v1/products/{id}/inventory [get]
+// @Router /products/{id}/inventory [get]
 func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
