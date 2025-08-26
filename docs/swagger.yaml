@@ -156,6 +156,27 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
     type: object
+  dto.CreateInventoryRequest:
+    properties:
+      location_id:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        minimum: 0
+        type: integer
+      reorder_level:
+        minimum: 0
+        type: integer
+      reserved_quantity:
+        minimum: 0
+        type: integer
+    required:
+    - location_id
+    - product_id
+    - quantity
+    - reorder_level
+    type: object
   dto.CreateUserRequest:
     properties:
       email:
@@ -198,26 +219,25 @@ definitions:
     type: object
   dto.InventoryResponse:
     properties:
-      available_quantity:
-        example: 45
-        type: integer
+      id:
+        type: string
+      last_updated:
+        type: string
       location_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       location_name:
-        example: Main Warehouse
         type: string
-      max_level:
-        example: 100
-        type: integer
+      product_id:
+        type: string
+      product_name:
+        type: string
+      product_sku:
+        type: string
       quantity:
-        example: 50
         type: integer
       reorder_level:
-        example: 10
         type: integer
       reserved_quantity:
-        example: 5
         type: integer
     type: object
   dto.LoginRequest:
@@ -245,6 +265,25 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.LowStockItemResponse:
+    properties:
+      deficit:
+        type: integer
+      location_id:
+        type: string
+      location_name:
+        type: string
+      product_id:
+        type: string
+      product_name:
+        type: string
+      product_sku:
+        type: string
+      quantity:
+        type: integer
+      reorder_level:
+        type: integer
     type: object
   dto.PaginatedResponse:
     properties:
@@ -321,6 +360,30 @@ definitions:
     - name
     - sku
     type: object
+  dto.ProductInventoryResponse:
+    properties:
+      available_quantity:
+        example: 45
+        type: integer
+      location_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      location_name:
+        example: Main Warehouse
+        type: string
+      max_level:
+        example: 100
+        type: integer
+      quantity:
+        example: 50
+        type: integer
+      reorder_level:
+        example: 10
+        type: integer
+      reserved_quantity:
+        example: 5
+        type: integer
+    type: object
   dto.ProductListResponse:
     properties:
       page:
@@ -367,7 +430,7 @@ definitions:
         type: string
       inventory:
         items:
-          $ref: '#/definitions/dto.InventoryResponse'
+          $ref: '#/definitions/dto.ProductInventoryResponse'
         type: array
       is_active:
         example: true
@@ -435,6 +498,107 @@ definitions:
         example: 13.5
         type: number
     type: object
+  dto.ReorderLevelUpdate:
+    properties:
+      location_id:
+        type: string
+      product_id:
+        type: string
+      reorder_level:
+        minimum: 0
+        type: integer
+    required:
+    - location_id
+    - product_id
+    - reorder_level
+    type: object
+  dto.StockAdjustmentRequest:
+    properties:
+      location_id:
+        type: string
+      movement_type:
+        enum:
+        - IN
+        - OUT
+        - ADJUSTMENT
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+    required:
+    - location_id
+    - movement_type
+    - product_id
+    - quantity
+    type: object
+  dto.StockMovementResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      location_id:
+        type: string
+      location_name:
+        type: string
+      movement_type:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      product_name:
+        type: string
+      product_sku:
+        type: string
+      quantity:
+        type: integer
+      reference_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.StockTransferRequest:
+    properties:
+      from_location_id:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+      to_location_id:
+        type: string
+    required:
+    - from_location_id
+    - product_id
+    - quantity
+    - to_location_id
+    type: object
+  dto.StockTransferResponse:
+    properties:
+      created_at:
+        type: string
+      from_location_id:
+        type: string
+      notes:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      to_location_id:
+        type: string
+      transfer_id:
+        type: string
+      user_id:
+        type: string
+    type: object
   dto.SupplierResponse:
     properties:
       code:
@@ -455,6 +619,16 @@ definitions:
       phone:
         example: +1-555-0123
         type: string
+    type: object
+  dto.UpdateReorderLevelsRequest:
+    properties:
+      reorder_levels:
+        items:
+          $ref: '#/definitions/dto.ReorderLevelUpdate'
+        minItems: 1
+        type: array
+    required:
+    - reorder_levels
     type: object
   dto.UpdateUserRequest:
     properties:
@@ -504,6 +678,21 @@ definitions:
         example: john_doe
         type: string
     type: object
+  dto.ZeroStockItemResponse:
+    properties:
+      last_updated:
+        type: string
+      location_id:
+        type: string
+      location_name:
+        type: string
+      product_id:
+        type: string
+      product_name:
+        type: string
+      product_sku:
+        type: string
+    type: object
   router.HealthResponse:
     properties:
       status:
@@ -531,6 +720,249 @@ info:
   title: Inventory Management API
   version: "1.0"
 paths:
+  /api/v1/inventory:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of inventory records with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      - description: Filter by product ID
+        in: query
+        name: product_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.InventoryResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: List inventory records
+      tags:
+      - inventory
+    post:
+      consumes:
+      - application/json
+      description: Create a new inventory record for a product at a location
+      parameters:
+      - description: Inventory data
+        in: body
+        name: inventory
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInventoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.InventoryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create inventory record
+      tags:
+      - inventory
+  /api/v1/inventory/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Adjust stock levels for a product (increase or decrease)
+      parameters:
+      - description: Stock adjustment data
+        in: body
+        name: adjustment
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StockAdjustmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StockMovementResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Adjust stock levels
+      tags:
+      - inventory
+  /api/v1/inventory/low-stock:
+    get:
+      consumes:
+      - application/json
+      description: Get items that are at or below their reorder level
+      parameters:
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.LowStockItemResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get low stock items
+      tags:
+      - inventory
+  /api/v1/inventory/reorder-levels:
+    put:
+      consumes:
+      - application/json
+      description: Update reorder levels for multiple inventory records
+      parameters:
+      - description: Reorder levels data
+        in: body
+        name: levels
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateReorderLevelsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update reorder levels
+      tags:
+      - inventory
+  /api/v1/inventory/transfer:
+    post:
+      consumes:
+      - application/json
+      description: Transfer stock from one location to another
+      parameters:
+      - description: Stock transfer data
+        in: body
+        name: transfer
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StockTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StockTransferResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Transfer stock between locations
+      tags:
+      - inventory
+  /api/v1/inventory/zero-stock:
+    get:
+      consumes:
+      - application/json
+      description: Get items that are completely out of stock
+      parameters:
+      - description: Filter by location ID
+        in: query
+        name: location_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ZeroStockItemResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get zero stock items
+      tags:
+      - inventory
   /api/v1/products:
     get:
       consumes:
@@ -759,7 +1191,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/dto.InventoryResponse'
+                    $ref: '#/definitions/dto.ProductInventoryResponse'
                   type: array
               type: object
         "400":

@@ -57,7 +57,7 @@ type ProductResponse struct {
 	CreatedAt      time.Time               `json:"created_at" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt      time.Time               `json:"updated_at" example:"2024-01-01T00:00:00Z"`
 	TotalStock     *int                    `json:"total_stock,omitempty" example:"100"`
-	Inventory      []InventoryResponse     `json:"inventory,omitempty"`
+	Inventory      []ProductInventoryResponse     `json:"inventory,omitempty"`
 }
 
 // ProductListResponse represents paginated product list
@@ -91,8 +91,8 @@ type SupplierResponse struct {
 	IsActive bool     `json:"is_active" example:"true"`
 }
 
-// InventoryResponse represents inventory info for products
-type InventoryResponse struct {
+// ProductInventoryResponse represents inventory info for products
+type ProductInventoryResponse struct {
 	LocationID       uuid.UUID `json:"location_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	LocationName     string    `json:"location_name" example:"Main Warehouse"`
 	Quantity         int       `json:"quantity" example:"50"`

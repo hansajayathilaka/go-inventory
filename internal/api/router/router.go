@@ -40,6 +40,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
+		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
 
 		// Authentication routes
 		auth := v1.Group("/auth")
@@ -84,6 +85,18 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			products.PUT("/:id", productHandler.UpdateProduct)                       // PUT /api/v1/products/:id
 			products.DELETE("/:id", productHandler.DeleteProduct)                    // DELETE /api/v1/products/:id
 			products.GET("/:id/inventory", productHandler.GetProductInventory)       // GET /api/v1/products/:id/inventory
+		}
+
+		// Inventory management routes
+		inventory := v1.Group("/inventory")
+		{
+			inventory.GET("", inventoryHandler.GetInventoryRecords)                  // GET /api/v1/inventory
+			inventory.POST("", inventoryHandler.CreateInventoryRecord)               // POST /api/v1/inventory
+			inventory.POST("/adjust", inventoryHandler.AdjustStock)                  // POST /api/v1/inventory/adjust
+			inventory.POST("/transfer", inventoryHandler.TransferStock)              // POST /api/v1/inventory/transfer
+			inventory.GET("/low-stock", inventoryHandler.GetLowStockItems)           // GET /api/v1/inventory/low-stock
+			inventory.GET("/zero-stock", inventoryHandler.GetZeroStockItems)         // GET /api/v1/inventory/zero-stock
+			inventory.PUT("/reorder-levels", inventoryHandler.UpdateReorderLevels)   // PUT /api/v1/inventory/reorder-levels
 		}
 	}
 

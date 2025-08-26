@@ -505,7 +505,7 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.ApiResponse{data=[]dto.InventoryResponse} "Product inventory retrieved successfully"
+// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductInventoryResponse} "Product inventory retrieved successfully"
 // @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
 // @Failure 404 {object} dto.ErrorResponse "Product not found"
 // @Failure 500 {object} dto.ErrorResponse "Internal server error"
@@ -614,10 +614,10 @@ func (h *ProductHandler) convertToResponseList(products []*models.Product) []dto
 	return responses
 }
 
-func (h *ProductHandler) convertInventoryToResponse(inventoryList []*models.Inventory) []dto.InventoryResponse {
-	responses := make([]dto.InventoryResponse, len(inventoryList))
+func (h *ProductHandler) convertInventoryToResponse(inventoryList []*models.Inventory) []dto.ProductInventoryResponse {
+	responses := make([]dto.ProductInventoryResponse, len(inventoryList))
 	for i, inv := range inventoryList {
-		response := dto.InventoryResponse{
+		response := dto.ProductInventoryResponse{
 			LocationID:        inv.LocationID,
 			Quantity:          inv.Quantity,
 			ReservedQuantity:  inv.ReservedQuantity,
