@@ -28,7 +28,11 @@
       "Bash(dos2unix:*)",
       "Bash(sed:*)",
       "Bash(./scripts/run-performance-tests.sh:*)",
-      "Bash(INTEGRATION_TESTS=1 go test -v ./tests/integration/ -timeout=30m)"
+      "Bash(INTEGRATION_TESTS=1 go test -v ./tests/integration/ -timeout=30m)",
+      "Bash(go list:*)",
+      "Bash(templ generate:*)",
+      "Bash(echo:*)",
+      "Bash(env)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,7 @@ import (
 	"inventory-api/internal/api/handlers"
 	"inventory-api/internal/api/middleware"
 	"inventory-api/internal/app"
+	webRouter "inventory-api/internal/web/router"
 )
 
 // SetupRouter configures and returns the main application router
@@ -165,6 +166,9 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			reports.GET("/inventory-summary", middleware.RequireMinimumRole("staff"), auditHandler.GetInventorySummary)
 		}
 	}
+
+	// Setup web routes (HTML/HTMX interface)
+	webRouter.SetupWebRoutes(router)
 
 	// Handle 404
 	router.NoRoute(middleware.NotFoundHandler())
