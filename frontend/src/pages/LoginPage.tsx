@@ -19,9 +19,9 @@ const LoginPage: React.FC = () => {
     try {
       const response = await api.login({ username, password });
       
-      // Store the token
-      if (response.data?.token) {
-        localStorage.setItem('auth_token', response.data.token);
+      // Store the token - API returns nested data structure
+      if (response.data?.data?.token) {
+        localStorage.setItem('auth_token', response.data.data.token);
         navigate('/dashboard');
       } else {
         setError('Invalid response from server');

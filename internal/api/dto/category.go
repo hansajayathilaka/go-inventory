@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
 	"inventory-api/internal/business/hierarchy"
@@ -63,14 +64,56 @@ type CategoryPathResponse struct {
 	Path []CategoryResponse `json:"path"`
 } // @name CategoryPathResponse
 
+// NullableUUID is a custom type to handle "null" string in query parameters
+type NullableUUID struct {
+	UUID  *uuid.UUID
+	IsSet bool
+}
+
+// UnmarshalJSON implements json.Unmarshaler to handle "null" strings
+func (n *NullableUUID) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	
+	if s == "null" || s == "" {
+		n.UUID = nil
+		n.IsSet = true
+		return nil
+	}
+	
+	id, err := uuid.Parse(s)
+	if err != nil {
+		return err
+	}
+	
+	n.UUID = &id
+	n.IsSet = true
+	return nil
+}
+
 // CategoryQueryParams represents query parameters for listing categories
 // @Description Query parameters for category listing and filtering
 type CategoryQueryParams struct {
-	Page     int  `form:"page" example:"1"`
-	PageSize int  `form:"page_size" example:"20"`
-	Level    *int `form:"level" binding:"omitempty,min=0,max=5" example:"1"`
-	ParentID *uuid.UUID `form:"parent_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Page     int    `form:"page" example:"1"`
+	PageSize int    `form:"page_size" example:"20"`
+	Level    *int   `form:"level" binding:"omitempty,min=0,max=5" example:"1"`
+	ParentID string `form:"parent_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 } // @name CategoryQueryParams
+
+// GetParentID returns the parsed parent ID or nil if "null" or empty
+func (p *CategoryQueryParams) GetParentID() *uuid.UUID {
+	if p.ParentID == "" || p.ParentID == "null" {
+		return nil
+	}
+	
+	if id, err := uuid.Parse(p.ParentID); err == nil {
+		return &id
+	}
+	
+	return nil
+}
 
 // ToCategoryResponse converts a hierarchy.CategoryNode to CategoryResponse
 func ToCategoryResponse(node *hierarchy.CategoryNode, childrenCount int) *CategoryResponse {

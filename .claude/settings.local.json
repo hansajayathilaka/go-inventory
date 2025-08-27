@@ -43,7 +43,9 @@
       "Bash(./build/build.sh:*)",
       "Bash(bash:*)",
       "Bash(./hardware-store-inventory --seed)",
-      "Bash(./hardware-store-inventory)"
+      "Bash(./hardware-store-inventory)",
+      "Bash(./build/dev.sh:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []

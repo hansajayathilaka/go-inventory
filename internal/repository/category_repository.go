@@ -96,3 +96,13 @@ func (r *categoryRepository) Count(ctx context.Context) (int64, error) {
 	err := r.db.WithContext(ctx).Model(&models.Category{}).Count(&count).Error
 	return count, err
 }
+
+func (r *categoryRepository) Search(ctx context.Context, query string) ([]*models.Category, error) {
+	var categories []*models.Category
+	searchTerm := "%" + query + "%"
+	err := r.db.WithContext(ctx).
+		Where("name ILIKE ? OR description ILIKE ?", searchTerm, searchTerm).
+		Order("name ASC").
+		Find(&categories).Error
+	return categories, err
+}

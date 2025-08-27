@@ -35,6 +35,7 @@ type Service interface {
 	MoveCategory(ctx context.Context, id uuid.UUID, newParentID *uuid.UUID) error
 	GetCategoryHierarchy(ctx context.Context, rootID *uuid.UUID) (*CategoryNode, error)
 	ValidateCategoryMove(ctx context.Context, categoryID uuid.UUID, newParentID *uuid.UUID) error
+	SearchCategories(ctx context.Context, query string) ([]*models.Category, error)
 }
 
 type CategoryNode struct {
@@ -157,6 +158,10 @@ func (s *service) GetCategoryPath(ctx context.Context, id uuid.UUID) ([]*models.
 
 func (s *service) GetCategoriesByLevel(ctx context.Context, level int) ([]*models.Category, error) {
 	return s.categoryRepo.GetByLevel(ctx, level)
+}
+
+func (s *service) SearchCategories(ctx context.Context, query string) ([]*models.Category, error) {
+	return s.categoryRepo.Search(ctx, query)
 }
 
 func (s *service) MoveCategory(ctx context.Context, id uuid.UUID, newParentID *uuid.UUID) error {

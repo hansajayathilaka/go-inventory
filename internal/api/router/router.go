@@ -118,6 +118,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		{
 			categories.GET("", middleware.RequireMinimumRole("viewer"), categoryHandler.ListCategories)
 			categories.POST("", middleware.RequireMinimumRole("manager"), categoryHandler.CreateCategory)
+			categories.GET("/search", middleware.RequireMinimumRole("viewer"), categoryHandler.SearchCategories)
 			categories.GET("/roots", middleware.RequireMinimumRole("viewer"), categoryHandler.GetRootCategories)
 			categories.GET("/hierarchy", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategoryHierarchy)
 			categories.GET("/:id", middleware.RequireMinimumRole("viewer"), categoryHandler.GetCategory)

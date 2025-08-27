@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"inventory-api/internal/api/dto"
 	"inventory-api/internal/business/hierarchy"
@@ -36,14 +37,40 @@ func NewCategoryHandler(categoryService hierarchy.Service) *CategoryHandler {
 // @Failure 500 {object} dto.ErrorResponse
 // @Router /categories [get]
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
+	// Manually parse query parameters to handle "null" parent_id
 	var params dto.CategoryQueryParams
-	if err := c.ShouldBindQuery(&params); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid query parameters",
-			Message: err.Error(),
-		})
-		return
+	
+	// Parse page parameter
+	if pageStr := c.Query("page"); pageStr != "" {
+		if page, err := strconv.Atoi(pageStr); err == nil && page > 0 {
+			params.Page = page
+		} else {
+			params.Page = 1
+		}
+	} else {
+		params.Page = 1
 	}
+	
+	// Parse page_size parameter
+	if pageSizeStr := c.Query("page_size"); pageSizeStr != "" {
+		if pageSize, err := strconv.Atoi(pageSizeStr); err == nil && pageSize > 0 {
+			params.PageSize = pageSize
+		} else {
+			params.PageSize = 20
+		}
+	} else {
+		params.PageSize = 20
+	}
+	
+	// Parse level parameter
+	if levelStr := c.Query("level"); levelStr != "" {
+		if level, err := strconv.Atoi(levelStr); err == nil && level >= 0 && level <= 5 {
+			params.Level = &level
+		}
+	}
+	
+	// Parse parent_id parameter (this is the problematic one)
+	params.ParentID = c.Query("parent_id")
 
 	// Set defaults
 	if params.Page < 1 {
@@ -60,8 +87,22 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 
 	if params.Level != nil {
 		categories, err = h.categoryService.GetCategoriesByLevel(c.Request.Context(), *params.Level)
-	} else if params.ParentID != nil {
-		categories, err = h.categoryService.GetCategoryChildren(c.Request.Context(), *params.ParentID)
+	} else if params.ParentID != "" {
+		// Handle parent_id parameter
+		if params.ParentID == "null" {
+			// Explicitly requested root categories
+			categories, err = h.categoryService.GetRootCategories(c.Request.Context())
+		} else if parentID := params.GetParentID(); parentID != nil {
+			// Valid UUID provided
+			categories, err = h.categoryService.GetCategoryChildren(c.Request.Context(), *parentID)
+		} else {
+			// Invalid UUID format
+			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Error:   "Invalid parent_id format",
+				Message: "parent_id must be a valid UUID or 'null'",
+			})
+			return
+		}
 	} else {
 		categories, err = h.categoryService.ListCategories(c.Request.Context(), params.PageSize, offset)
 	}
@@ -630,6 +671,79 @@ func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.SuccessResponse{
 		Message: "Category moved successfully",
+		Data:    response,
+	})
+}
+
+// SearchCategories godoc
+// @Summary Search categories
+// @Description Search categories by name or description
+// @Tags categories
+// @Accept json
+// @Produce json
+// @Param q query string true "Search query"
+// @Success 200 {object} dto.SuccessResponse{data=dto.CategoryListResponse}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /categories/search [get]
+func (h *CategoryHandler) SearchCategories(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Missing search query",
+			Message: "Query parameter 'q' is required",
+		})
+		return
+	}
+
+	if len(query) < 2 {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Query too short",
+			Message: "Search query must be at least 2 characters long",
+		})
+		return
+	}
+
+	// Search categories using the hierarchy service
+	categories, err := h.categoryService.SearchCategories(c.Request.Context(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to search categories",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// Convert to response format
+	categoryResponses := make([]dto.CategoryResponse, len(categories))
+	for i, category := range categories {
+		children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
+		childrenCount := len(children)
+
+		categoryResponses[i] = dto.CategoryResponse{
+			ID:            category.ID,
+			Name:          category.Name,
+			Description:   category.Description,
+			ParentID:      category.ParentID,
+			Level:         category.Level,
+			Path:          category.Path,
+			ChildrenCount: childrenCount,
+			CreatedAt:     category.CreatedAt,
+			UpdatedAt:     category.UpdatedAt,
+		}
+	}
+
+	response := dto.CategoryListResponse{
+		Categories: categoryResponses,
+		Pagination: dto.PaginationResponse{
+			Page:     1,
+			PageSize: len(categoryResponses),
+			Total:    len(categoryResponses),
+		},
+	}
+
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Message: "Categories searched successfully",
 		Data:    response,
 	})
 }

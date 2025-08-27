@@ -1,2 +1,18 @@
 config.yaml
 bin/
+
+# Build artifacts
+frontend/dist/
+frontend/node_modules/
+internal/embed/static/
+internal/embed/frontend/
+
+# Go build artifacts
+hardware-store-inventory
+inventory-api
+main
+
+# Development files
+*.log
+.env
+.env.local

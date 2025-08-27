@@ -19,4 +19,5 @@ type CategoryRepository interface {
 	GetRootCategories(ctx context.Context) ([]*models.Category, error)
 	GetCategoryPath(ctx context.Context, id uuid.UUID) ([]*models.Category, error)
 	Count(ctx context.Context) (int64, error)
+	Search(ctx context.Context, query string) ([]*models.Category, error)
 }
