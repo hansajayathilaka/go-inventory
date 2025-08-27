@@ -32,7 +32,18 @@
       "Bash(go list:*)",
       "Bash(templ generate:*)",
       "Bash(echo:*)",
-      "Bash(env)"
+      "Bash(env)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npm run build:*)",
+      "Bash(./build/build.sh:*)",
+      "Bash(bash:*)",
+      "Bash(./hardware-store-inventory --seed)",
+      "Bash(./hardware-store-inventory)"
     ],
     "deny": [],
     "ask": []

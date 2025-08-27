@@ -3,17 +3,19 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
+	"inventory-api/internal/app"
 	"inventory-api/internal/web/handlers"
 	"inventory-api/internal/web/middleware"
 )
 
-func SetupWebRoutes(router *gin.Engine) {
+func SetupWebRoutes(router *gin.Engine, appCtx *app.Context) {
 	// Serve static files
 	router.Static("/static", "./web/static")
 	
 	// Initialize handlers
 	authHandler := handlers.NewWebAuthHandler()
 	dashboardHandler := handlers.NewWebDashboardHandler()
+	categoryHandler := handlers.NewCategoryWebHandler(appCtx.HierarchyService)
 	
 	// Public routes (no auth required)
 	router.GET("/", func(c *gin.Context) {
@@ -35,9 +37,7 @@ func SetupWebRoutes(router *gin.Engine) {
 			c.String(200, "Products page - Coming soon")
 		})
 		
-		protected.GET("/categories", func(c *gin.Context) {
-			c.String(200, "Categories page - Coming soon")
-		})
+		protected.GET("/categories", categoryHandler.CategoriesPage)
 		
 		protected.GET("/inventory", func(c *gin.Context) {
 			c.String(200, "Inventory page - Coming soon")
@@ -58,5 +58,22 @@ func SetupWebRoutes(router *gin.Engine) {
 		protected.GET("/audit", func(c *gin.Context) {
 			c.String(200, "Audit page - Coming soon")
 		})
+		
+		// Web API routes for HTMX requests
+		webAPI := protected.Group("/web")
+		{
+			// Category management HTMX routes
+			categories := webAPI.Group("/categories")
+			{
+				categories.GET("/tree", categoryHandler.CategoryTree)
+				categories.GET("/create", categoryHandler.CreateCategoryForm)
+				categories.GET("/selector", categoryHandler.CategorySelector)
+				categories.POST("", categoryHandler.CreateCategory)
+				categories.GET("/:id/children", categoryHandler.LoadCategoryChildren)
+				categories.GET("/:id/edit", categoryHandler.EditCategoryForm)
+				categories.PUT("/:id", categoryHandler.UpdateCategory)
+				categories.DELETE("/:id", categoryHandler.DeleteCategory)
+			}
+		}
 	}
 }

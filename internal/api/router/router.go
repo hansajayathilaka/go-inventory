@@ -1,7 +1,11 @@
 package router
 
 import (
+	"io/fs"
+	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +16,7 @@ import (
 	"inventory-api/internal/api/handlers"
 	"inventory-api/internal/api/middleware"
 	"inventory-api/internal/app"
-	webRouter "inventory-api/internal/web/router"
+	"inventory-api/internal/embed"
 )
 
 // SetupRouter configures and returns the main application router
@@ -167,11 +171,8 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		}
 	}
 
-	// Setup web routes (HTML/HTMX interface)
-	webRouter.SetupWebRoutes(router)
-
-	// Handle 404
-	router.NoRoute(middleware.NotFoundHandler())
+	// Setup React frontend serving (replaces old Templ/HTMX interface)
+	setupReactServing(router)
 
 	return router
 }
@@ -195,5 +196,66 @@ func HealthCheck(c *gin.Context) {
 		Status:    "ok",
 		Timestamp: "2023-01-01T12:00:00Z", // You can use time.Now().Format(time.RFC3339)
 		Version:   "1.0.0",
+	})
+}
+
+// setupReactServing configures React frontend serving
+func setupReactServing(router *gin.Engine) {
+	// Get embedded React files
+	reactFS := embed.GetReactFiles()
+	
+	// Serve React static assets (CSS, JS, images, etc.)
+	// In development, files might not be embedded yet, so we'll serve from disk
+	if gin.Mode() == gin.DebugMode {
+		router.Static("/assets", "./frontend/dist/assets")
+	}
+	
+	// Create a file server for React files
+	fileServer := http.FileServer(http.FS(reactFS))
+	
+	// Serve React app - handle all non-API routes
+	router.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+		
+		// Don't serve React for API routes or docs
+		if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/docs/") || strings.HasPrefix(path, "/health") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "API endpoint not found"})
+			return
+		}
+		
+		// For development mode, try to serve from filesystem first
+		if gin.Mode() == gin.DebugMode {
+			filePath := filepath.Join("frontend/dist", strings.TrimPrefix(path, "/"))
+			if _, err := os.Stat(filePath); err == nil {
+				c.File(filePath)
+				return
+			}
+			// Serve index.html for client-side routing
+			c.File("frontend/dist/index.html")
+			return
+		}
+		
+		// Production mode: serve from embedded files
+		// Check if file exists in React build
+		if file, err := reactFS.Open(strings.TrimPrefix(path, "/")); err == nil {
+			file.Close()
+			// File exists, serve it
+			fileServer.ServeHTTP(c.Writer, c.Request)
+			return
+		}
+		
+		// File doesn't exist, serve index.html for React routing
+		if indexFile, err := reactFS.Open("index.html"); err == nil {
+			defer indexFile.Close()
+			c.Header("Content-Type", "text/html")
+			// Copy file content to response
+			if content, err := fs.ReadFile(reactFS, "index.html"); err == nil {
+				c.Data(http.StatusOK, "text/html", content)
+			}
+			return
+		}
+		
+		// Fallback if index.html not found
+		c.String(http.StatusNotFound, "React app not found. Make sure to build the frontend first.")
 	})
 }

@@ -55,13 +55,20 @@ func main() {
 	}
 
 	
-	// Initialize router with all routes and middleware
+	// Initialize router with all routes and middleware (API + React)
 	r := router.SetupRouter(appCtx)
 
-	fmt.Println("Starting web server...")
+	fmt.Println("Hardware Store Inventory System")
+	fmt.Println("===============================")
+	fmt.Println("🚀 Single Executable Deployment")
+	fmt.Println("📦 React Frontend + Go API Backend")
+	fmt.Println()
 	fmt.Println("Server running on :8080")
-	fmt.Println("Swagger UI: http://localhost:8080/docs/index.html")
+	fmt.Println("Web Interface: http://localhost:8080")
 	fmt.Println("API Base: http://localhost:8080/api/v1")
+	fmt.Println("Swagger UI: http://localhost:8080/docs/index.html")
+	fmt.Println()
+	fmt.Println("Perfect for hardware store inventory management!")
 	fmt.Println()
 
 	log.Fatal(r.Run(":8080"))

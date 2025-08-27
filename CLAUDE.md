@@ -2,33 +2,50 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# Inventory Management API - Development Guide
+# Hardware Store Inventory Management System - Development Guide
 
 ## Project Overview
-A comprehensive REST API inventory management system built with Go and Gin, evolved from a TUI-based system. Features complete Swagger documentation, JWT authentication, role-based access control, and production-ready deployment configurations.
+A **single-user hardware store inventory management system** designed for deployment as a **single executable**. Features a Go API backend with embedded React frontend, SQLite database, and offline operation capabilities.
 
-## Technology Stack
-- **Language**: Go 1.23+
-- **Web Framework**: Gin
-- **ORM**: GORM
-- **Database**: PostgreSQL 16
-- **Configuration**: Viper
-- **Authentication**: JWT with golang-jwt/jwt/v5
-- **Documentation**: Swagger/OpenAPI with gin-swagger
-- **Architecture**: Clean Architecture with API/Business/Repository layers
+## NEW ARCHITECTURE (2025-08-27) 🚀
+**MAJOR CHANGE**: Migrated from Go + Templ + HTMX to **Go + Embedded React** architecture.
 
-## Project Structure
+### Technology Stack
+- **Backend**: Go 1.23+ with Gin framework (existing API - no changes)
+- **Frontend**: React + TypeScript + TailwindCSS (new)
+- **Database**: SQLite (single file, perfect for hardware store)
+- **Deployment**: Single executable with embedded React build
+- **Target User**: Single hardware store owner using old computer
+- **Operation**: Offline capable, no external dependencies
+
+### Architecture Benefits
+- **Single File Deployment** - Copy one executable, run anywhere
+- **Hardware Store Perfect** - Works offline, old computers, simple setup
+- **Developer Experience** - Modern React tooling and components
+- **Maintenance** - Easier UI development and feature additions
+
+## NEW Project Structure
 ```
-inventory-api/
+hardware-store-inventory/
 ├── cmd/
-│   └── main.go                 # Web server entry point
+│   └── main.go                 # Single executable entry point
+├── frontend/                   # React frontend (NEW)
+│   ├── src/
+│   │   ├── components/        # React components
+│   │   ├── pages/             # Page components
+│   │   ├── services/          # API client
+│   │   ├── types/             # TypeScript types
+│   │   └── App.tsx            # Main React app
+│   ├── public/                # Static assets
+│   ├── package.json           # NPM dependencies
+│   └── vite.config.ts         # Vite build configuration
 ├── internal/
-│   ├── api/                    # REST API layer
+│   ├── api/                   # REST API layer (KEEP - no changes)
 │   │   ├── handlers/          # HTTP request handlers
 │   │   ├── middleware/        # Authentication, CORS, validation
 │   │   ├── router/            # Route definitions
 │   │   └── dto/               # Data Transfer Objects
-│   ├── business/              # Business logic layer (unchanged)
+│   ├── business/              # Business logic layer (KEEP - no changes)
 │   │   ├── inventory/         # Inventory management services
 │   │   ├── user/              # User management services
 │   │   ├── product/           # Product management services
@@ -36,16 +53,24 @@ inventory-api/
 │   │   ├── location/          # Location management services
 │   │   ├── audit/             # Audit logging services
 │   │   └── hierarchy/         # Category hierarchy services
-│   ├── repository/            # Data access layer (unchanged)
+│   ├── repository/            # Data access layer (KEEP - no changes)
 │   │   ├── models/            # GORM models
 │   │   └── interfaces/        # Repository interfaces
 │   ├── app/                   # Application context and initialization
-│   └── config/                # Configuration management
+│   ├── config/                # Configuration management
+│   └── embed/                 # React build embedding (NEW)
+├── internal/web/              # OLD - TO BE REMOVED
+│   ├── components/            # Templ components (DELETE)
+│   ├── handlers/              # Web handlers (DELETE)
+│   ├── layouts/               # Templ layouts (DELETE)
+│   └── types/                 # Web types (DELETE)
 ├── docs/                      # Swagger documentation (auto-generated)
 ├── tests/                     # Test suites
 │   ├── integration/           # API integration tests
 │   └── performance/           # Benchmarks and load tests
-├── tools/                     # Performance monitoring utilities
+├── build/                     # Build scripts (NEW)
+│   ├── build.sh               # Single executable build script
+│   └── dev.sh                 # Development script
 ├── go.mod
 └── go.sum
 ```
@@ -105,23 +130,47 @@ inventory-api/
 ### Audit Logs Table
 - id, table_name, record_id, action, old_values, new_values, user_id, timestamp
 
-## Common Development Commands
+## NEW Development Commands
 
-### Building and Running
+### React + Go Development
 ```bash
-# Build the application
-go build -o inventory-api ./cmd/main.go
-
-# Run the web server
+# Development Mode (Run both simultaneously)
+# Terminal 1: Start Go API server
 go run cmd/main.go
 
-# Seed database with test data (first run only)
-go run cmd/main.go --seed
-# OR
-./inventory-api --seed
+# Terminal 2: Start React development server
+cd frontend
+npm run dev
+# React: http://localhost:3000 -> Go API: http://localhost:8080
 
+# OR use development script:
+./build/dev.sh
+```
+
+### Building Single Executable
+```bash
+# Build React for production
+cd frontend
+npm run build
+
+# Build Go with embedded React
+go build -o hardware-store-inventory ./cmd/main.go
+
+# OR use build script:
+./build/build.sh
+
+# Deploy single executable
+./hardware-store-inventory --seed  # First run with sample data
+./hardware-store-inventory          # Normal operation
+```
+
+### Legacy Commands (Still Available)
+```bash
 # Generate Swagger documentation
 swag init -g cmd/main.go -o ./docs
+
+# Run API-only mode (development)
+go run cmd/main.go
 ```
 
 ### Testing

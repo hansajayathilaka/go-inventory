@@ -21,6 +21,8 @@ templ Dashboard(title string, user interface{}) {
 				<div class="p-6">
 					if title == "Dashboard" {
 						@components.DashboardContent()
+					} else if title == "Categories" {
+						@components.CategoriesPage()
 					} else {
 						{ children... }
 					}
