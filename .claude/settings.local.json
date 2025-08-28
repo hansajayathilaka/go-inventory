@@ -46,7 +46,8 @@
       "Bash(./hardware-store-inventory)",
       "Bash(./build/dev.sh:*)",
       "Bash(cp:*)",
-      "Bash(sudo netstat:*)"
+      "Bash(sudo netstat:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
