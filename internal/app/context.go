@@ -19,14 +19,21 @@ type Context struct {
 	Database *config.Database
 
 	// Repositories
-	UserRepo         interfaces.UserRepository
-	CategoryRepo     interfaces.CategoryRepository
-	SupplierRepo     interfaces.SupplierRepository
-	LocationRepo     interfaces.LocationRepository
-	ProductRepo      interfaces.ProductRepository
-	InventoryRepo    interfaces.InventoryRepository
-	StockMovementRepo interfaces.StockMovementRepository
-	AuditLogRepo     interfaces.AuditLogRepository
+	UserRepo                  interfaces.UserRepository
+	CategoryRepo              interfaces.CategoryRepository
+	SupplierRepo              interfaces.SupplierRepository
+	LocationRepo              interfaces.LocationRepository
+	ProductRepo               interfaces.ProductRepository
+	InventoryRepo             interfaces.InventoryRepository
+	StockMovementRepo         interfaces.StockMovementRepository
+	AuditLogRepo              interfaces.AuditLogRepository
+	CustomerRepo              interfaces.CustomerRepository
+	BrandRepo                 interfaces.BrandRepository
+	VehicleBrandRepo          interfaces.VehicleBrandRepository
+	VehicleModelRepo          interfaces.VehicleModelRepository
+	PurchaseOrderRepo         interfaces.PurchaseOrderRepository
+	GRNRepo                   interfaces.GRNRepository
+	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
 	// Services
 	UserService      user.Service
@@ -80,6 +87,13 @@ func (ctx *Context) initRepositories() {
 	ctx.InventoryRepo = repository.NewInventoryRepository(ctx.Database.DB)
 	ctx.StockMovementRepo = repository.NewStockMovementRepository(ctx.Database.DB)
 	ctx.AuditLogRepo = repository.NewAuditLogRepository(ctx.Database.DB)
+	ctx.CustomerRepo = repository.NewCustomerRepository(ctx.Database.DB)
+	ctx.BrandRepo = repository.NewBrandRepository(ctx.Database.DB)
+	ctx.VehicleBrandRepo = repository.NewVehicleBrandRepository(ctx.Database.DB)
+	ctx.VehicleModelRepo = repository.NewVehicleModelRepository(ctx.Database.DB)
+	ctx.PurchaseOrderRepo = repository.NewPurchaseOrderRepository(ctx.Database.DB)
+	ctx.GRNRepo = repository.NewGRNRepository(ctx.Database.DB)
+	ctx.VehicleCompatibilityRepo = repository.NewVehicleCompatibilityRepository(ctx.Database.DB)
 }
 
 func (ctx *Context) initServices() {

@@ -56,6 +56,13 @@ func (db *Database) AutoMigrate() error {
 		&models.Inventory{},
 		&models.StockMovement{},
 		&models.AuditLog{},
+		&models.Customer{},
+		&models.Brand{},
+		&models.VehicleBrand{},
+		&models.VehicleModel{},
+		&models.PurchaseOrder{},
+		&models.GRN{},
+		&models.VehicleCompatibility{},
 	)
 }
 
