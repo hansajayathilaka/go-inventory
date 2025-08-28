@@ -143,7 +143,8 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 		},
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
 		Message: "Categories retrieved successfully",
 		Data:    response,
 	})

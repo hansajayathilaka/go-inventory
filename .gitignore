@@ -4,8 +4,8 @@ bin/
 # Build artifacts
 frontend/dist/
 frontend/node_modules/
-internal/embed/static/
-internal/embed/frontend/
+internal/embed/static/*
+internal/embed/frontend/*
 
 # Go build artifacts
 hardware-store-inventory

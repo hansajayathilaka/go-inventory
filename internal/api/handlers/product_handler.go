@@ -135,14 +135,21 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 			perPage = parsed
 		}
 	}
+	if p := c.Query("limit"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 && parsed <= 100 {
+			perPage = parsed
+		}
+	}
 
 	offset := (page - 1) * perPage
 
 	var products []*models.Product
 	var err error
 
-	// Check for category filter
-	if categoryIDStr := c.Query("category_id"); categoryIDStr != "" {
+	// Check for search parameter first
+	if searchTerm := c.Query("search"); searchTerm != "" {
+		products, err = h.productService.SearchProducts(c.Request.Context(), searchTerm, perPage, offset)
+	} else if categoryIDStr := c.Query("category_id"); categoryIDStr != "" {
 		categoryID, parseErr := uuid.Parse(categoryIDStr)
 		if parseErr != nil {
 			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
@@ -162,8 +169,21 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 			return
 		}
 		products, err = h.productService.GetProductsBySupplier(c.Request.Context(), supplierID)
-	} else if isActiveStr := c.Query("is_active"); isActiveStr == "true" {
+	} else if statusStr := c.Query("status"); statusStr == "active" {
 		products, err = h.productService.GetActiveProducts(c.Request.Context())
+	} else if statusStr := c.Query("status"); statusStr == "inactive" {
+		// Get all products and filter out active ones
+		allProducts, getAllErr := h.productService.ListProducts(c.Request.Context(), 1000, 0)
+		if getAllErr != nil {
+			err = getAllErr
+		} else {
+			products = make([]*models.Product, 0)
+			for _, p := range allProducts {
+				if !p.IsActive {
+					products = append(products, p)
+				}
+			}
+		}
 	} else {
 		products, err = h.productService.ListProducts(c.Request.Context(), perPage, offset)
 	}

@@ -33,9 +33,10 @@ export interface Product {
   cost_price: number;
   retail_price: number;
   wholesale_price?: number;
+  barcode?: string;
   weight?: number;
   dimensions?: string;
-  status: 'active' | 'inactive';
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -43,13 +44,14 @@ export interface Product {
 export interface Supplier {
   id: string;
   name: string;
-  contact_person: string;
-  email: string;
-  phone: string;
-  address: string;
-  status: 'active' | 'inactive';
-  created_at: string;
-  updated_at: string;
+  code: string;
+  contact_person?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Location {
@@ -150,4 +152,38 @@ export interface PaginationParams {
 export interface SortParams {
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+}
+
+// API Response types
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp?: string;
+}
+
+export interface ProductListResponse {
+  products: Product[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
+export interface CategoryListResponse {
+  categories: Category[];
+  pagination: {
+    page: number;
+    page_size: number;
+    total: number;
+  };
+}
+
+export interface SupplierListResponse {
+  suppliers: Supplier[];
+  pagination?: {
+    page: number;
+    page_size: number;
+    total: number;
+  };
 }
