@@ -395,14 +395,9 @@ func (h *AuditHandler) GetInventorySummary(c *gin.Context) {
 		return
 	}
 
-	locations, err := h.locationRepo.List(c.Request.Context(), 0, 0)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to fetch locations",
-			Message: err.Error(),
-		})
-		return
-	}
+	// For single hardware store, use default location only
+	defaultLocation := models.GetDefaultLocation()
+	locations := []*models.Location{defaultLocation}
 
 	// Get low stock and zero stock items
 	lowStockItems, err := h.inventoryService.GetLowStock(c.Request.Context())

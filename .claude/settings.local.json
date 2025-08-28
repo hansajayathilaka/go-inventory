@@ -45,7 +45,8 @@
       "Bash(./hardware-store-inventory --seed)",
       "Bash(./hardware-store-inventory)",
       "Bash(./build/dev.sh:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(sudo netstat:*)"
     ],
     "deny": [],
     "ask": []

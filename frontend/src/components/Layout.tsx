@@ -6,13 +6,14 @@ import {
   FolderTree, 
   Warehouse, 
   Truck, 
-  MapPin, 
+  Store, 
   Users, 
   FileText, 
   Menu, 
   X,
   LogOut,
-  User
+  User,
+  ShoppingCart
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -30,7 +31,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Categories', href: '/categories', icon: FolderTree },
     { name: 'Inventory', href: '/inventory', icon: Warehouse },
     { name: 'Suppliers', href: '/suppliers', icon: Truck },
-    { name: 'Locations', href: '/locations', icon: MapPin },
+    { name: 'Store Info', href: '/locations', icon: Store },
+    { name: 'POS Ready', href: '/pos', icon: ShoppingCart, badge: 'Coming Soon' },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Audit Logs', href: '/audit', icon: FileText },
   ];
@@ -119,7 +121,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 // Sidebar content component
 const SidebarContent: React.FC<{
-  navigation: Array<{ name: string; href: string; icon: any }>;
+  navigation: Array<{ name: string; href: string; icon: any; badge?: string }>;
   currentPath: string;
 }> = ({ navigation, currentPath }) => {
   return (
@@ -139,18 +141,25 @@ const SidebarContent: React.FC<{
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`group flex items-center justify-between px-2 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive
                     ? 'bg-blue-100 text-blue-900'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
-                <item.icon
-                  className={`mr-3 flex-shrink-0 h-6 w-6 ${
-                    isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
-                  }`}
-                />
-                {item.name}
+                <div className="flex items-center">
+                  <item.icon
+                    className={`mr-3 flex-shrink-0 h-6 w-6 ${
+                      isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                    }`}
+                  />
+                  {item.name}
+                </div>
+                {item.badge && (
+                  <span className="ml-auto px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -160,8 +169,8 @@ const SidebarContent: React.FC<{
       {/* Footer */}
       <div className="flex-shrink-0 bg-gray-50 p-4 border-t border-gray-200">
         <div className="text-xs text-gray-500 text-center">
-          Hardware Store Inventory v1.0<br />
-          Single User Edition
+          Hardware Store Inventory v2.0<br />
+          <span className="text-blue-600">POS Ready</span> • Single Location
         </div>
       </div>
     </div>

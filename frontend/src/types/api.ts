@@ -37,6 +37,9 @@ export interface Product {
   weight?: number;
   dimensions?: string;
   is_active: boolean;
+  // POS-ready fields
+  tax_category?: string;
+  quick_sale?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -69,12 +72,12 @@ export interface InventoryRecord {
   id: string;
   product_id: string;
   product?: Product;
-  location_id: string;
-  location?: Location;
   quantity: number;
   reserved_quantity: number;
   reorder_level: number;
   last_updated: string;
+  // POS-ready fields
+  available_quantity?: number;
 }
 
 export interface StockMovement {
@@ -186,4 +189,68 @@ export interface SupplierListResponse {
     page_size: number;
     total: number;
   };
+}
+
+// Single-location inventory types for hardware store
+export interface LowStockItem {
+  product_id: string;
+  product_name: string;
+  product_sku: string;
+  quantity: number;
+  reorder_level: number;
+  deficit: number;
+  barcode?: string;
+}
+
+export interface ZeroStockItem {
+  product_id: string;
+  product_name: string;
+  product_sku: string;
+  last_updated: string;
+  barcode?: string;
+}
+
+export interface StockAdjustmentRequest {
+  product_id: string;
+  quantity: number;
+  movement_type: 'IN' | 'OUT' | 'ADJUSTMENT';
+  notes?: string;
+  reason?: 'sale' | 'damage' | 'receiving' | 'correction' | 'other';
+}
+
+export interface CreateInventoryRequest {
+  product_id: string;
+  quantity: number;
+  reserved_quantity?: number;
+  reorder_level: number;
+}
+
+// POS-ready types for future integration
+export interface POSProduct {
+  id: string;
+  sku: string;
+  name: string;
+  barcode?: string;
+  retail_price: number;
+  quantity: number;
+  tax_category?: string;
+  quick_sale?: boolean;
+}
+
+export interface POSLookupRequest {
+  barcode?: string;
+  sku?: string;
+  name?: string;
+}
+
+export interface InventoryListResponse {
+  data: InventoryRecord[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+  message: string;
+  success: boolean;
 }

@@ -39,20 +39,17 @@ type service struct {
 	inventoryRepo     interfaces.InventoryRepository
 	stockMovementRepo interfaces.StockMovementRepository
 	productRepo       interfaces.ProductRepository
-	locationRepo      interfaces.LocationRepository
 }
 
 func NewService(
 	inventoryRepo interfaces.InventoryRepository,
 	stockMovementRepo interfaces.StockMovementRepository,
 	productRepo interfaces.ProductRepository,
-	locationRepo interfaces.LocationRepository,
 ) Service {
 	return &service{
 		inventoryRepo:     inventoryRepo,
 		stockMovementRepo: stockMovementRepo,
 		productRepo:       productRepo,
-		locationRepo:      locationRepo,
 	}
 }
 
@@ -66,10 +63,7 @@ func (s *service) CreateInventory(ctx context.Context, productID, locationID uui
 		return nil, ErrProductNotFound
 	}
 
-	_, err = s.locationRepo.GetByID(ctx, locationID)
-	if err != nil {
-		return nil, ErrLocationNotFound
-	}
+	// Skip location validation - using default hardware store location
 
 	existing, _ := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
 	if existing != nil {
@@ -78,7 +72,7 @@ func (s *service) CreateInventory(ctx context.Context, productID, locationID uui
 
 	inventory := &models.Inventory{
 		ProductID:    productID,
-		LocationID:   locationID,
+		LocationID:   &locationID,
 		Quantity:     initialQuantity,
 		ReorderLevel: reorderLevel,
 		MaxLevel:     maxLevel,
@@ -224,7 +218,7 @@ func (s *service) TransferStock(ctx context.Context, productID, fromLocationID, 
 	if err != nil {
 		toInventory = &models.Inventory{
 			ProductID:  productID,
-			LocationID: toLocationID,
+			LocationID: &toLocationID,
 			Quantity:   0,
 		}
 		if err := s.inventoryRepo.Create(ctx, toInventory); err != nil {

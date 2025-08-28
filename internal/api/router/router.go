@@ -55,7 +55,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		authHandler := handlers.NewAuthHandler(appCtx.UserService)
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
-		locationHandler := handlers.NewLocationHandler(appCtx.LocationService)
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
@@ -100,17 +99,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
 		}
 
-		// Location management routes (protected)
-		locations := v1.Group("/locations")
-		locations.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			locations.GET("", middleware.RequireMinimumRole("viewer"), locationHandler.ListLocations)
-			locations.POST("", middleware.RequireMinimumRole("manager"), locationHandler.CreateLocation)
-			locations.GET("/:id", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocation)
-			locations.PUT("/:id", middleware.RequireMinimumRole("manager"), locationHandler.UpdateLocation)
-			locations.DELETE("/:id", middleware.RequireRole("admin"), locationHandler.DeleteLocation)
-			locations.GET("/:id/inventory", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocationInventory)
-		}
 
 		// Category management routes (protected)
 		categories := v1.Group("/categories")
@@ -137,6 +125,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			products.GET("", middleware.RequireMinimumRole("viewer"), productHandler.GetProducts)
 			products.POST("", middleware.RequireMinimumRole("staff"), productHandler.CreateProduct)
 			products.GET("/search", middleware.RequireMinimumRole("viewer"), productHandler.SearchProducts)
+			products.GET("/pos-ready", middleware.RequireMinimumRole("viewer"), productHandler.GetPOSReady)
 			products.GET("/:id", middleware.RequireMinimumRole("viewer"), productHandler.GetProduct)
 			products.PUT("/:id", middleware.RequireMinimumRole("staff"), productHandler.UpdateProduct)
 			products.DELETE("/:id", middleware.RequireMinimumRole("manager"), productHandler.DeleteProduct)
@@ -150,10 +139,16 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			inventory.GET("", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetInventoryRecords)
 			inventory.POST("", middleware.RequireMinimumRole("staff"), inventoryHandler.CreateInventoryRecord)
 			inventory.POST("/adjust", middleware.RequireMinimumRole("staff"), inventoryHandler.AdjustStock)
-			inventory.POST("/transfer", middleware.RequireMinimumRole("staff"), inventoryHandler.TransferStock)
 			inventory.GET("/low-stock", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetLowStockItems)
 			inventory.GET("/zero-stock", middleware.RequireMinimumRole("viewer"), inventoryHandler.GetZeroStockItems)
 			inventory.PUT("/reorder-levels", middleware.RequireMinimumRole("manager"), inventoryHandler.UpdateReorderLevels)
+		}
+
+		// POS routes (protected)
+		pos := v1.Group("/pos")
+		pos.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			pos.GET("/lookup", middleware.RequireMinimumRole("staff"), productHandler.POSLookup)
 		}
 
 		// Audit and reporting routes (protected)

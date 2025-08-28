@@ -637,8 +637,13 @@ func (h *ProductHandler) convertToResponseList(products []*models.Product) []dto
 func (h *ProductHandler) convertInventoryToResponse(inventoryList []*models.Inventory) []dto.ProductInventoryResponse {
 	responses := make([]dto.ProductInventoryResponse, len(inventoryList))
 	for i, inv := range inventoryList {
+		var locationID uuid.UUID
+		if inv.LocationID != nil {
+			locationID = *inv.LocationID
+		}
+		
 		response := dto.ProductInventoryResponse{
-			LocationID:        inv.LocationID,
+			LocationID:        locationID,
 			Quantity:          inv.Quantity,
 			ReservedQuantity:  inv.ReservedQuantity,
 			AvailableQuantity: inv.AvailableQuantity(),
@@ -647,11 +652,159 @@ func (h *ProductHandler) convertInventoryToResponse(inventoryList []*models.Inve
 		}
 
 		// Include location name if loaded
-		if inv.Location.ID != uuid.Nil {
+		if inv.LocationID != nil && inv.Location != nil && inv.Location.ID != uuid.Nil {
 			response.LocationName = inv.Location.Name
 		}
 
 		responses[i] = response
 	}
 	return responses
+}
+
+// POSLookup godoc
+// @Summary POS product lookup
+// @Description Search products for POS by barcode, SKU, or name
+// @Tags pos
+// @Accept json
+// @Produce json
+// @Param q query string true "Search query (barcode, SKU, or name)"
+// @Success 200 {object} dto.POSLookupResponse "Products found"
+// @Failure 400 {object} dto.ErrorResponse "Invalid query"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /pos/lookup [get]
+func (h *ProductHandler) POSLookup(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Missing query",
+			Message: "Search query is required",
+		})
+		return
+	}
+
+	ctx := c.Request.Context()
+	
+	// Search products by the query (could be barcode, SKU, or name)
+	products, err := h.productService.SearchProducts(ctx, query, 10, 0)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to search products",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// Convert to POS format with inventory data
+	posProducts := make([]dto.POSProduct, 0, len(products))
+	for _, product := range products {
+		// Get inventory for this product
+		inventory, err := h.inventoryService.GetInventoryByProduct(ctx, product.ID)
+		if err != nil {
+			continue // Skip products with inventory errors
+		}
+
+		var totalQuantity int
+		for _, inv := range inventory {
+			totalQuantity += inv.Quantity
+		}
+
+		posProduct := dto.POSProduct{
+			ID:          product.ID,
+			SKU:         product.SKU,
+			Name:        product.Name,
+			Barcode:     product.Barcode,
+			RetailPrice: product.RetailPrice,
+			CostPrice:   product.CostPrice,
+			Quantity:    totalQuantity,
+			TaxCategory: "standard", // Default tax category for hardware store
+			QuickSale:   false,      // Default to false
+			IsActive:    product.IsActive,
+		}
+		
+		posProducts = append(posProducts, posProduct)
+	}
+
+	response := dto.POSLookupResponse{
+		Success: true,
+		Message: "Products found successfully",
+		Data:    posProducts,
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// GetPOSReady godoc
+// @Summary Get POS-ready products
+// @Description Get all active products formatted for POS use
+// @Tags pos
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Items per page" default(20)
+// @Success 200 {object} dto.ApiResponse{data=[]dto.POSProduct} "POS products"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /products/pos-ready [get]
+func (h *ProductHandler) GetPOSReady(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+
+	offset := (page - 1) * limit
+	ctx := c.Request.Context()
+
+	// Get active products only
+	products, err := h.productService.ListProducts(ctx, limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to fetch products",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// Filter active products and convert to POS format
+	posProducts := make([]dto.POSProduct, 0)
+	for _, product := range products {
+		if !product.IsActive {
+			continue // Skip inactive products
+		}
+
+		// Get inventory for this product
+		inventory, err := h.inventoryService.GetInventoryByProduct(ctx, product.ID)
+		if err != nil {
+			continue // Skip products with inventory errors
+		}
+
+		var totalQuantity int
+		for _, inv := range inventory {
+			totalQuantity += inv.Quantity
+		}
+
+		posProduct := dto.POSProduct{
+			ID:          product.ID,
+			SKU:         product.SKU,
+			Name:        product.Name,
+			Barcode:     product.Barcode,
+			RetailPrice: product.RetailPrice,
+			CostPrice:   product.CostPrice,
+			Quantity:    totalQuantity,
+			TaxCategory: "standard",
+			QuickSale:   false,
+			IsActive:    product.IsActive,
+		}
+		
+		posProducts = append(posProducts, posProduct)
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "POS products retrieved successfully",
+		Data:    posProducts,
+	})
 }

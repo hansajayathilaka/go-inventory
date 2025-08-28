@@ -73,25 +73,19 @@ func (ctx *Context) seedUsers(ctxBg context.Context) error {
 }
 
 func (ctx *Context) seedLocations(ctxBg context.Context) error {
-	// Check if locations already exist
-	if count, _ := ctx.LocationRepo.Count(ctxBg); count > 0 {
-		log.Println("Locations already exist, skipping location seeding")
+	// Check if default hardware store location already exists
+	if _, err := ctx.LocationRepo.GetByID(ctxBg, models.GetDefaultLocationID()); err == nil {
+		log.Println("Default hardware store location already exists, skipping location seeding")
 		return nil
 	}
 	
-	locations := []models.Location{
-		{Name: "Main Warehouse", Code: "WH001", Type: models.LocationWarehouse, Address: "123 Industrial Ave", Description: "Primary storage facility"},
-		{Name: "Retail Store", Code: "ST001", Type: models.LocationStore, Address: "456 Main Street", Description: "Customer-facing store"},
-		{Name: "Online Inventory", Code: "ON001", Type: models.LocationOnline, Description: "Online sales inventory"},
+	// Create single default hardware store location
+	location := models.GetDefaultLocation()
+	if err := ctx.LocationRepo.Create(ctxBg, location); err != nil {
+		return fmt.Errorf("failed to seed default hardware store location: %w", err)
 	}
 	
-	for _, location := range locations {
-		if err := ctx.LocationRepo.Create(ctxBg, &location); err != nil {
-			return fmt.Errorf("failed to create location %s: %w", location.Name, err)
-		}
-		log.Printf("Created location: %s (%s)", location.Name, location.Code)
-	}
-	
+	log.Printf("Seeded default hardware store location: %s", location.Name)
 	return nil
 }
 
@@ -217,10 +211,9 @@ func (ctx *Context) seedInventory(ctxBg context.Context) error {
 		return fmt.Errorf("failed to get products: %w", err)
 	}
 	
-	locations, err := ctx.LocationRepo.List(ctxBg, 10, 0)
-	if err != nil {
-		return fmt.Errorf("failed to get locations: %w", err)
-	}
+	// For single hardware store, use default location only
+	defaultLocation := models.GetDefaultLocation()
+	locations := []*models.Location{defaultLocation}
 	
 	if len(products) == 0 || len(locations) == 0 {
 		return fmt.Errorf("need products and locations for inventory seeding")

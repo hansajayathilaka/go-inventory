@@ -9,10 +9,10 @@ import (
 
 type Inventory struct {
 	ID               uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ProductID        uuid.UUID      `gorm:"type:uuid;not null;index" json:"product_id"`
+	ProductID        uuid.UUID      `gorm:"type:uuid;not null;uniqueIndex" json:"product_id"`
 	Product          Product        `gorm:"foreignKey:ProductID" json:"product"`
-	LocationID       uuid.UUID      `gorm:"type:uuid;not null;index" json:"location_id"`
-	Location         Location       `gorm:"foreignKey:LocationID" json:"location"`
+	LocationID       *uuid.UUID     `gorm:"type:uuid;index" json:"location_id,omitempty"`
+	Location         *Location      `gorm:"foreignKey:LocationID" json:"location,omitempty"`
 	Quantity         int            `gorm:"not null;default:0" json:"quantity"`
 	ReservedQuantity int            `gorm:"not null;default:0" json:"reserved_quantity"`
 	ReorderLevel     int            `gorm:"not null;default:0" json:"reorder_level"`
@@ -38,4 +38,8 @@ func (i *Inventory) IsLowStock() bool {
 func (i *Inventory) BeforeUpdate(tx *gorm.DB) error {
 	i.LastUpdated = time.Now()
 	return nil
+}
+
+func GetDefaultLocationID() uuid.UUID {
+	return uuid.MustParse("00000000-0000-0000-0000-000000000001")
 }
