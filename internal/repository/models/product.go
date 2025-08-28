@@ -16,6 +16,8 @@ type Product struct {
 	Category      Category       `gorm:"foreignKey:CategoryID" json:"category"`
 	SupplierID    *uuid.UUID     `gorm:"type:uuid;index" json:"supplier_id,omitempty"`
 	Supplier      *Supplier      `gorm:"foreignKey:SupplierID" json:"supplier,omitempty"`
+	BrandID       *uuid.UUID     `gorm:"type:uuid;index" json:"brand_id,omitempty"`
+	Brand         *Brand         `gorm:"foreignKey:BrandID" json:"brand,omitempty"`
 	CostPrice     float64        `gorm:"type:decimal(10,2);not null;default:0" json:"cost_price"`
 	RetailPrice   float64        `gorm:"type:decimal(10,2);not null;default:0" json:"retail_price"`
 	WholesalePrice float64       `gorm:"type:decimal(10,2);not null;default:0" json:"wholesale_price"`

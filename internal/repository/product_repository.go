@@ -23,7 +23,7 @@ func (r *productRepository) Create(ctx context.Context, product *models.Product)
 
 func (r *productRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Product, error) {
 	var product models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").First(&product, id).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").First(&product, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (r *productRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.
 
 func (r *productRepository) GetBySKU(ctx context.Context, sku string) (*models.Product, error) {
 	var product models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("sku = ?", sku).First(&product).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("sku = ?", sku).First(&product).Error
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *productRepository) GetBySKU(ctx context.Context, sku string) (*models.P
 
 func (r *productRepository) GetByBarcode(ctx context.Context, barcode string) (*models.Product, error) {
 	var product models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("barcode = ?", barcode).First(&product).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("barcode = ?", barcode).First(&product).Error
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (r *productRepository) GetByBarcode(ctx context.Context, barcode string) (*
 
 func (r *productRepository) GetByName(ctx context.Context, name string) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("name ILIKE ?", "%"+name+"%").Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("name ILIKE ?", "%"+name+"%").Find(&products).Error
 	return products, err
 }
 
@@ -64,25 +64,31 @@ func (r *productRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *productRepository) List(ctx context.Context, limit, offset int) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Limit(limit).Offset(offset).Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Limit(limit).Offset(offset).Find(&products).Error
 	return products, err
 }
 
 func (r *productRepository) GetByCategory(ctx context.Context, categoryID uuid.UUID) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("category_id = ?", categoryID).Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("category_id = ?", categoryID).Find(&products).Error
 	return products, err
 }
 
 func (r *productRepository) GetBySupplier(ctx context.Context, supplierID uuid.UUID) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("supplier_id = ?", supplierID).Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("supplier_id = ?", supplierID).Find(&products).Error
+	return products, err
+}
+
+func (r *productRepository) GetByBrand(ctx context.Context, brandID uuid.UUID) ([]*models.Product, error) {
+	var products []*models.Product
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("brand_id = ?", brandID).Find(&products).Error
 	return products, err
 }
 
 func (r *productRepository) GetActive(ctx context.Context) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Where("is_active = ?", true).Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("is_active = ?", true).Find(&products).Error
 	return products, err
 }
 
@@ -92,6 +98,7 @@ func (r *productRepository) Search(ctx context.Context, query string, limit, off
 	err := r.db.WithContext(ctx).
 		Preload("Category").
 		Preload("Supplier").
+		Preload("Brand").
 		Where("name ILIKE ? OR sku ILIKE ? OR barcode ILIKE ? OR description ILIKE ?", 
 			searchQuery, searchQuery, searchQuery, searchQuery).
 		Limit(limit).
