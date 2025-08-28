@@ -87,9 +87,7 @@ func (r *vehicleBrandRepository) Search(ctx context.Context, query string, limit
 
 func (r *vehicleBrandRepository) GetWithModels(ctx context.Context, id uuid.UUID) (*models.VehicleBrand, error) {
 	var vehicleBrand models.VehicleBrand
-	// TODO: Uncomment when VehicleModel is implemented
-	// err := r.db.WithContext(ctx).Preload("VehicleModels").First(&vehicleBrand, id).Error
-	err := r.db.WithContext(ctx).First(&vehicleBrand, id).Error
+	err := r.db.WithContext(ctx).Preload("VehicleModels").First(&vehicleBrand, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +96,6 @@ func (r *vehicleBrandRepository) GetWithModels(ctx context.Context, id uuid.UUID
 
 func (r *vehicleBrandRepository) ListWithModels(ctx context.Context, limit, offset int) ([]*models.VehicleBrand, error) {
 	var vehicleBrands []*models.VehicleBrand
-	// TODO: Uncomment when VehicleModel is implemented
-	// err := r.db.WithContext(ctx).Preload("VehicleModels").Limit(limit).Offset(offset).Find(&vehicleBrands).Error
-	err := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&vehicleBrands).Error
+	err := r.db.WithContext(ctx).Preload("VehicleModels").Limit(limit).Offset(offset).Find(&vehicleBrands).Error
 	return vehicleBrands, err
 }

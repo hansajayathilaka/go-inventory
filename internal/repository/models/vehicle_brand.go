@@ -19,8 +19,8 @@ type VehicleBrand struct {
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 
-	// Relationships - VehicleModels will be added in next step
-	// VehicleModels []VehicleModel `gorm:"foreignKey:VehicleBrandID" json:"vehicle_models,omitempty"`
+	// Relationships
+	VehicleModels []VehicleModel `gorm:"foreignKey:VehicleBrandID" json:"vehicle_models,omitempty"`
 }
 
 func (VehicleBrand) TableName() string {
