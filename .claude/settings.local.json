@@ -48,7 +48,8 @@
       "Bash(cp:*)",
       "Bash(sudo netstat:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
