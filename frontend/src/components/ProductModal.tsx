@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Package, DollarSign, Loader } from 'lucide-react';
-import type { Product, Category, Supplier, ApiResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
+import type { Product, Category, Supplier, Brand, ApiResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
 import { api } from '../services/api';
 
 interface ProductFormData {
@@ -9,6 +9,7 @@ interface ProductFormData {
   description: string;
   category_id: string;
   supplier_id: string;
+  brand_id: string;
   cost_price: number;
   retail_price: number;
   wholesale_price?: number;
@@ -39,6 +40,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     description: '',
     category_id: '',
     supplier_id: '',
+    brand_id: '',
     cost_price: 0,
     retail_price: 0,
     wholesale_price: 0,
@@ -50,6 +52,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -93,10 +96,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     }
   }, []);
 
+  const fetchBrands = useCallback(async () => {
+    try {
+      const response = await api.brands.getActive();
+      if (response.data.success) {
+        setBrands(response.data.data.data.filter((b: Brand) => b.is_active));
+      }
+    } catch (err) {
+      console.error('Error fetching brands:', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      Promise.all([fetchCategories(), fetchSuppliers()]).finally(() => {
+      Promise.all([fetchCategories(), fetchSuppliers(), fetchBrands()]).finally(() => {
         setLoading(false);
       });
 
@@ -108,6 +122,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           description: product.description,
           category_id: product.category_id,
           supplier_id: product.supplier_id || '',
+          brand_id: product.brand_id || '',
           cost_price: product.cost_price,
           retail_price: product.retail_price,
           wholesale_price: product.wholesale_price || 0,
@@ -124,6 +139,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           description: '',
           category_id: '',
           supplier_id: '',
+          brand_id: '',
           cost_price: 0,
           retail_price: 0,
           wholesale_price: 0,
@@ -135,7 +151,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       }
       setErrors({});
     }
-  }, [isOpen, product, fetchCategories, fetchSuppliers]);
+  }, [isOpen, product, fetchCategories, fetchSuppliers, fetchBrands]);
 
   // Auto-generate SKU when name changes (only for new products)
   useEffect(() => {
@@ -360,10 +376,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </div>
               </div>
 
-              {/* Category and Supplier */}
+              {/* Category, Supplier, and Brand */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Classification</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Category *
@@ -410,6 +426,32 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     {errors.supplier_id && (
                       <p className="mt-1 text-sm text-red-600">{errors.supplier_id}</p>
                     )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Brand
+                    </label>
+                    <select
+                      value={formData.brand_id}
+                      onChange={(e) => handleInputChange('brand_id', e.target.value)}
+                      className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.brand_id ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select a brand (optional)</option>
+                      {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name} ({brand.code})
+                        </option>
+                      ))}
+                    </select>
+                    {errors.brand_id && (
+                      <p className="mt-1 text-sm text-red-600">{errors.brand_id}</p>
+                    )}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Select the manufacturer/brand (e.g., Bosch, NGK, Castrol)
+                    </p>
                   </div>
                 </div>
               </div>

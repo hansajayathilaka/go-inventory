@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Grid, List, Package, Tag, Building2, Eye, Edit, Trash2 } from 'lucide-react';
-import type { Product, Category, Supplier, ProductFilters, ApiResponse, ProductListResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
+import type { Product, Category, Supplier, Brand, ProductFilters, ApiResponse, ProductListResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
 import { api } from '../services/api';
 
 interface ProductListProps {
@@ -17,6 +17,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -44,6 +45,7 @@ export const ProductList: React.FC<ProductListProps> = ({
         ...(search && { search }),
         ...(productFilters.category_id && { category_id: productFilters.category_id }),
         ...(productFilters.supplier_id && { supplier_id: productFilters.supplier_id }),
+        ...((productFilters as any).brand_id && { brand_id: (productFilters as any).brand_id }),
         ...(productFilters.status && { status: productFilters.status }),
         ...(productFilters.min_price && { min_price: productFilters.min_price.toString() }),
         ...(productFilters.max_price && { max_price: productFilters.max_price.toString() })
@@ -90,11 +92,23 @@ export const ProductList: React.FC<ProductListProps> = ({
     }
   }, []);
 
+  const fetchBrands = useCallback(async () => {
+    try {
+      const response = await api.brands.getActive();
+      if (response.data.success) {
+        setBrands(response.data.data.data.filter((b: Brand) => b.is_active));
+      }
+    } catch (err) {
+      console.error('Error fetching brands:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
     fetchSuppliers();
-  }, [fetchProducts, fetchCategories, fetchSuppliers]);
+    fetchBrands();
+  }, [fetchProducts, fetchCategories, fetchSuppliers, fetchBrands]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +168,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               {product.description}
             </p>
 
-            {/* Category and Supplier */}
+            {/* Category, Supplier, and Brand */}
             <div className="space-y-1 mb-3">
               {product.category && (
                 <div className="flex items-center text-xs text-gray-500">
@@ -166,6 +180,12 @@ export const ProductList: React.FC<ProductListProps> = ({
                 <div className="flex items-center text-xs text-gray-500">
                   <Building2 className="h-3 w-3 mr-1" />
                   <span className="truncate">{product.supplier.name}</span>
+                </div>
+              )}
+              {product.brand && (
+                <div className="flex items-center text-xs text-gray-500">
+                  <Tag className="h-3 w-3 mr-1" />
+                  <span className="truncate">Brand: {product.brand.name}</span>
                 </div>
               )}
             </div>
@@ -235,6 +255,9 @@ export const ProductList: React.FC<ProductListProps> = ({
               Supplier
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Brand
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Pricing
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -260,6 +283,9 @@ export const ProductList: React.FC<ProductListProps> = ({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {product.supplier?.name || '-'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {product.brand?.name || '-'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <div>
@@ -460,7 +486,7 @@ export const ProductList: React.FC<ProductListProps> = ({
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-gray-50 rounded-lg p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -494,6 +520,25 @@ export const ProductList: React.FC<ProductListProps> = ({
                 {suppliers.map((supplier) => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Brand Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Brand
+              </label>
+              <select
+                value={(filters as any).brand_id || ''}
+                onChange={(e) => handleFilterChange({ brand_id: e.target.value || undefined } as any)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Brands</option>
+                {brands.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
                   </option>
                 ))}
               </select>

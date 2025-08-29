@@ -154,4 +154,70 @@ export const api = {
       tax_rate?: number;
     }) => apiClient.put('/store/settings', data),
   },
+
+  // Brand Management
+  brands: {
+    // List all brands with pagination and filtering
+    list: (params?: { 
+      page?: number; 
+      limit?: number; 
+      search?: string;
+      is_active?: boolean;
+      country_code?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      if (params?.country_code) searchParams.append('country_code', params.country_code);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/brands${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get active brands for dropdowns
+    getActive: () => apiClient.get('/brands?is_active=true&limit=1000'),
+
+    // Get single brand by ID
+    getById: (id: string) => apiClient.get(`/brands/${id}`),
+
+    // Create new brand
+    create: (data: {
+      name: string;
+      code?: string;
+      description?: string;
+      website?: string;
+      country_code?: string;
+      logo_url?: string;
+    }) => apiClient.post('/brands', data),
+
+    // Update existing brand
+    update: (id: string, data: {
+      name?: string;
+      code?: string;
+      description?: string;
+      website?: string;
+      country_code?: string;
+      logo_url?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/brands/${id}`, data),
+
+    // Delete brand
+    delete: (id: string) => apiClient.delete(`/brands/${id}`),
+
+    // Activate brand
+    activate: (id: string) => apiClient.put(`/brands/${id}/activate`),
+
+    // Deactivate brand
+    deactivate: (id: string) => apiClient.put(`/brands/${id}/deactivate`),
+
+    // Get brands by country
+    getByCountry: (countryCode: string) => 
+      apiClient.get(`/brands?country_code=${countryCode}&is_active=true`),
+
+    // Search brands
+    search: (query: string) => 
+      apiClient.get(`/brands?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
+  },
 };
