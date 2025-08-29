@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"inventory-api/internal/repository/models"
 )
 
 // ProductCreateRequest represents the request to create a product
@@ -100,4 +101,31 @@ type ProductInventoryResponse struct {
 	AvailableQuantity int      `json:"available_quantity" example:"45"`
 	ReorderLevel     int       `json:"reorder_level" example:"10"`
 	MaxLevel         int       `json:"max_level" example:"100"`
+}
+
+// ToProductResponse converts a product model to response DTO
+func ToProductResponse(product *models.Product) ProductResponse {
+	response := ProductResponse{
+		ID:             product.ID,
+		SKU:            product.SKU,
+		Name:           product.Name,
+		Description:    product.Description,
+		CategoryID:     product.CategoryID,
+		SupplierID:     product.SupplierID,
+		CostPrice:      product.CostPrice,
+		RetailPrice:    product.RetailPrice,
+		WholesalePrice: product.WholesalePrice,
+		Barcode:        product.Barcode,
+		Weight:         product.Weight,
+		Dimensions:     product.Dimensions,
+		IsActive:       product.IsActive,
+		CreatedAt:      product.CreatedAt,
+		UpdatedAt:      product.UpdatedAt,
+	}
+
+	// Note: Category and Supplier relationships are not included here
+	// to avoid circular dependencies and complexity. They should be loaded
+	// separately when needed through dedicated endpoints.
+
+	return response
 }

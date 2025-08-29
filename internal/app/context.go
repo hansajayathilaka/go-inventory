@@ -5,6 +5,7 @@ import (
 
 	"inventory-api/internal/business/audit"
 	"inventory-api/internal/business/brand"
+	"inventory-api/internal/business/compatibility"
 	"inventory-api/internal/business/customer"
 	"inventory-api/internal/business/hierarchy"
 	"inventory-api/internal/business/inventory"
@@ -40,16 +41,17 @@ type Context struct {
 	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
 	// Services
-	UserService      user.Service
-	SupplierService  supplier.Service
-	CustomerService  customer.Service
-	BrandService     brand.Service
-	VehicleService   vehicle.Service
-	PurchaseService  purchase.Service
-	ProductService   product.Service
-	HierarchyService hierarchy.Service
-	InventoryService inventory.Service
-	AuditService     audit.Service
+	UserService         user.Service
+	SupplierService     supplier.Service
+	CustomerService     customer.Service
+	BrandService        brand.Service
+	VehicleService      vehicle.Service
+	PurchaseService     purchase.Service
+	ProductService      product.Service
+	HierarchyService    hierarchy.Service
+	InventoryService    inventory.Service
+	AuditService        audit.Service
+	CompatibilityService compatibility.Service
 }
 
 func NewContext() (*Context, error) {
@@ -131,6 +133,11 @@ func (ctx *Context) initServices() {
 		ctx.ProductRepo,
 	)
 	ctx.AuditService = audit.NewService(ctx.AuditLogRepo, ctx.UserRepo)
+	ctx.CompatibilityService = compatibility.NewService(
+		ctx.VehicleCompatibilityRepo,
+		ctx.ProductRepo,
+		ctx.VehicleModelRepo,
+	)
 }
 
 func (ctx *Context) Close() error {

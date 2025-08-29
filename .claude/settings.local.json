@@ -49,7 +49,8 @@
       "Bash(sudo netstat:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []
