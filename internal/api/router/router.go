@@ -72,6 +72,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		vehicleBrandHandler := handlers.NewVehicleBrandHandler(appCtx.VehicleService)
 		vehicleModelHandler := handlers.NewVehicleModelHandler(appCtx.VehicleService)
 		purchaseOrderHandler := handlers.NewPurchaseOrderHandler(appCtx.PurchaseService)
+		grnHandler := handlers.NewGRNHandler(appCtx.PurchaseService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -102,6 +103,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.GET("/:id", middleware.RequireMinimumRole("viewer"), supplierHandler.GetSupplier)
 			suppliers.PUT("/:id", middleware.RequireMinimumRole("manager"), supplierHandler.UpdateSupplier)
 			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
+			suppliers.GET("/:supplier_id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsBySupplier)
 		}
 
 		// Customer management routes (protected)
@@ -193,6 +195,33 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			purchaseOrders.POST("/:id/items", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.AddPurchaseOrderItem)
 			purchaseOrders.PUT("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrderItem)
 			purchaseOrders.DELETE("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.RemovePurchaseOrderItem)
+			
+			// GRN relationship routes
+			purchaseOrders.GET("/:purchase_order_id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsByPurchaseOrder)
+		}
+
+		// GRN (Goods Received Note) management routes (protected)
+		grns := v1.Group("/grns")
+		grns.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			// Basic CRUD operations
+			grns.GET("", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNs)
+			grns.POST("", middleware.RequireMinimumRole("staff"), grnHandler.CreateGRN)
+			grns.GET("/number/:grn_number", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNByNumber)
+			grns.GET("/:id", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRN)
+			grns.PUT("/:id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRN)
+			grns.DELETE("/:id", middleware.RequireMinimumRole("manager"), grnHandler.DeleteGRN)
+			
+			// Processing operations
+			grns.POST("/:id/process-receipt", middleware.RequireMinimumRole("staff"), grnHandler.ProcessGRNReceipt)
+			grns.POST("/:id/verify", middleware.RequireMinimumRole("manager"), grnHandler.VerifyGRN)
+			grns.POST("/:id/complete", middleware.RequireMinimumRole("manager"), grnHandler.CompleteGRN)
+			
+			// Item management operations
+			grns.GET("/:id/items", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNItems)
+			grns.POST("/:id/items", middleware.RequireMinimumRole("staff"), grnHandler.AddGRNItem)
+			grns.PUT("/:grn_id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRNItem)
+			grns.DELETE("/:grn_id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.RemoveGRNItem)
 		}
 
 		// Category management routes (protected)
