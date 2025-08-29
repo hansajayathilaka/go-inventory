@@ -338,6 +338,39 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
     type: object
+  dto.BrandResponse:
+    properties:
+      code:
+        example: BOSCH
+        type: string
+      country_code:
+        example: DE
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      description:
+        example: German automotive parts manufacturer
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      logo_url:
+        example: https://example.com/logos/bosch.png
+        type: string
+      name:
+        example: Bosch
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      website:
+        example: https://www.bosch.com
+        type: string
+    type: object
   dto.CategoryStockSummary:
     properties:
       category_id:
@@ -348,6 +381,36 @@ definitions:
         type: integer
       total_value:
         type: number
+    type: object
+  dto.CreateBrandRequest:
+    properties:
+      code:
+        example: BOSCH
+        maxLength: 20
+        type: string
+      country_code:
+        example: DE
+        maxLength: 10
+        type: string
+      description:
+        example: German automotive parts manufacturer
+        maxLength: 500
+        type: string
+      logo_url:
+        example: https://example.com/logos/bosch.png
+        maxLength: 500
+        type: string
+      name:
+        example: Bosch
+        maxLength: 100
+        minLength: 1
+        type: string
+      website:
+        example: https://www.bosch.com
+        maxLength: 200
+        type: string
+    required:
+    - name
     type: object
   dto.CreateCustomerRequest:
     properties:
@@ -972,6 +1035,37 @@ definitions:
         example: +1-555-0123
         type: string
     type: object
+  dto.UpdateBrandRequest:
+    properties:
+      code:
+        example: BOSCH2
+        maxLength: 20
+        type: string
+      country_code:
+        example: DE
+        maxLength: 10
+        type: string
+      description:
+        example: Updated description
+        maxLength: 500
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      logo_url:
+        example: https://example.com/logos/bosch-new.png
+        maxLength: 500
+        type: string
+      name:
+        example: Bosch Updated
+        maxLength: 100
+        minLength: 1
+        type: string
+      website:
+        example: https://www.bosch-updated.com
+        maxLength: 200
+        type: string
+    type: object
   dto.UpdateCustomerRequest:
     properties:
       address:
@@ -1353,6 +1447,395 @@ paths:
       summary: Refresh JWT token
       tags:
       - Authentication
+  /brands:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of brands with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name or code
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Filter by country code
+        in: query
+        name: country_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.BrandResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List brands
+      tags:
+      - Brands
+    post:
+      consumes:
+      - application/json
+      description: Create a new brand with the provided information
+      parameters:
+      - description: Brand creation request
+        in: body
+        name: brand
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBrandRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Create a new brand
+      tags:
+      - Brands
+  /brands/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a brand by their ID (soft delete)
+      parameters:
+      - description: Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Delete a brand
+      tags:
+      - Brands
+    get:
+      consumes:
+      - application/json
+      description: Get a specific brand by their ID
+      parameters:
+      - description: Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get brand by ID
+      tags:
+      - Brands
+    put:
+      consumes:
+      - application/json
+      description: Update an existing brand's information
+      parameters:
+      - description: Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Brand update request
+        in: body
+        name: brand
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateBrandRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Update a brand
+      tags:
+      - Brands
+  /brands/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate a deactivated brand
+      parameters:
+      - description: Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Activate a brand
+      tags:
+      - Brands
+  /brands/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active brand
+      parameters:
+      - description: Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Deactivate a brand
+      tags:
+      - Brands
+  /brands/active:
+    get:
+      consumes:
+      - application/json
+      description: Get all active brands
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.BrandResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List active brands
+      tags:
+      - Brands
+  /brands/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific brand by their code
+      parameters:
+      - description: Brand code
+        example: '"BOSCH"'
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get brand by code
+      tags:
+      - Brands
+  /brands/generate-code:
+    get:
+      consumes:
+      - application/json
+      description: Generate a unique brand code based on brand name
+      parameters:
+      - description: Brand name
+        example: '"Bosch"'
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Generate brand code
+      tags:
+      - Brands
   /categories:
     get:
       consumes:

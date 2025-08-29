@@ -68,6 +68,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			appCtx.CategoryRepo,
 		)
 		customerHandler := handlers.NewCustomerHandler(appCtx.CustomerService)
+		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -116,6 +117,21 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			customers.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), customerHandler.DeactivateCustomer)
 		}
 
+		// Brand management routes (protected)
+		brands := v1.Group("/brands")
+		brands.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			brands.GET("", middleware.RequireMinimumRole("viewer"), brandHandler.GetBrands)
+			brands.POST("", middleware.RequireMinimumRole("staff"), brandHandler.CreateBrand)
+			brands.GET("/active", middleware.RequireMinimumRole("viewer"), brandHandler.GetActiveBrands)
+			brands.GET("/generate-code", middleware.RequireMinimumRole("staff"), brandHandler.GenerateBrandCode)
+			brands.GET("/code/:code", middleware.RequireMinimumRole("viewer"), brandHandler.GetBrandByCode)
+			brands.GET("/:id", middleware.RequireMinimumRole("viewer"), brandHandler.GetBrand)
+			brands.PUT("/:id", middleware.RequireMinimumRole("staff"), brandHandler.UpdateBrand)
+			brands.DELETE("/:id", middleware.RequireMinimumRole("manager"), brandHandler.DeleteBrand)
+			brands.POST("/:id/activate", middleware.RequireMinimumRole("staff"), brandHandler.ActivateBrand)
+			brands.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), brandHandler.DeactivateBrand)
+		}
 
 		// Category management routes (protected)
 		categories := v1.Group("/categories")
