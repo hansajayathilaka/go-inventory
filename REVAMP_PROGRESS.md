@@ -37,7 +37,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - [x] **Step 2.4**: Create PurchaseService (PO and GRN) ✅
 - [x] **Step 2.5**: Create CompatibilityService ✅
 - [x] **Step 2.6**: Update ProductService for brand integration ✅
-- [ ] **Step 2.7**: Update InventoryService for GRN integration
+- [x] **Step 2.7**: Update InventoryService for GRN integration ✅
 
 ### Phase 3: API Layer
 - [ ] **Step 3.1**: Create Customer API endpoints and handlers
@@ -60,9 +60,9 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - [ ] **Step 4.6**: Performance optimization
 
 ## Current Status
-- **Current Phase**: Phase 2 - Business Logic Layer
-- **Current Step**: Step 2.7 - Update InventoryService for GRN integration
-- **Next Step**: Ready to update InventoryService to integrate with GRN model and support purchase order goods receipt operations
+- **Current Phase**: Phase 3 - API Layer
+- **Current Step**: Step 3.1 - Create Customer API endpoints and handlers
+- **Next Step**: Ready to implement REST API endpoints for customer management with full CRUD operations and role-based access control
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -80,6 +80,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 2.4 (2025-08-29)**: PurchaseService business logic implementation with comprehensive PO and GRN management, status workflows, and testing
 - **Step 2.5 (2025-08-29)**: CompatibilityService business logic implementation with comprehensive vehicle-part compatibility management, verification, bulk operations, and testing
 - **Step 2.6 (2025-08-29)**: ProductService brand integration with brand validation, brand-related operations, and comprehensive testing
+- **Step 2.7 (2025-08-29)**: InventoryService GRN integration with comprehensive stock update operations, validation, and reversal capabilities for goods receipt processing
 
 ## Notes
 - Each step should be committed separately for better tracking
