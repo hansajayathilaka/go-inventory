@@ -10,7 +10,7 @@
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:8080
+// @host localhost:9090
 // @BasePath /api/v1
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
@@ -25,8 +25,8 @@ import (
 	"os"
 
 	_ "inventory-api/docs" // Import generated docs
-	"inventory-api/internal/app"
 	"inventory-api/internal/api/router"
+	"inventory-api/internal/app"
 )
 
 func main() {
@@ -54,7 +54,6 @@ func main() {
 		return
 	}
 
-	
 	// Initialize router with all routes and middleware (API + React)
 	r := router.SetupRouter(appCtx)
 
@@ -63,13 +62,13 @@ func main() {
 	fmt.Println("🚀 Single Executable Deployment")
 	fmt.Println("📦 React Frontend + Go API Backend")
 	fmt.Println()
-	fmt.Println("Server running on :8080")
-	fmt.Println("Web Interface: http://localhost:8080")
-	fmt.Println("API Base: http://localhost:8080/api/v1")
-	fmt.Println("Swagger UI: http://localhost:8080/docs/index.html")
+	fmt.Println("Server running on :9090")
+	fmt.Println("Web Interface: http://localhost:9090")
+	fmt.Println("API Base: http://localhost:9090/api/v1")
+	fmt.Println("Swagger UI: http://localhost:9090/docs/index.html")
 	fmt.Println()
 	fmt.Println("Perfect for hardware store inventory management!")
 	fmt.Println()
 
-	log.Fatal(r.Run(":8080"))
+	log.Fatal(r.Run(":9090"))
 }

@@ -31,10 +31,10 @@ type ServerConfig struct {
 }
 
 type SecurityConfig struct {
-	JWTSecret       string `mapstructure:"jwt_secret"`
-	PasswordMinLen  int    `mapstructure:"password_min_length"`
-	SessionTimeout  int    `mapstructure:"session_timeout_minutes"`
-	MaxLoginAttempts int   `mapstructure:"max_login_attempts"`
+	JWTSecret        string `mapstructure:"jwt_secret"`
+	PasswordMinLen   int    `mapstructure:"password_min_length"`
+	SessionTimeout   int    `mapstructure:"session_timeout_minutes"`
+	MaxLoginAttempts int    `mapstructure:"max_login_attempts"`
 }
 
 type LoggingConfig struct {
@@ -88,7 +88,7 @@ func setDefaults() {
 
 	// Server defaults
 	viper.SetDefault("server.host", "localhost")
-	viper.SetDefault("server.port", 8080)
+	viper.SetDefault("server.port", 9090)
 
 	// Security defaults
 	viper.SetDefault("security.jwt_secret", "your-secret-key-change-this")

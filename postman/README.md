@@ -21,7 +21,7 @@ This directory contains Postman collection and environment files for comprehensi
 ### 2. Setup Environment
 
 1. Select the **"Inventory API - Local"** environment in Postman
-2. Verify the `base_url` is set to `http://localhost:8080`
+2. Verify the `base_url` is set to `http://localhost:9090`
 3. Make sure your API server is running
 
 ### 3. Start Testing
@@ -180,7 +180,7 @@ The environment includes these variables:
 - Verify your credentials match the seeded database
 
 ### 404 Errors
-- Ensure the API server is running on port 8080
+- Ensure the API server is running on port 9090
 - Check that the base_url in environment is correct
 - Verify database is seeded with required data
 
@@ -217,6 +217,6 @@ The collection includes test scripts that:
 ## Support
 
 For issues with the API itself, refer to the Swagger documentation at:
-`http://localhost:8080/docs/index.html`
+`http://localhost:9090/docs/index.html`
 
 For Postman-specific questions, consult the Postman documentation.

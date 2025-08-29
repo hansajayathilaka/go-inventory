@@ -48,7 +48,7 @@ echo "✅ React built and copied for development!"
 echo ""
 
 # Start Go API server in background
-echo "🚀 Starting Go API server on :8080..."
+echo "🚀 Starting Go API server on :9090..."
 go run cmd/main.go &
 GO_PID=$!
 
@@ -56,15 +56,15 @@ GO_PID=$!
 sleep 2
 
 # Start React development server
-echo "🚀 Starting React development server on :3000..."
+echo "🚀 Starting React development server on :9000..."
 echo ""
 echo "📍 Development URLs:"
-echo "   React Dev Server: http://localhost:3000 (hot reload)"
-echo "   Go API Server:    http://localhost:8080 (API + static React)"
-echo "   API Docs:         http://localhost:8080/docs/index.html"
+echo "   React Dev Server: http://localhost:9000 (hot reload)"
+echo "   Go API Server:    http://localhost:9090 (API + static React)"
+echo "   API Docs:         http://localhost:9090/docs/index.html"
 echo ""
-echo "💡 Use React dev server (port 3000) for development with hot reload!"
-echo "💡 Use Go server (port 8080) to test the embedded version!"
+echo "💡 Use React dev server (port 9000) for development with hot reload!"
+echo "💡 Use Go server (port 9090) to test the embedded version!"
 echo ""
 echo "Press Ctrl+C to stop both servers..."
 echo ""

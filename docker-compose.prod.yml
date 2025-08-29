@@ -40,7 +40,7 @@ services:
       
       # Server configuration
       TUI_INVENTORY_SERVER_HOST: 0.0.0.0
-      TUI_INVENTORY_SERVER_PORT: 8080
+      TUI_INVENTORY_SERVER_PORT: 9090
       
       # Security configuration (use secrets)
       TUI_INVENTORY_SECURITY_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
@@ -141,7 +141,7 @@ services:
   grafana:
     restart: always
     ports:
-      - "127.0.0.1:3000:3000"  # Only accessible from localhost
+      - "127.0.0.1:9000:9000"  # Only accessible from localhost
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}
       GF_USERS_ALLOW_SIGN_UP: "false"

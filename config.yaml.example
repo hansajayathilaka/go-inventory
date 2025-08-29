@@ -10,7 +10,7 @@ database:
 
 server:
   host: "localhost"
-  port: 8080
+  port: 9090
 
 security:
   jwt_secret: "your-very-secure-secret-key-change-this-in-production"

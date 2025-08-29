@@ -141,7 +141,7 @@ go run cmd/main.go
 # Terminal 2: Start React development server
 cd frontend
 npm run dev
-# React: http://localhost:3000 -> Go API: http://localhost:8080
+# React: http://localhost:9000 -> Go API: http://localhost:9090
 
 # OR use development script:
 ./build/dev.sh
@@ -246,9 +246,9 @@ psql -h postgres -U inventory_user -d inventory_db
 - `/api/v1/audit-logs` - Audit trail and reporting
 
 ### API Documentation
-- **Swagger UI**: `http://localhost:8080/docs/index.html`
+- **Swagger UI**: `http://localhost:9090/docs/index.html`
 - **Health Check**: `GET /api/v1/health`
-- **Base URL**: `http://localhost:8080/api/v1`
+- **Base URL**: `http://localhost:9090/api/v1`
 
 ## Development Environment Setup
 

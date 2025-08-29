@@ -27,13 +27,13 @@ type PerformanceMetrics struct {
 
 // PerformanceMonitor tracks API performance
 type PerformanceMonitor struct {
-	baseURL     string
-	endpoints   []string
-	metrics     map[string]*PerformanceMetrics
-	mu          sync.RWMutex
-	authToken   string
-	duration    time.Duration
-	concurrent  int
+	baseURL    string
+	endpoints  []string
+	metrics    map[string]*PerformanceMetrics
+	mu         sync.RWMutex
+	authToken  string
+	duration   time.Duration
+	concurrent int
 }
 
 // NewPerformanceMonitor creates a new performance monitor
@@ -64,11 +64,11 @@ func (pm *PerformanceMonitor) authenticate() error {
 	}
 
 	jsonData, _ := json.Marshal(loginData)
-	
+
 	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Post(pm.baseURL+"/api/v1/auth/login", "application/json", 
+	resp, err := client.Post(pm.baseURL+"/api/v1/auth/login", "application/json",
 		strings.NewReader(string(jsonData)))
-	
+
 	if err != nil {
 		return fmt.Errorf("authentication failed: %v", err)
 	}
@@ -81,7 +81,7 @@ func (pm *PerformanceMonitor) authenticate() error {
 	var authResp struct {
 		Token string `json:"token"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
 		return fmt.Errorf("failed to decode auth response: %v", err)
 	}
@@ -93,7 +93,7 @@ func (pm *PerformanceMonitor) authenticate() error {
 // makeRequest makes an HTTP request and measures performance
 func (pm *PerformanceMonitor) makeRequest(method, endpoint string) (time.Duration, bool) {
 	start := time.Now()
-	
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	req, err := http.NewRequest(method, pm.baseURL+endpoint, nil)
 	if err != nil {
@@ -108,7 +108,7 @@ func (pm *PerformanceMonitor) makeRequest(method, endpoint string) (time.Duratio
 
 	resp, err := client.Do(req)
 	duration := time.Since(start)
-	
+
 	if err != nil {
 		return duration, false
 	}
@@ -121,12 +121,12 @@ func (pm *PerformanceMonitor) makeRequest(method, endpoint string) (time.Duratio
 // runTest runs performance tests for a specific endpoint
 func (pm *PerformanceMonitor) runTest(method, endpoint string, results chan<- time.Duration, errors chan<- bool) {
 	endTime := time.Now().Add(pm.duration)
-	
+
 	for time.Now().Before(endTime) {
 		duration, success := pm.makeRequest(method, endpoint)
 		results <- duration
 		errors <- !success
-		
+
 		// Small delay to prevent overwhelming the server
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -147,16 +147,16 @@ func (pm *PerformanceMonitor) Run() error {
 	fmt.Printf("🔑 Authentication successful\n\n")
 
 	var wg sync.WaitGroup
-	
+
 	for _, endpointSpec := range pm.endpoints {
 		parts := strings.SplitN(endpointSpec, ":", 2)
 		if len(parts) != 2 {
 			continue
 		}
-		
+
 		method, endpoint := parts[0], parts[1]
 		key := fmt.Sprintf("%s %s", method, endpoint)
-		
+
 		pm.mu.Lock()
 		pm.metrics[key] = &PerformanceMetrics{
 			Endpoint:        endpoint,
@@ -164,12 +164,12 @@ func (pm *PerformanceMonitor) Run() error {
 			MinResponseTime: time.Hour, // Initialize to large value
 		}
 		pm.mu.Unlock()
-		
+
 		fmt.Printf("🧪 Testing %s %s\n", method, endpoint)
-		
+
 		results := make(chan time.Duration, 1000)
 		errors := make(chan bool, 1000)
-		
+
 		// Start concurrent workers for this endpoint
 		for i := 0; i < pm.concurrent; i++ {
 			wg.Add(1)
@@ -178,16 +178,16 @@ func (pm *PerformanceMonitor) Run() error {
 				pm.runTest(method, endpoint, results, errors)
 			}()
 		}
-		
+
 		// Collect results for this endpoint
 		go func(key string) {
 			var totalDuration time.Duration
 			var requestCount int
 			var errorCount int
-			
+
 			// Collect results for the duration of the test
 			timeout := time.After(pm.duration + time.Second)
-			
+
 		collectLoop:
 			for {
 				select {
@@ -196,17 +196,17 @@ func (pm *PerformanceMonitor) Run() error {
 					metric := pm.metrics[key]
 					metric.TotalRequests++
 					totalDuration += duration
-					
+
 					if duration < metric.MinResponseTime {
 						metric.MinResponseTime = duration
 					}
 					if duration > metric.MaxResponseTime {
 						metric.MaxResponseTime = duration
 					}
-					
+
 					requestCount++
 					pm.mu.Unlock()
-					
+
 				case isError := <-errors:
 					if isError {
 						pm.mu.Lock()
@@ -218,12 +218,12 @@ func (pm *PerformanceMonitor) Run() error {
 						pm.metrics[key].SuccessRequests++
 						pm.mu.Unlock()
 					}
-					
+
 				case <-timeout:
 					break collectLoop
 				}
 			}
-			
+
 			// Calculate final metrics
 			pm.mu.Lock()
 			metric := pm.metrics[key]
@@ -237,13 +237,13 @@ func (pm *PerformanceMonitor) Run() error {
 			pm.mu.Unlock()
 		}(key)
 	}
-	
+
 	// Wait for all workers to complete
 	wg.Wait()
-	
+
 	// Give collectors time to finish
 	time.Sleep(2 * time.Second)
-	
+
 	return nil
 }
 
@@ -281,10 +281,10 @@ func (pm *PerformanceMonitor) SaveResults(filename string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	
+
 	results := struct {
-		Timestamp time.Time                       `json:"timestamp"`
-		Duration  time.Duration                   `json:"test_duration"`
+		Timestamp time.Time                      `json:"timestamp"`
+		Duration  time.Duration                  `json:"test_duration"`
 		BaseURL   string                         `json:"base_url"`
 		Metrics   map[string]*PerformanceMetrics `json:"metrics"`
 	}{
@@ -299,7 +299,7 @@ func (pm *PerformanceMonitor) SaveResults(filename string) error {
 
 func main() {
 	// Default values
-	baseURL := "http://localhost:8080"
+	baseURL := "http://localhost:9090"
 	duration := 30 * time.Second
 	concurrent := 5
 
@@ -330,17 +330,17 @@ func main() {
 	}
 
 	monitor := NewPerformanceMonitor(baseURL, duration, concurrent)
-	
+
 	if err := monitor.Run(); err != nil {
 		log.Fatalf("Performance monitoring failed: %v", err)
 	}
 
 	monitor.PrintResults()
-	
+
 	// Save results to file
 	timestamp := time.Now().Format("20060102_150405")
 	filename := fmt.Sprintf("performance_results_%s.json", timestamp)
-	
+
 	if err := monitor.SaveResults(filename); err != nil {
 		log.Printf("Failed to save results: %v", err)
 	} else {

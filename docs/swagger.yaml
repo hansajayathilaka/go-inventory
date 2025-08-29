@@ -512,6 +512,32 @@ definitions:
     - role
     - username
     type: object
+  dto.CreateVehicleBrandRequest:
+    properties:
+      code:
+        example: TOYT
+        maxLength: 20
+        type: string
+      country_code:
+        example: JP
+        maxLength: 10
+        type: string
+      description:
+        example: Japanese automotive manufacturer
+        maxLength: 500
+        type: string
+      logo_url:
+        example: https://example.com/logos/toyota.png
+        maxLength: 500
+        type: string
+      name:
+        example: Toyota
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
   dto.CustomerResponse:
     properties:
       address:
@@ -1150,6 +1176,33 @@ definitions:
         minLength: 3
         type: string
     type: object
+  dto.UpdateVehicleBrandRequest:
+    properties:
+      code:
+        example: TOYT2
+        maxLength: 20
+        type: string
+      country_code:
+        example: JP
+        maxLength: 10
+        type: string
+      description:
+        example: Updated description
+        maxLength: 500
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      logo_url:
+        example: https://example.com/logos/toyota-new.png
+        maxLength: 500
+        type: string
+      name:
+        example: Toyota Updated
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
   dto.UserResponse:
     properties:
       created_at:
@@ -1178,6 +1231,112 @@ definitions:
       username:
         example: john_doe
         type: string
+    type: object
+  dto.VehicleBrandResponse:
+    properties:
+      code:
+        example: TOYT
+        type: string
+      country_code:
+        example: JP
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      description:
+        example: Japanese automotive manufacturer
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      logo_url:
+        example: https://example.com/logos/toyota.png
+        type: string
+      name:
+        example: Toyota
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  dto.VehicleBrandWithModelsResponse:
+    properties:
+      code:
+        example: TOYT
+        type: string
+      country_code:
+        example: JP
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      description:
+        example: Japanese automotive manufacturer
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      logo_url:
+        example: https://example.com/logos/toyota.png
+        type: string
+      name:
+        example: Toyota
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      vehicle_models:
+        items:
+          $ref: '#/definitions/dto.VehicleModelResponse'
+        type: array
+    type: object
+  dto.VehicleModelResponse:
+    properties:
+      code:
+        example: TOYT-CAMR01
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      description:
+        example: Mid-size sedan
+        type: string
+      engine_size:
+        example: 2.5L
+        type: string
+      fuel_type:
+        example: PETROL
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: Camry
+        type: string
+      transmission:
+        example: AUTOMATIC
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      vehicle_brand_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      year_from:
+        example: 2020
+        type: integer
+      year_to:
+        example: 2024
+        type: integer
     type: object
   dto.ZeroStockItemResponse:
     properties:
@@ -1241,7 +1400,7 @@ definitions:
         example: 1.0.0
         type: string
     type: object
-host: localhost:8080
+host: localhost:9090
 info:
   contact:
     email: support@swagger.io
@@ -3748,6 +3907,477 @@ paths:
       summary: Update a user
       tags:
       - Users
+  /vehicle-brands:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of vehicle brands with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name or code
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Filter by country code
+        in: query
+        name: country_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VehicleBrandResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List vehicle brands
+      tags:
+      - Vehicle Brands
+    post:
+      consumes:
+      - application/json
+      description: Create a new vehicle brand with the provided information
+      parameters:
+      - description: Vehicle brand creation request
+        in: body
+        name: vehicle_brand
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateVehicleBrandRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Create a new vehicle brand
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a vehicle brand by their ID (soft delete)
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Delete a vehicle brand
+      tags:
+      - Vehicle Brands
+    get:
+      consumes:
+      - application/json
+      description: Get a specific vehicle brand by their ID
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get vehicle brand by ID
+      tags:
+      - Vehicle Brands
+    put:
+      consumes:
+      - application/json
+      description: Update an existing vehicle brand's information
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Vehicle brand update request
+        in: body
+        name: vehicle_brand
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateVehicleBrandRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Update a vehicle brand
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate a deactivated vehicle brand
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Activate a vehicle brand
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active vehicle brand
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Deactivate a vehicle brand
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/{id}/with-models:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific vehicle brand by their ID including all associated
+        vehicle models
+      parameters:
+      - description: Vehicle Brand ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandWithModelsResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get vehicle brand with models
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/active:
+    get:
+      consumes:
+      - application/json
+      description: Get all active vehicle brands
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VehicleBrandResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List active vehicle brands
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific vehicle brand by their code
+      parameters:
+      - description: Vehicle Brand code
+        example: '"TOYT"'
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VehicleBrandResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get vehicle brand by code
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/generate-code:
+    get:
+      consumes:
+      - application/json
+      description: Generate a unique vehicle brand code based on vehicle brand name
+      parameters:
+      - description: Vehicle Brand name
+        example: '"Toyota"'
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Generate vehicle brand code
+      tags:
+      - Vehicle Brands
+  /vehicle-brands/with-models:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of vehicle brands including all associated
+        vehicle models
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VehicleBrandWithModelsResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List vehicle brands with models
+      tags:
+      - Vehicle Brands
 securityDefinitions:
   ApiKeyAuth:
     description: Type "Bearer" followed by a space and JWT token.

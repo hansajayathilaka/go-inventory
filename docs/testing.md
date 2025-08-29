@@ -108,7 +108,7 @@ LOAD_TESTS=1 go test -v ./tests/performance/ -run=TestAPILoadTest -timeout=10m
 - ⚠️ Requires seeded test data
 
 ### Load Tests
-- ⚠️ Requires running API server on `localhost:8080`
+- ⚠️ Requires running API server on `localhost:9090`
 - ⚠️ Requires database setup
 
 ## Database Setup for Integration/Load Tests

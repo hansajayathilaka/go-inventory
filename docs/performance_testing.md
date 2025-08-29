@@ -196,7 +196,7 @@ Monitor generates JSON output with:
 {
   "timestamp": "2024-01-01T12:00:00Z",
   "test_duration": "30s",
-  "base_url": "http://localhost:8080",
+  "base_url": "http://localhost:9090",
   "metrics": {
     "GET /api/v1/health": {
       "total_requests": 1000,
@@ -302,7 +302,7 @@ go run tools/performance_monitor.go --extended \
 
 1. **Server not running**
    ```bash
-   curl http://localhost:8080/api/v1/health
+   curl http://localhost:9090/api/v1/health
    ```
 
 2. **Authentication failures**

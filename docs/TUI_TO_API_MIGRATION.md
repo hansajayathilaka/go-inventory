@@ -159,7 +159,7 @@ swag init -g cmd/main.go -o ./docs
 go run cmd/main.go
 
 # Access Swagger UI
-http://localhost:8080/docs/index.html
+http://localhost:9090/docs/index.html
 ```
 
 ## Progress Tracking
@@ -168,7 +168,7 @@ http://localhost:8080/docs/index.html
 - **Completed Phase 5:** 2025-08-26 ✅  
 - **Completed Phase 6:** 2025-08-26 ✅
 - **🎉 MIGRATION COMPLETED:** 2025-08-26
-- **Swagger UI Available:** ✅ http://localhost:8080/docs/index.html
+- **Swagger UI Available:** ✅ http://localhost:9090/docs/index.html
 - **APIs Implemented:** 48+ (Health + Complete User Management + Complete Categories + Complete Products + Complete Inventory + Complete Suppliers + Complete Locations + Complete Audit & Reporting)
 - **Advanced Features:** ✅ JWT Auth + RBAC + Rate Limiting + Validation + Error Handling + Versioning
 - **Testing Suite:** ✅ Integration Tests + Performance Tests + Postman Collection
@@ -176,7 +176,7 @@ http://localhost:8080/docs/index.html
 - **Production Ready:** ✅ Complete production deployment documentation and configurations
 
 ## Server Status
-- **Port:** 8080
+- **Port:** 9090
 - **Health Check:** GET /api/v1/health
 - **Swagger UI:** GET /docs/index.html
 - **CORS:** Enabled for all origins

@@ -13,12 +13,14 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "anthropic.claude-code",
         "golang.go",
         "ms-vscode.vscode-json",
         "bradlc.vscode-tailwindcss",
         "ms-vscode.hexeditor",
         "ms-vscode-remote.remote-containers",
-        "cweijan.vscode-postgresql-client2"
+        "ms-ossdata.vscode-pgsql",
+        "qwtel.sqlite-viewer"
       ],
       "settings": {
         "go.toolsManagement.checkForUpdates": "local",
@@ -32,10 +34,14 @@
     }
   },
 
-  "forwardPorts": [8080],
+  "forwardPorts": [9000, 9090],
   "portsAttributes": {
-    "8080": {
-      "label": "Application Port",
+    "9000": {
+      "label": "Application API Port",
+      "onAutoForward": "notify"
+    },
+    "9090": {
+      "label": "Application UI Port",
       "onAutoForward": "notify"
     }
   },
