@@ -290,10 +290,14 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			products.POST("", middleware.RequireMinimumRole("staff"), productHandler.CreateProduct)
 			products.GET("/search", middleware.RequireMinimumRole("viewer"), productHandler.SearchProducts)
 			products.GET("/pos-ready", middleware.RequireMinimumRole("viewer"), productHandler.GetPOSReady)
+			products.GET("/brand/:brand_id", middleware.RequireMinimumRole("viewer"), productHandler.GetProductsByBrand)
+			products.GET("/without-brand", middleware.RequireMinimumRole("viewer"), productHandler.GetProductsWithoutBrand)
 			products.GET("/:id", middleware.RequireMinimumRole("viewer"), productHandler.GetProduct)
 			products.PUT("/:id", middleware.RequireMinimumRole("staff"), productHandler.UpdateProduct)
 			products.DELETE("/:id", middleware.RequireMinimumRole("manager"), productHandler.DeleteProduct)
 			products.GET("/:id/inventory", middleware.RequireMinimumRole("viewer"), productHandler.GetProductInventory)
+			products.POST("/:id/brand", middleware.RequireMinimumRole("staff"), productHandler.SetProductBrand)
+			products.DELETE("/:id/brand", middleware.RequireMinimumRole("staff"), productHandler.RemoveProductBrand)
 		}
 
 		// Inventory management routes (protected)
