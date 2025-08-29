@@ -221,6 +221,73 @@ export const api = {
       apiClient.get(`/brands?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
   },
 
+  // Vehicle Brand Management
+  vehicleBrands: {
+    // List all vehicle brands with pagination and filtering
+    list: (params?: { 
+      page?: number; 
+      limit?: number; 
+      search?: string;
+      is_active?: boolean;
+      country_code?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      if (params?.country_code) searchParams.append('country_code', params.country_code);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-brands${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get active vehicle brands for dropdowns
+    getActive: () => apiClient.get('/vehicle-brands?is_active=true&limit=1000'),
+
+    // Get single vehicle brand by ID
+    getById: (id: string) => apiClient.get(`/vehicle-brands/${id}`),
+
+    // Get vehicle brand with models
+    getWithModels: (id: string) => apiClient.get(`/vehicle-brands/${id}/models`),
+
+    // Create new vehicle brand
+    create: (data: {
+      name: string;
+      code?: string;
+      description?: string;
+      country_code?: string;
+      logo_url?: string;
+    }) => apiClient.post('/vehicle-brands', data),
+
+    // Update existing vehicle brand
+    update: (id: string, data: {
+      name?: string;
+      code?: string;
+      description?: string;
+      country_code?: string;
+      logo_url?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/vehicle-brands/${id}`, data),
+
+    // Delete vehicle brand
+    delete: (id: string) => apiClient.delete(`/vehicle-brands/${id}`),
+
+    // Activate vehicle brand
+    activate: (id: string) => apiClient.put(`/vehicle-brands/${id}/activate`),
+
+    // Deactivate vehicle brand
+    deactivate: (id: string) => apiClient.put(`/vehicle-brands/${id}/deactivate`),
+
+    // Get vehicle brands by country
+    getByCountry: (countryCode: string) => 
+      apiClient.get(`/vehicle-brands?country_code=${countryCode}&is_active=true`),
+
+    // Search vehicle brands
+    search: (query: string) => 
+      apiClient.get(`/vehicle-brands?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
+  },
+
   // Customer Management
   customers: {
     // List all customers with pagination and filtering

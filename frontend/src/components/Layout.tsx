@@ -14,7 +14,8 @@ import {
   LogOut,
   User,
   ShoppingCart,
-  Tag
+  Tag,
+  Car
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -33,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Inventory', href: '/inventory', icon: Warehouse },
     { name: 'Customers', href: '/customers', icon: Users },
     { name: 'Part Brands', href: '/brands', icon: Tag },
+    { name: 'Vehicle Brands', href: '/vehicle-brands', icon: Car },
     { name: 'Suppliers', href: '/suppliers', icon: Truck },
     { name: 'Store Info', href: '/locations', icon: Store },
     { name: 'POS Ready', href: '/pos', icon: ShoppingCart, badge: 'Coming Soon' },

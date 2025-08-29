@@ -13,6 +13,7 @@ import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import CustomersPage from './pages/CustomersPage';
 import BrandsPage from './pages/BrandsPage';
+import VehicleBrandsPage from './pages/VehicleBrandsPage';
 import AuditPage from './pages/AuditPage';
 
 // Layout
@@ -142,6 +143,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <BrandsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/vehicle-brands"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <VehicleBrandsPage />
                   </Layout>
                 </ProtectedRoute>
               }
