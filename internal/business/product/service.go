@@ -18,6 +18,7 @@ var (
 	ErrBarcodeExists       = errors.New("barcode already exists")
 	ErrCategoryNotFound    = errors.New("category not found")
 	ErrSupplierNotFound    = errors.New("supplier not found")
+	ErrBrandNotFound       = errors.New("brand not found")
 )
 
 type Service interface {
@@ -30,26 +31,36 @@ type Service interface {
 	ListProducts(ctx context.Context, limit, offset int) ([]*models.Product, error)
 	GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]*models.Product, error)
 	GetProductsBySupplier(ctx context.Context, supplierID uuid.UUID) ([]*models.Product, error)
+	GetProductsByBrand(ctx context.Context, brandID uuid.UUID) ([]*models.Product, error)
 	SearchProducts(ctx context.Context, query string, limit, offset int) ([]*models.Product, error)
 	GetActiveProducts(ctx context.Context) ([]*models.Product, error)
 	CountProducts(ctx context.Context) (int64, error)
+	
+	// Brand integration methods
+	SetProductBrand(ctx context.Context, productID, brandID uuid.UUID) error
+	RemoveProductBrand(ctx context.Context, productID uuid.UUID) error
+	GetProductsWithoutBrand(ctx context.Context) ([]*models.Product, error)
+	CountProductsByBrand(ctx context.Context, brandID uuid.UUID) (int64, error)
 }
 
 type service struct {
 	productRepo  interfaces.ProductRepository
 	categoryRepo interfaces.CategoryRepository
 	supplierRepo interfaces.SupplierRepository
+	brandRepo    interfaces.BrandRepository
 }
 
 func NewService(
 	productRepo interfaces.ProductRepository,
 	categoryRepo interfaces.CategoryRepository,
 	supplierRepo interfaces.SupplierRepository,
+	brandRepo interfaces.BrandRepository,
 ) Service {
 	return &service{
 		productRepo:  productRepo,
 		categoryRepo: categoryRepo,
 		supplierRepo: supplierRepo,
+		brandRepo:    brandRepo,
 	}
 }
 
@@ -151,6 +162,16 @@ func (s *service) GetProductsBySupplier(ctx context.Context, supplierID uuid.UUI
 	return s.productRepo.GetBySupplier(ctx, supplierID)
 }
 
+func (s *service) GetProductsByBrand(ctx context.Context, brandID uuid.UUID) ([]*models.Product, error) {
+	// Verify brand exists
+	_, err := s.brandRepo.GetByID(ctx, brandID)
+	if err != nil {
+		return nil, ErrBrandNotFound
+	}
+
+	return s.productRepo.GetByBrand(ctx, brandID)
+}
+
 func (s *service) SearchProducts(ctx context.Context, query string, limit, offset int) ([]*models.Product, error) {
 	if strings.TrimSpace(query) == "" {
 		return []*models.Product{}, nil
@@ -209,5 +230,77 @@ func (s *service) validateProduct(ctx context.Context, product *models.Product, 
 		}
 	}
 
+	// Verify brand exists (if provided)
+	if product.BrandID != nil && *product.BrandID != uuid.Nil {
+		_, err := s.brandRepo.GetByID(ctx, *product.BrandID)
+		if err != nil {
+			return ErrBrandNotFound
+		}
+	}
+
 	return nil
+}
+
+// Brand integration methods
+func (s *service) SetProductBrand(ctx context.Context, productID, brandID uuid.UUID) error {
+	// Verify product exists
+	product, err := s.productRepo.GetByID(ctx, productID)
+	if err != nil {
+		return ErrProductNotFound
+	}
+
+	// Verify brand exists
+	_, err = s.brandRepo.GetByID(ctx, brandID)
+	if err != nil {
+		return ErrBrandNotFound
+	}
+
+	// Update product with brand
+	product.BrandID = &brandID
+	return s.productRepo.Update(ctx, product)
+}
+
+func (s *service) RemoveProductBrand(ctx context.Context, productID uuid.UUID) error {
+	// Verify product exists
+	product, err := s.productRepo.GetByID(ctx, productID)
+	if err != nil {
+		return ErrProductNotFound
+	}
+
+	// Remove brand from product
+	product.BrandID = nil
+	return s.productRepo.Update(ctx, product)
+}
+
+func (s *service) GetProductsWithoutBrand(ctx context.Context) ([]*models.Product, error) {
+	// Get all products and filter those without brands
+	allProducts, err := s.productRepo.GetActive(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var productsWithoutBrand []*models.Product
+	for _, product := range allProducts {
+		if product.BrandID == nil || *product.BrandID == uuid.Nil {
+			productsWithoutBrand = append(productsWithoutBrand, product)
+		}
+	}
+
+	return productsWithoutBrand, nil
+}
+
+func (s *service) CountProductsByBrand(ctx context.Context, brandID uuid.UUID) (int64, error) {
+	// Verify brand exists
+	_, err := s.brandRepo.GetByID(ctx, brandID)
+	if err != nil {
+		return 0, ErrBrandNotFound
+	}
+
+	// Get products by brand and count them
+	products, err := s.productRepo.GetByBrand(ctx, brandID)
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(len(products)), nil
 }
