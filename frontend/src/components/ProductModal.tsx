@@ -107,7 +107,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           name: product.name,
           description: product.description,
           category_id: product.category_id,
-          supplier_id: product.supplier_id,
+          supplier_id: product.supplier_id || '',
           cost_price: product.cost_price,
           retail_price: product.retail_price,
           wholesale_price: product.wholesale_price || 0,
