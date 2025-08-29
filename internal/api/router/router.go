@@ -70,6 +70,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		customerHandler := handlers.NewCustomerHandler(appCtx.CustomerService)
 		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)
 		vehicleBrandHandler := handlers.NewVehicleBrandHandler(appCtx.VehicleService)
+		vehicleModelHandler := handlers.NewVehicleModelHandler(appCtx.VehicleService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -150,6 +151,23 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			vehicleBrands.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleBrandHandler.DeleteVehicleBrand)
 			vehicleBrands.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.ActivateVehicleBrand)
 			vehicleBrands.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.DeactivateVehicleBrand)
+		}
+
+		// Vehicle Model management routes (protected)
+		vehicleModels := v1.Group("/vehicle-models")
+		vehicleModels.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			vehicleModels.GET("", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModels)
+			vehicleModels.POST("", middleware.RequireMinimumRole("staff"), vehicleModelHandler.CreateVehicleModel)
+			vehicleModels.GET("/active", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetActiveVehicleModels)
+			vehicleModels.GET("/generate-code", middleware.RequireMinimumRole("staff"), vehicleModelHandler.GenerateVehicleModelCode)
+			vehicleModels.GET("/code/:code", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModelByCode)
+			vehicleModels.GET("/brand/:brand_id", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModelsByBrand)
+			vehicleModels.GET("/:id", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModel)
+			vehicleModels.PUT("/:id", middleware.RequireMinimumRole("staff"), vehicleModelHandler.UpdateVehicleModel)
+			vehicleModels.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleModelHandler.DeleteVehicleModel)
+			vehicleModels.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.ActivateVehicleModel)
+			vehicleModels.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.DeactivateVehicleModel)
 		}
 
 		// Category management routes (protected)
