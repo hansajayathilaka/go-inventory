@@ -54,6 +54,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 		Description:    req.Description,
 		CategoryID:     req.CategoryID,
 		SupplierID:     req.SupplierID,
+		BrandID:        req.BrandID,
 		CostPrice:      req.CostPrice,
 		RetailPrice:    req.RetailPrice,
 		WholesalePrice: req.WholesalePrice,
@@ -115,6 +116,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 // @Param per_page query int false "Items per page" default(20)
 // @Param category_id query string false "Filter by category ID"
 // @Param supplier_id query string false "Filter by supplier ID"
+// @Param brand_id query string false "Filter by brand ID"
 // @Param is_active query boolean false "Filter by active status"
 // @Success 200 {object} dto.ApiResponse{data=dto.ProductListResponse} "Products retrieved successfully"
 // @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
@@ -169,6 +171,16 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 			return
 		}
 		products, err = h.productService.GetProductsBySupplier(c.Request.Context(), supplierID)
+	} else if brandIDStr := c.Query("brand_id"); brandIDStr != "" {
+		brandID, parseErr := uuid.Parse(brandIDStr)
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Error:   "Invalid brand ID",
+				Message: parseErr.Error(),
+			})
+			return
+		}
+		products, err = h.productService.GetProductsByBrand(c.Request.Context(), brandID)
 	} else if statusStr := c.Query("status"); statusStr == "active" {
 		products, err = h.productService.GetActiveProducts(c.Request.Context())
 	} else if statusStr := c.Query("status"); statusStr == "inactive" {
@@ -345,6 +357,9 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 	if req.SupplierID != nil {
 		product.SupplierID = req.SupplierID
+	}
+	if req.BrandID != nil {
+		product.BrandID = req.BrandID
 	}
 	if req.CostPrice != nil {
 		product.CostPrice = *req.CostPrice
@@ -586,6 +601,7 @@ func (h *ProductHandler) convertToResponse(product *models.Product) dto.ProductR
 		Description:    product.Description,
 		CategoryID:     product.CategoryID,
 		SupplierID:     product.SupplierID,
+		BrandID:        product.BrandID,
 		CostPrice:      product.CostPrice,
 		RetailPrice:    product.RetailPrice,
 		WholesalePrice: product.WholesalePrice,
@@ -620,6 +636,22 @@ func (h *ProductHandler) convertToResponse(product *models.Product) dto.ProductR
 			Email:    product.Supplier.Email,
 			Phone:    product.Supplier.Phone,
 			IsActive: product.Supplier.IsActive,
+		}
+	}
+
+	// Include brand info if loaded
+	if product.Brand != nil && product.Brand.ID != uuid.Nil {
+		response.Brand = &dto.BrandResponse{
+			ID:          product.Brand.ID,
+			Name:        product.Brand.Name,
+			Code:        product.Brand.Code,
+			Description: product.Brand.Description,
+			Website:     product.Brand.Website,
+			CountryCode: product.Brand.CountryCode,
+			LogoURL:     product.Brand.LogoURL,
+			IsActive:    product.Brand.IsActive,
+			CreatedAt:   product.Brand.CreatedAt,
+			UpdatedAt:   product.Brand.UpdatedAt,
 		}
 	}
 
@@ -806,5 +838,188 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 		Success: true,
 		Message: "POS products retrieved successfully",
 		Data:    posProducts,
+	})
+}
+
+// GetProductsByBrand godoc
+// @Summary Get products by brand
+// @Description Get all products for a specific brand
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param brand_id path string true "Brand ID"
+// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
+// @Failure 400 {object} dto.ErrorResponse "Invalid brand ID"
+// @Failure 404 {object} dto.ErrorResponse "Brand not found"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /products/brand/{brand_id} [get]
+func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
+	idStr := c.Param("brand_id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Invalid brand ID",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	products, err := h.productService.GetProductsByBrand(c.Request.Context(), id)
+	if err != nil {
+		if errors.Is(err, productBusiness.ErrBrandNotFound) {
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Error:   "Brand not found",
+				Message: err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to fetch products",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	response := h.convertToResponseList(products)
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Products retrieved successfully",
+		Data:    response,
+	})
+}
+
+// GetProductsWithoutBrand godoc
+// @Summary Get products without brand
+// @Description Get all products that do not have a brand assigned
+// @Tags products
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /products/no-brand [get]
+func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
+	products, err := h.productService.GetProductsWithoutBrand(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to fetch products",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	response := h.convertToResponseList(products)
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Products without brand retrieved successfully",
+		Data:    response,
+	})
+}
+
+// SetProductBrand godoc
+// @Summary Set product brand
+// @Description Assign a brand to a product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param product_id path string true "Product ID"
+// @Param brand_id path string true "Brand ID"
+// @Success 200 {object} dto.ApiResponse "Brand assigned successfully"
+// @Failure 400 {object} dto.ErrorResponse "Invalid product or brand ID"
+// @Failure 404 {object} dto.ErrorResponse "Product or brand not found"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /products/{product_id}/brand/{brand_id} [put]
+func (h *ProductHandler) SetProductBrand(c *gin.Context) {
+	productIDStr := c.Param("product_id")
+	productID, err := uuid.Parse(productIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Invalid product ID",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	brandIDStr := c.Param("brand_id")
+	brandID, err := uuid.Parse(brandIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Invalid brand ID",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if err := h.productService.SetProductBrand(c.Request.Context(), productID, brandID); err != nil {
+		if errors.Is(err, productBusiness.ErrProductNotFound) {
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Error:   "Product not found",
+				Message: err.Error(),
+			})
+			return
+		}
+		if errors.Is(err, productBusiness.ErrBrandNotFound) {
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Error:   "Brand not found",
+				Message: err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to assign brand",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Brand assigned successfully",
+	})
+}
+
+// RemoveProductBrand godoc
+// @Summary Remove product brand
+// @Description Remove brand assignment from a product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param product_id path string true "Product ID"
+// @Success 200 {object} dto.ApiResponse "Brand removed successfully"
+// @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
+// @Failure 404 {object} dto.ErrorResponse "Product not found"
+// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Router /products/{product_id}/brand [delete]
+func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
+	productIDStr := c.Param("product_id")
+	productID, err := uuid.Parse(productIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Invalid product ID",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if err := h.productService.RemoveProductBrand(c.Request.Context(), productID); err != nil {
+		if errors.Is(err, productBusiness.ErrProductNotFound) {
+			c.JSON(http.StatusNotFound, dto.ErrorResponse{
+				Error:   "Product not found",
+				Message: err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to remove brand",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ApiResponse{
+		Success: true,
+		Message: "Brand removed successfully",
 	})
 }

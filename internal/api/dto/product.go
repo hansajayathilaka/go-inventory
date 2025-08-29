@@ -14,6 +14,7 @@ type ProductCreateRequest struct {
 	Description    string     `json:"description" example:"A sample product for demonstration"`
 	CategoryID     uuid.UUID  `json:"category_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SupplierID     *uuid.UUID `json:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
+	BrandID        *uuid.UUID `json:"brand_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
 	CostPrice      float64    `json:"cost_price" example:"10.50"`
 	RetailPrice    float64    `json:"retail_price" example:"15.99"`
 	WholesalePrice float64    `json:"wholesale_price" example:"12.50"`
@@ -29,6 +30,7 @@ type ProductUpdateRequest struct {
 	Description    *string    `json:"description" example:"Updated description"`
 	CategoryID     *uuid.UUID `json:"category_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SupplierID     *uuid.UUID `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	BrandID        *uuid.UUID `json:"brand_id" example:"550e8400-e29b-41d4-a716-446655440002"`
 	CostPrice      *float64   `json:"cost_price" example:"11.00"`
 	RetailPrice    *float64   `json:"retail_price" example:"16.99"`
 	WholesalePrice *float64   `json:"wholesale_price" example:"13.50"`
@@ -48,6 +50,8 @@ type ProductResponse struct {
 	Category       *CategoryResponse       `json:"category,omitempty"`
 	SupplierID     *uuid.UUID              `json:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
 	Supplier       *SupplierResponse       `json:"supplier,omitempty"`
+	BrandID        *uuid.UUID              `json:"brand_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
+	Brand          *BrandResponse          `json:"brand,omitempty"`
 	CostPrice      float64                 `json:"cost_price" example:"10.50"`
 	RetailPrice    float64                 `json:"retail_price" example:"15.99"`
 	WholesalePrice float64                 `json:"wholesale_price" example:"12.50"`
@@ -75,6 +79,7 @@ type ProductSearchRequest struct {
 	Query      string     `form:"q" example:"sample"`
 	CategoryID *uuid.UUID `form:"category_id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	SupplierID *uuid.UUID `form:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	BrandID    *uuid.UUID `form:"brand_id" example:"550e8400-e29b-41d4-a716-446655440002"`
 	IsActive   *bool      `form:"is_active" example:"true"`
 	MinPrice   *float64   `form:"min_price" example:"10.00"`
 	MaxPrice   *float64   `form:"max_price" example:"50.00"`
@@ -112,6 +117,7 @@ func ToProductResponse(product *models.Product) ProductResponse {
 		Description:    product.Description,
 		CategoryID:     product.CategoryID,
 		SupplierID:     product.SupplierID,
+		BrandID:        product.BrandID,
 		CostPrice:      product.CostPrice,
 		RetailPrice:    product.RetailPrice,
 		WholesalePrice: product.WholesalePrice,
@@ -123,7 +129,7 @@ func ToProductResponse(product *models.Product) ProductResponse {
 		UpdatedAt:      product.UpdatedAt,
 	}
 
-	// Note: Category and Supplier relationships are not included here
+	// Note: Category, Supplier, and Brand relationships are not included here
 	// to avoid circular dependencies and complexity. They should be loaded
 	// separately when needed through dedicated endpoints.
 
