@@ -9,6 +9,7 @@ import (
 	"inventory-api/internal/business/hierarchy"
 	"inventory-api/internal/business/inventory"
 	"inventory-api/internal/business/product"
+	"inventory-api/internal/business/purchase"
 	"inventory-api/internal/business/supplier"
 	"inventory-api/internal/business/user"
 	"inventory-api/internal/business/vehicle"
@@ -44,6 +45,7 @@ type Context struct {
 	CustomerService  customer.Service
 	BrandService     brand.Service
 	VehicleService   vehicle.Service
+	PurchaseService  purchase.Service
 	ProductService   product.Service
 	HierarchyService hierarchy.Service
 	InventoryService inventory.Service
@@ -108,6 +110,14 @@ func (ctx *Context) initServices() {
 	ctx.CustomerService = customer.NewService(ctx.CustomerRepo)
 	ctx.BrandService = brand.NewService(ctx.BrandRepo)
 	ctx.VehicleService = vehicle.NewService(ctx.VehicleBrandRepo, ctx.VehicleModelRepo)
+	ctx.PurchaseService = purchase.NewService(
+		ctx.PurchaseOrderRepo,
+		ctx.GRNRepo,
+		ctx.SupplierRepo,
+		ctx.ProductRepo,
+		ctx.LocationRepo,
+		ctx.InventoryRepo,
+	)
 	ctx.ProductService = product.NewService(
 		ctx.ProductRepo,
 		ctx.CategoryRepo,

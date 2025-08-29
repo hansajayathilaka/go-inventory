@@ -71,6 +71,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)
 		vehicleBrandHandler := handlers.NewVehicleBrandHandler(appCtx.VehicleService)
 		vehicleModelHandler := handlers.NewVehicleModelHandler(appCtx.VehicleService)
+		purchaseOrderHandler := handlers.NewPurchaseOrderHandler(appCtx.PurchaseService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -168,6 +169,30 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			vehicleModels.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleModelHandler.DeleteVehicleModel)
 			vehicleModels.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.ActivateVehicleModel)
 			vehicleModels.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.DeactivateVehicleModel)
+		}
+
+		// Purchase Order management routes (protected)
+		purchaseOrders := v1.Group("/purchase-orders")
+		purchaseOrders.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			// Basic CRUD operations
+			purchaseOrders.GET("", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrders)
+			purchaseOrders.POST("", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.CreatePurchaseOrder)
+			purchaseOrders.GET("/number/:po_number", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrderByNumber)
+			purchaseOrders.GET("/:id", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrder)
+			purchaseOrders.PUT("/:id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrder)
+			purchaseOrders.DELETE("/:id", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.DeletePurchaseOrder)
+			
+			// Status management operations
+			purchaseOrders.POST("/:id/approve", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.ApprovePurchaseOrder)
+			purchaseOrders.POST("/:id/send", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.SendPurchaseOrder)
+			purchaseOrders.POST("/:id/cancel", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.CancelPurchaseOrder)
+			
+			// Item management operations
+			purchaseOrders.GET("/:id/items", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrderItems)
+			purchaseOrders.POST("/:id/items", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.AddPurchaseOrderItem)
+			purchaseOrders.PUT("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrderItem)
+			purchaseOrders.DELETE("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.RemovePurchaseOrderItem)
 		}
 
 		// Category management routes (protected)

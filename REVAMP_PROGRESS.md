@@ -44,7 +44,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - [x] **Step 3.2**: Create Brand API endpoints and handlers ✅
 - [x] **Step 3.3**: Create VehicleBrand API endpoints and handlers ✅
 - [x] **Step 3.4**: Create VehicleModel API endpoints and handlers ✅
-- [ ] **Step 3.5**: Create PurchaseOrder API endpoints and handlers
+- [x] **Step 3.5**: Create PurchaseOrder API endpoints and handlers ✅
 - [ ] **Step 3.6**: Create GRN API endpoints and handlers
 - [ ] **Step 3.7**: Create VehicleCompatibility API endpoints and handlers
 - [ ] **Step 3.8**: Update Product API with brand filtering
@@ -61,8 +61,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status
 - **Current Phase**: Phase 3 - API Layer
-- **Current Step**: Step 3.5 - Create PurchaseOrder API endpoints and handlers
-- **Next Step**: Ready to implement REST API endpoints for purchase order management with full CRUD operations, supplier relationships, workflow states, and role-based access control
+- **Current Step**: Step 3.6 - Create GRN API endpoints and handlers
+- **Next Step**: Ready to implement REST API endpoints for GRN (Goods Received Note) management with full CRUD operations, purchase order relationships, receipt processing, workflow states, and role-based access control
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -85,6 +85,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 3.2 (2025-08-29)**: Brand API endpoints and handlers implementation with comprehensive CRUD operations, DTOs, Swagger documentation, role-based access control, and app context integration
 - **Step 3.3 (2025-08-29)**: VehicleBrand API endpoints and handlers implementation with comprehensive CRUD operations, DTOs, Swagger documentation, role-based access control, vehicle model relationships, and router integration
 - **Step 3.4 (2025-08-29)**: VehicleModel API endpoints and handlers implementation with comprehensive CRUD operations, DTOs with brand relationships, Swagger documentation, role-based access control, brand filtering, code generation, and router integration
+- **Step 3.5 (2025-08-29)**: PurchaseOrder API endpoints and handlers implementation with comprehensive CRUD operations, DTOs, status management (approve/send/cancel), item management, Swagger documentation, role-based access control, and app context integration
 
 ## Notes
 - Each step should be committed separately for better tracking
