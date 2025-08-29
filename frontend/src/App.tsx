@@ -11,6 +11,7 @@ import InventoryPage from './pages/InventoryPage';
 import SuppliersPage from './pages/SuppliersPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
+import CustomersPage from './pages/CustomersPage';
 import AuditPage from './pages/AuditPage';
 
 // Layout
@@ -118,6 +119,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <LocationsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CustomersPage />
                   </Layout>
                 </ProtectedRoute>
               }

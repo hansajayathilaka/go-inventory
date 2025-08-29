@@ -220,4 +220,85 @@ export const api = {
     search: (query: string) => 
       apiClient.get(`/brands?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
   },
+
+  // Customer Management
+  customers: {
+    // List all customers with pagination and filtering
+    list: (params?: { 
+      page?: number; 
+      limit?: number; 
+      search?: string;
+      customer_type?: string;
+      is_active?: boolean;
+      city?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.customer_type) searchParams.append('customer_type', params.customer_type);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      if (params?.city) searchParams.append('city', params.city);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/customers${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get active customers for dropdowns
+    getActive: () => apiClient.get('/customers?is_active=true&limit=1000'),
+
+    // Get single customer by ID
+    getById: (id: string) => apiClient.get(`/customers/${id}`),
+
+    // Create new customer
+    create: (data: {
+      name: string;
+      code?: string;
+      customer_type: 'individual' | 'business';
+      email?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+      tax_number?: string;
+      credit_limit?: number;
+      notes?: string;
+    }) => apiClient.post('/customers', data),
+
+    // Update existing customer
+    update: (id: string, data: {
+      name?: string;
+      code?: string;
+      customer_type?: 'individual' | 'business';
+      email?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+      tax_number?: string;
+      credit_limit?: number;
+      notes?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/customers/${id}`, data),
+
+    // Delete customer
+    delete: (id: string) => apiClient.delete(`/customers/${id}`),
+
+    // Activate customer
+    activate: (id: string) => apiClient.put(`/customers/${id}/activate`),
+
+    // Deactivate customer
+    deactivate: (id: string) => apiClient.put(`/customers/${id}/deactivate`),
+
+    // Search customers
+    search: (query: string) => 
+      apiClient.get(`/customers?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
+
+    // Get customer statistics
+    getStats: () => apiClient.get('/customers/stats'),
+  },
 };

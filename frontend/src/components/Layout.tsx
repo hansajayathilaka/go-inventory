@@ -30,10 +30,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Categories', href: '/categories', icon: FolderTree },
     { name: 'Inventory', href: '/inventory', icon: Warehouse },
+    { name: 'Customers', href: '/customers', icon: Users },
     { name: 'Suppliers', href: '/suppliers', icon: Truck },
     { name: 'Store Info', href: '/locations', icon: Store },
     { name: 'POS Ready', href: '/pos', icon: ShoppingCart, badge: 'Coming Soon' },
-    { name: 'Users', href: '/users', icon: Users },
+    { name: 'Admin', href: '/users', icon: User },
     { name: 'Audit Logs', href: '/audit', icon: FileText },
   ];
 

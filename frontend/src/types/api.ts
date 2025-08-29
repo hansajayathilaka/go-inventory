@@ -270,6 +270,7 @@ export interface Customer {
   id: string;
   name: string;
   code: string;
+  customer_type: 'individual' | 'business';
   email?: string;
   phone?: string;
   address?: string;
@@ -288,6 +289,7 @@ export interface Customer {
 export interface CreateCustomerRequest {
   name: string;
   code?: string;
+  customer_type: 'individual' | 'business';
   email?: string;
   phone?: string;
   address?: string;
@@ -303,6 +305,7 @@ export interface CreateCustomerRequest {
 export interface UpdateCustomerRequest {
   name?: string;
   code?: string;
+  customer_type?: 'individual' | 'business';
   email?: string;
   phone?: string;
   address?: string;
@@ -314,6 +317,18 @@ export interface UpdateCustomerRequest {
   credit_limit?: number;
   notes?: string;
   is_active?: boolean;
+}
+
+export interface CustomerListResponse {
+  data: Customer[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+  message: string;
+  success: boolean;
 }
 
 export interface CustomerListRequest {
