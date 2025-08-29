@@ -67,6 +67,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			appCtx.StockMovementRepo,
 			appCtx.CategoryRepo,
 		)
+		customerHandler := handlers.NewCustomerHandler(appCtx.CustomerService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -97,6 +98,22 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.GET("/:id", middleware.RequireMinimumRole("viewer"), supplierHandler.GetSupplier)
 			suppliers.PUT("/:id", middleware.RequireMinimumRole("manager"), supplierHandler.UpdateSupplier)
 			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
+		}
+
+		// Customer management routes (protected)
+		customers := v1.Group("/customers")
+		customers.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			customers.GET("", middleware.RequireMinimumRole("viewer"), customerHandler.GetCustomers)
+			customers.POST("", middleware.RequireMinimumRole("staff"), customerHandler.CreateCustomer)
+			customers.GET("/active", middleware.RequireMinimumRole("viewer"), customerHandler.GetActiveCustomers)
+			customers.GET("/generate-code", middleware.RequireMinimumRole("staff"), customerHandler.GenerateCustomerCode)
+			customers.GET("/code/:code", middleware.RequireMinimumRole("viewer"), customerHandler.GetCustomerByCode)
+			customers.GET("/:id", middleware.RequireMinimumRole("viewer"), customerHandler.GetCustomer)
+			customers.PUT("/:id", middleware.RequireMinimumRole("staff"), customerHandler.UpdateCustomer)
+			customers.DELETE("/:id", middleware.RequireMinimumRole("manager"), customerHandler.DeleteCustomer)
+			customers.POST("/:id/activate", middleware.RequireMinimumRole("staff"), customerHandler.ActivateCustomer)
+			customers.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), customerHandler.DeactivateCustomer)
 		}
 
 

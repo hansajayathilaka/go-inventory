@@ -559,6 +559,62 @@
                 }
             }
         },
+        "/categories/search": {
+            "get": {
+                "description": "Search categories by name or description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Search categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/CategoryListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/categories/{id}": {
             "get": {
                 "description": "Get category details by ID",
@@ -1015,6 +1071,636 @@
                 }
             }
         },
+        "/customers": {
+            "get": {
+                "description": "Get a paginated list of customers with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List customers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by name, code, or email",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by state",
+                        "name": "state",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.CustomerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new customer with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create a new customer",
+                "parameters": [
+                    {
+                        "description": "Customer creation request",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateCustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/active": {
+            "get": {
+                "description": "Get all active customers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "List active customers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.CustomerResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/code/{code}": {
+            "get": {
+                "description": "Get a specific customer by their code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get customer by code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"JOH001\"",
+                        "description": "Customer code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/generate-code": {
+            "get": {
+                "description": "Generate a unique customer code based on customer name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Generate customer code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"John Doe\"",
+                        "description": "Customer name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/{id}": {
+            "get": {
+                "description": "Get a specific customer by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get customer by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing customer's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Update a customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Customer update request",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a customer by their ID (soft delete)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Delete a customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/{id}/activate": {
+            "post": {
+                "description": "Activate a deactivated customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Activate a customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/{id}/deactivate": {
+            "post": {
+                "description": "Deactivate an active customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Deactivate a customer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Returns the health status of the API",
@@ -1065,12 +1751,6 @@
                     },
                     {
                         "type": "string",
-                        "description": "Filter by location ID",
-                        "name": "location_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "description": "Filter by product ID",
                         "name": "product_id",
                         "in": "query"
@@ -1113,7 +1793,7 @@
                 }
             },
             "post": {
-                "description": "Create a new inventory record for a product at a location",
+                "description": "Create a new inventory record for a product",
                 "consumes": [
                     "application/json"
                 ],
@@ -1319,52 +1999,6 @@
                 }
             }
         },
-        "/inventory/transfer": {
-            "post": {
-                "description": "Transfer stock from one location to another",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "inventory"
-                ],
-                "summary": "Transfer stock between locations",
-                "parameters": [
-                    {
-                        "description": "Stock transfer data",
-                        "name": "transfer",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.StockTransferRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.StockTransferResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/inventory/zero-stock": {
             "get": {
                 "description": "Get items that are completely out of stock",
@@ -1423,84 +2057,9 @@
                 }
             }
         },
-        "/locations": {
+        "/pos/lookup": {
             "get": {
-                "description": "Get a paginated list of all locations",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "List all locations",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number (default: 1)",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 50,
-                        "description": "Items per page (default: 50, max: 100)",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "warehouse",
-                            "store",
-                            "online"
-                        ],
-                        "type": "string",
-                        "description": "Filter by location type",
-                        "name": "type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "active",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Locations retrieved successfully",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/LocationListResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid query parameters",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new location in the system",
+                "description": "Search products for POS by barcode, SKU, or name",
                 "consumes": [
                     "application/json"
                 ],
@@ -1508,288 +2067,27 @@
                     "application/json"
                 ],
                 "tags": [
-                    "locations"
+                    "pos"
                 ],
-                "summary": "Create a new location",
-                "parameters": [
-                    {
-                        "description": "Location creation data",
-                        "name": "location",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/LocationCreateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Location created successfully",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/LocationDetailResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Location already exists",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/locations/{id}": {
-            "get": {
-                "description": "Get detailed information about a specific location",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Get a location by ID",
+                "summary": "POS product lookup",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Location ID (UUID)",
-                        "name": "id",
-                        "in": "path",
+                        "description": "Search query (barcode, SKU, or name)",
+                        "name": "q",
+                        "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Location retrieved successfully",
+                        "description": "Products found",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/LocationDetailResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/dto.POSLookupResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid location ID",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Location not found",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing location's information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Update a location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Location ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Location update data",
-                        "name": "location",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/LocationUpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Location updated successfully",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/LocationDetailResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Location not found",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Location code already exists",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an existing location from the system",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Delete a location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Location ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Location deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/ApiResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid location ID",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Location not found",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/locations/{id}/inventory": {
-            "get": {
-                "description": "Get all inventory records for a specific location",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "locations"
-                ],
-                "summary": "Get inventory for a location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Location ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Location inventory retrieved successfully",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/ApiResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/dto.InventoryResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid location ID",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Location not found",
+                        "description": "Invalid query",
                         "schema": {
                             "$ref": "#/definitions/ErrorResponse"
                         }
@@ -1935,6 +2233,66 @@
                         "description": "Product already exists",
                         "schema": {
                             "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/pos-ready": {
+            "get": {
+                "description": "Get all active products formatted for POS use",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pos"
+                ],
+                "summary": "Get POS-ready products",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "POS products",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.POSProduct"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -3156,155 +3514,6 @@
                 }
             }
         },
-        "LocationCreateRequest": {
-            "description": "Request body for creating a new location",
-            "type": "object",
-            "required": [
-                "code",
-                "name",
-                "type"
-            ],
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 500,
-                    "example": "123 Storage St, Industrial District, City 12345"
-                },
-                "code": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 1,
-                    "example": "WH001"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 500,
-                    "example": "Primary storage facility"
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1,
-                    "example": "Main Warehouse"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "warehouse",
-                        "store",
-                        "online"
-                    ],
-                    "example": "warehouse"
-                }
-            }
-        },
-        "LocationDetailResponse": {
-            "description": "Detailed location information returned by the API",
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "123 Storage St, Industrial District, City 12345"
-                },
-                "code": {
-                    "type": "string",
-                    "example": "WH001"
-                },
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T12:00:00Z"
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Primary storage facility"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Main Warehouse"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "warehouse"
-                },
-                "updated_at": {
-                    "type": "string",
-                    "example": "2023-01-02T12:00:00Z"
-                }
-            }
-        },
-        "LocationListResponse": {
-            "description": "Paginated list of locations with metadata",
-            "type": "object",
-            "properties": {
-                "locations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/LocationDetailResponse"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/PaginationResponse"
-                }
-            }
-        },
-        "LocationUpdateRequest": {
-            "description": "Request body for updating an existing location",
-            "type": "object",
-            "required": [
-                "code",
-                "name",
-                "type"
-            ],
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 500,
-                    "example": "123 Storage St, Industrial District, City 12345"
-                },
-                "code": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 1,
-                    "example": "WH001"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 500,
-                    "example": "Primary storage facility"
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1,
-                    "example": "Main Warehouse"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "warehouse",
-                        "store",
-                        "online"
-                    ],
-                    "example": "warehouse"
-                }
-            }
-        },
         "MoveCategoryRequest": {
             "description": "Request payload for moving a category to a different parent",
             "type": "object",
@@ -3651,18 +3860,83 @@
                 }
             }
         },
+        "dto.CreateCustomerRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "123 Main Street"
+                },
+                "city": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Kuala Lumpur"
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "JOH001"
+                },
+                "country": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Malaysia"
+                },
+                "credit_limit": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 10000
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "john@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "John Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Regular customer"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "+60123456789"
+                },
+                "postal_code": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "50000"
+                },
+                "state": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Selangor"
+                },
+                "tax_number": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "TAX123456"
+                }
+            }
+        },
         "dto.CreateInventoryRequest": {
             "type": "object",
             "required": [
-                "location_id",
                 "product_id",
                 "quantity",
                 "reorder_level"
             ],
             "properties": {
-                "location_id": {
-                    "type": "string"
-                },
                 "product_id": {
                     "type": "string"
                 },
@@ -3716,6 +3990,75 @@
                 }
             }
         },
+        "dto.CustomerResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "Kuala Lumpur"
+                },
+                "code": {
+                    "type": "string",
+                    "example": "JOH001"
+                },
+                "country": {
+                    "type": "string",
+                    "example": "Malaysia"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "credit_limit": {
+                    "type": "number",
+                    "example": 10000
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Regular customer"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+60123456789"
+                },
+                "postal_code": {
+                    "type": "string",
+                    "example": "50000"
+                },
+                "state": {
+                    "type": "string",
+                    "example": "Selangor"
+                },
+                "tax_number": {
+                    "type": "string",
+                    "example": "TAX123456"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
         "dto.ErrorInfo": {
             "type": "object",
             "properties": {
@@ -3742,10 +4085,7 @@
                 "last_updated": {
                     "type": "string"
                 },
-                "location_id": {
-                    "type": "string"
-                },
-                "location_name": {
+                "product_barcode": {
                     "type": "string"
                 },
                 "product_id": {
@@ -3898,10 +4238,7 @@
                 "deficit": {
                     "type": "integer"
                 },
-                "location_id": {
-                    "type": "string"
-                },
-                "location_name": {
+                "product_barcode": {
                     "type": "string"
                 },
                 "product_id": {
@@ -3918,6 +4255,58 @@
                 },
                 "reorder_level": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.POSLookupResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.POSProduct"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.POSProduct": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "type": "string"
+                },
+                "cost_price": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "quick_sale": {
+                    "type": "boolean"
+                },
+                "retail_price": {
+                    "type": "number"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "tax_category": {
+                    "type": "string"
                 }
             }
         },
@@ -4217,14 +4606,10 @@
         "dto.ReorderLevelUpdate": {
             "type": "object",
             "required": [
-                "location_id",
                 "product_id",
                 "reorder_level"
             ],
             "properties": {
-                "location_id": {
-                    "type": "string"
-                },
                 "product_id": {
                     "type": "string"
                 },
@@ -4237,15 +4622,12 @@
         "dto.StockAdjustmentRequest": {
             "type": "object",
             "required": [
-                "location_id",
                 "movement_type",
                 "product_id",
-                "quantity"
+                "quantity",
+                "reason"
             ],
             "properties": {
-                "location_id": {
-                    "type": "string"
-                },
                 "movement_type": {
                     "type": "string",
                     "enum": [
@@ -4262,6 +4644,21 @@
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "receiving",
+                        "sale",
+                        "sales",
+                        "damage",
+                        "corrections",
+                        "correction",
+                        "inventory_count",
+                        "return",
+                        "supplier_return",
+                        "other"
+                    ]
                 }
             }
         },
@@ -4306,62 +4703,6 @@
                 }
             }
         },
-        "dto.StockTransferRequest": {
-            "type": "object",
-            "required": [
-                "from_location_id",
-                "product_id",
-                "quantity",
-                "to_location_id"
-            ],
-            "properties": {
-                "from_location_id": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "product_id": {
-                    "type": "string"
-                },
-                "quantity": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "to_location_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.StockTransferResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "from_location_id": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "product_id": {
-                    "type": "string"
-                },
-                "quantity": {
-                    "type": "integer"
-                },
-                "to_location_id": {
-                    "type": "string"
-                },
-                "transfer_id": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.SupplierResponse": {
             "type": "object",
             "properties": {
@@ -4388,6 +4729,76 @@
                 "phone": {
                     "type": "string",
                     "example": "+1-555-0123"
+                }
+            }
+        },
+        "dto.UpdateCustomerRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "456 Updated Street"
+                },
+                "city": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Kuala Lumpur"
+                },
+                "code": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "JOH002"
+                },
+                "country": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Malaysia"
+                },
+                "credit_limit": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 15000
+                },
+                "email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "john.updated@example.com"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "John Doe Updated"
+                },
+                "notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Updated notes"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "+60123456789"
+                },
+                "postal_code": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "50000"
+                },
+                "state": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Selangor"
+                },
+                "tax_number": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "TAX123456"
                 }
             }
         },
@@ -4476,10 +4887,7 @@
                 "last_updated": {
                     "type": "string"
                 },
-                "location_id": {
-                    "type": "string"
-                },
-                "location_name": {
+                "product_barcode": {
                     "type": "string"
                 },
                 "product_id": {

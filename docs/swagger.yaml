@@ -98,119 +98,6 @@ definitions:
         example: Detailed error message
         type: string
     type: object
-  LocationCreateRequest:
-    description: Request body for creating a new location
-    properties:
-      address:
-        example: 123 Storage St, Industrial District, City 12345
-        maxLength: 500
-        type: string
-      code:
-        example: WH001
-        maxLength: 20
-        minLength: 1
-        type: string
-      description:
-        example: Primary storage facility
-        maxLength: 500
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Main Warehouse
-        maxLength: 100
-        minLength: 1
-        type: string
-      type:
-        enum:
-        - warehouse
-        - store
-        - online
-        example: warehouse
-        type: string
-    required:
-    - code
-    - name
-    - type
-    type: object
-  LocationDetailResponse:
-    description: Detailed location information returned by the API
-    properties:
-      address:
-        example: 123 Storage St, Industrial District, City 12345
-        type: string
-      code:
-        example: WH001
-        type: string
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      description:
-        example: Primary storage facility
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Main Warehouse
-        type: string
-      type:
-        example: warehouse
-        type: string
-      updated_at:
-        example: "2023-01-02T12:00:00Z"
-        type: string
-    type: object
-  LocationListResponse:
-    description: Paginated list of locations with metadata
-    properties:
-      locations:
-        items:
-          $ref: '#/definitions/LocationDetailResponse'
-        type: array
-      pagination:
-        $ref: '#/definitions/PaginationResponse'
-    type: object
-  LocationUpdateRequest:
-    description: Request body for updating an existing location
-    properties:
-      address:
-        example: 123 Storage St, Industrial District, City 12345
-        maxLength: 500
-        type: string
-      code:
-        example: WH001
-        maxLength: 20
-        minLength: 1
-        type: string
-      description:
-        example: Primary storage facility
-        maxLength: 500
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Main Warehouse
-        maxLength: 100
-        minLength: 1
-        type: string
-      type:
-        enum:
-        - warehouse
-        - store
-        - online
-        example: warehouse
-        type: string
-    required:
-    - code
-    - name
-    - type
-    type: object
   MoveCategoryRequest:
     description: Request payload for moving a category to a different parent
     properties:
@@ -462,10 +349,62 @@ definitions:
       total_value:
         type: number
     type: object
+  dto.CreateCustomerRequest:
+    properties:
+      address:
+        example: 123 Main Street
+        maxLength: 500
+        type: string
+      city:
+        example: Kuala Lumpur
+        maxLength: 100
+        type: string
+      code:
+        example: JOH001
+        maxLength: 20
+        type: string
+      country:
+        example: Malaysia
+        maxLength: 100
+        type: string
+      credit_limit:
+        example: 10000
+        minimum: 0
+        type: number
+      email:
+        example: john@example.com
+        maxLength: 100
+        type: string
+      name:
+        example: John Doe
+        maxLength: 100
+        minLength: 1
+        type: string
+      notes:
+        example: Regular customer
+        maxLength: 1000
+        type: string
+      phone:
+        example: "+60123456789"
+        maxLength: 20
+        type: string
+      postal_code:
+        example: "50000"
+        maxLength: 20
+        type: string
+      state:
+        example: Selangor
+        maxLength: 100
+        type: string
+      tax_number:
+        example: TAX123456
+        maxLength: 50
+        type: string
+    required:
+    - name
+    type: object
   dto.CreateInventoryRequest:
     properties:
-      location_id:
-        type: string
       product_id:
         type: string
       quantity:
@@ -478,7 +417,6 @@ definitions:
         minimum: 0
         type: integer
     required:
-    - location_id
     - product_id
     - quantity
     - reorder_level
@@ -511,6 +449,57 @@ definitions:
     - role
     - username
     type: object
+  dto.CustomerResponse:
+    properties:
+      address:
+        example: 123 Main Street
+        type: string
+      city:
+        example: Kuala Lumpur
+        type: string
+      code:
+        example: JOH001
+        type: string
+      country:
+        example: Malaysia
+        type: string
+      created_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      credit_limit:
+        example: 10000
+        type: number
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: John Doe
+        type: string
+      notes:
+        example: Regular customer
+        type: string
+      phone:
+        example: "+60123456789"
+        type: string
+      postal_code:
+        example: "50000"
+        type: string
+      state:
+        example: Selangor
+        type: string
+      tax_number:
+        example: TAX123456
+        type: string
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
   dto.ErrorInfo:
     properties:
       code:
@@ -529,9 +518,7 @@ definitions:
         type: string
       last_updated:
         type: string
-      location_id:
-        type: string
-      location_name:
+      product_barcode:
         type: string
       product_id:
         type: string
@@ -633,9 +620,7 @@ definitions:
     properties:
       deficit:
         type: integer
-      location_id:
-        type: string
-      location_name:
+      product_barcode:
         type: string
       product_id:
         type: string
@@ -647,6 +632,40 @@ definitions:
         type: integer
       reorder_level:
         type: integer
+    type: object
+  dto.POSLookupResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.POSProduct'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.POSProduct:
+    properties:
+      barcode:
+        type: string
+      cost_price:
+        type: number
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      quantity:
+        type: integer
+      quick_sale:
+        type: boolean
+      retail_price:
+        type: number
+      sku:
+        type: string
+      tax_category:
+        type: string
     type: object
   dto.PaginatedResponse:
     properties:
@@ -863,22 +882,17 @@ definitions:
     type: object
   dto.ReorderLevelUpdate:
     properties:
-      location_id:
-        type: string
       product_id:
         type: string
       reorder_level:
         minimum: 0
         type: integer
     required:
-    - location_id
     - product_id
     - reorder_level
     type: object
   dto.StockAdjustmentRequest:
     properties:
-      location_id:
-        type: string
       movement_type:
         enum:
         - IN
@@ -891,11 +905,24 @@ definitions:
         type: string
       quantity:
         type: integer
+      reason:
+        enum:
+        - receiving
+        - sale
+        - sales
+        - damage
+        - corrections
+        - correction
+        - inventory_count
+        - return
+        - supplier_return
+        - other
+        type: string
     required:
-    - location_id
     - movement_type
     - product_id
     - quantity
+    - reason
     type: object
   dto.StockMovementResponse:
     properties:
@@ -924,44 +951,6 @@ definitions:
       user_id:
         type: string
     type: object
-  dto.StockTransferRequest:
-    properties:
-      from_location_id:
-        type: string
-      notes:
-        type: string
-      product_id:
-        type: string
-      quantity:
-        minimum: 1
-        type: integer
-      to_location_id:
-        type: string
-    required:
-    - from_location_id
-    - product_id
-    - quantity
-    - to_location_id
-    type: object
-  dto.StockTransferResponse:
-    properties:
-      created_at:
-        type: string
-      from_location_id:
-        type: string
-      notes:
-        type: string
-      product_id:
-        type: string
-      quantity:
-        type: integer
-      to_location_id:
-        type: string
-      transfer_id:
-        type: string
-      user_id:
-        type: string
-    type: object
   dto.SupplierResponse:
     properties:
       code:
@@ -981,6 +970,61 @@ definitions:
         type: string
       phone:
         example: +1-555-0123
+        type: string
+    type: object
+  dto.UpdateCustomerRequest:
+    properties:
+      address:
+        example: 456 Updated Street
+        maxLength: 500
+        type: string
+      city:
+        example: Kuala Lumpur
+        maxLength: 100
+        type: string
+      code:
+        example: JOH002
+        maxLength: 20
+        type: string
+      country:
+        example: Malaysia
+        maxLength: 100
+        type: string
+      credit_limit:
+        example: 15000
+        minimum: 0
+        type: number
+      email:
+        example: john.updated@example.com
+        maxLength: 100
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: John Doe Updated
+        maxLength: 100
+        minLength: 1
+        type: string
+      notes:
+        example: Updated notes
+        maxLength: 1000
+        type: string
+      phone:
+        example: "+60123456789"
+        maxLength: 20
+        type: string
+      postal_code:
+        example: "50000"
+        maxLength: 20
+        type: string
+      state:
+        example: Selangor
+        maxLength: 100
+        type: string
+      tax_number:
+        example: TAX123456
+        maxLength: 50
         type: string
     type: object
   dto.UpdateReorderLevelsRequest:
@@ -1045,9 +1089,7 @@ definitions:
     properties:
       last_updated:
         type: string
-      location_id:
-        type: string
-      location_name:
+      product_barcode:
         type: string
       product_id:
         type: string
@@ -1739,6 +1781,433 @@ paths:
       summary: Get root categories
       tags:
       - categories
+  /categories/search:
+    get:
+      consumes:
+      - application/json
+      description: Search categories by name or description
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/CategoryListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Search categories
+      tags:
+      - categories
+  /customers:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of customers with optional filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name, code, or email
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Filter by city
+        in: query
+        name: city
+        type: string
+      - description: Filter by state
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.CustomerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List customers
+      tags:
+      - Customers
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer with the provided information
+      parameters:
+      - description: Customer creation request
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Create a new customer
+      tags:
+      - Customers
+  /customers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a customer by their ID (soft delete)
+      parameters:
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Delete a customer
+      tags:
+      - Customers
+    get:
+      consumes:
+      - application/json
+      description: Get a specific customer by their ID
+      parameters:
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get customer by ID
+      tags:
+      - Customers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer's information
+      parameters:
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Customer update request
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Update a customer
+      tags:
+      - Customers
+  /customers/{id}/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate a deactivated customer
+      parameters:
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Activate a customer
+      tags:
+      - Customers
+  /customers/{id}/deactivate:
+    post:
+      consumes:
+      - application/json
+      description: Deactivate an active customer
+      parameters:
+      - description: Customer ID
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Deactivate a customer
+      tags:
+      - Customers
+  /customers/active:
+    get:
+      consumes:
+      - application/json
+      description: Get all active customers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.CustomerResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: List active customers
+      tags:
+      - Customers
+  /customers/code/{code}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific customer by their code
+      parameters:
+      - description: Customer code
+        example: '"JOH001"'
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Get customer by code
+      tags:
+      - Customers
+  /customers/generate-code:
+    get:
+      consumes:
+      - application/json
+      description: Generate a unique customer code based on customer name
+      parameters:
+      - description: Customer name
+        example: '"John Doe"'
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Generate customer code
+      tags:
+      - Customers
   /health:
     get:
       description: Returns the health status of the API
@@ -1768,10 +2237,6 @@ paths:
         in: query
         name: limit
         type: integer
-      - description: Filter by location ID
-        in: query
-        name: location_id
-        type: string
       - description: Filter by product ID
         in: query
         name: product_id
@@ -1804,7 +2269,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new inventory record for a product at a location
+      description: Create a new inventory record for a product
       parameters:
       - description: Inventory data
         in: body
@@ -1930,36 +2395,6 @@ paths:
       summary: Update reorder levels
       tags:
       - inventory
-  /inventory/transfer:
-    post:
-      consumes:
-      - application/json
-      description: Transfer stock from one location to another
-      parameters:
-      - description: Stock transfer data
-        in: body
-        name: transfer
-        required: true
-        schema:
-          $ref: '#/definitions/dto.StockTransferRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.StockTransferResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Transfer stock between locations
-      tags:
-      - inventory
   /inventory/zero-stock:
     get:
       consumes:
@@ -1995,244 +2430,35 @@ paths:
       summary: Get zero stock items
       tags:
       - inventory
-  /locations:
+  /pos/lookup:
     get:
-      description: Get a paginated list of all locations
-      parameters:
-      - default: 1
-        description: 'Page number (default: 1)'
-        in: query
-        name: page
-        type: integer
-      - default: 50
-        description: 'Items per page (default: 50, max: 100)'
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by location type
-        enum:
-        - warehouse
-        - store
-        - online
-        in: query
-        name: type
-        type: string
-      - description: Filter by active status
-        in: query
-        name: active
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Locations retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationListResponse'
-              type: object
-        "400":
-          description: Invalid query parameters
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: List all locations
-      tags:
-      - locations
-    post:
       consumes:
       - application/json
-      description: Create a new location in the system
+      description: Search products for POS by barcode, SKU, or name
       parameters:
-      - description: Location creation data
-        in: body
-        name: location
-        required: true
-        schema:
-          $ref: '#/definitions/LocationCreateRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Location created successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Location already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Create a new location
-      tags:
-      - locations
-  /locations/{id}:
-    delete:
-      description: Delete an existing location from the system
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
+      - description: Search query (barcode, SKU, or name)
+        in: query
+        name: q
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Location deleted successfully
+          description: Products found
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/dto.POSLookupResponse'
         "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
+          description: Invalid query
           schema:
             $ref: '#/definitions/ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/ErrorResponse'
-      summary: Delete a location
+      summary: POS product lookup
       tags:
-      - locations
-    get:
-      description: Get detailed information about a specific location
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get a location by ID
-      tags:
-      - locations
-    put:
-      consumes:
-      - application/json
-      description: Update an existing location's information
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Location update data
-        in: body
-        name: location
-        required: true
-        schema:
-          $ref: '#/definitions/LocationUpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location updated successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/LocationDetailResponse'
-              type: object
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "409":
-          description: Location code already exists
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Update a location
-      tags:
-      - locations
-  /locations/{id}/inventory:
-    get:
-      description: Get all inventory records for a specific location
-      parameters:
-      - description: Location ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Location inventory retrieved successfully
-          schema:
-            allOf:
-            - $ref: '#/definitions/ApiResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.InventoryResponse'
-                  type: array
-              type: object
-        "400":
-          description: Invalid location ID
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Location not found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      summary: Get inventory for a location
-      tags:
-      - locations
+      - pos
   /products:
     get:
       consumes:
@@ -2479,6 +2705,43 @@ paths:
       summary: Get product inventory
       tags:
       - products
+  /products/pos-ready:
+    get:
+      consumes:
+      - application/json
+      description: Get all active products formatted for POS use
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: POS products
+          schema:
+            allOf:
+            - $ref: '#/definitions/ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.POSProduct'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get POS-ready products
+      tags:
+      - pos
   /products/search:
     get:
       consumes:
