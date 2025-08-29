@@ -450,4 +450,151 @@ export const api = {
     // Generate model code
     generateCode: (brandId: string) => apiClient.post('/vehicle-models/generate-code', { vehicle_brand_id: brandId }),
   },
+
+  // Vehicle Compatibility Management
+  vehicleCompatibilities: {
+    // List all vehicle compatibilities with pagination and filtering
+    list: (params?: { 
+      page?: number; 
+      limit?: number; 
+      product_id?: string;
+      vehicle_model_id?: string;
+      year?: number;
+      is_verified?: boolean;
+      is_active?: boolean;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.product_id) searchParams.append('product_id', params.product_id);
+      if (params?.vehicle_model_id) searchParams.append('vehicle_model_id', params.vehicle_model_id);
+      if (params?.year) searchParams.append('year', params.year.toString());
+      if (params?.is_verified !== undefined) searchParams.append('is_verified', params.is_verified.toString());
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-compatibilities${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get active vehicle compatibilities
+    getActive: () => apiClient.get('/vehicle-compatibilities/active'),
+
+    // Get verified vehicle compatibilities
+    getVerified: (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-compatibilities/verified${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get unverified vehicle compatibilities
+    getUnverified: (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-compatibilities/unverified${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get single vehicle compatibility by ID
+    getById: (id: string) => apiClient.get(`/vehicle-compatibilities/${id}`),
+
+    // Get compatible products for a vehicle model
+    getCompatibleProducts: (params: {
+      vehicle_model_id: string;
+      year?: number;
+      page?: number;
+      limit?: number;
+    }) => {
+      const searchParams = new URLSearchParams();
+      searchParams.append('vehicle_model_id', params.vehicle_model_id);
+      if (params.year) searchParams.append('year', params.year.toString());
+      if (params.page) searchParams.append('page', params.page.toString());
+      if (params.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-compatibilities/compatible-products?${queryString}`);
+    },
+
+    // Get compatible vehicles for a product
+    getCompatibleVehicles: (params: {
+      product_id: string;
+      year?: number;
+      page?: number;
+      limit?: number;
+    }) => {
+      const searchParams = new URLSearchParams();
+      searchParams.append('product_id', params.product_id);
+      if (params.year) searchParams.append('year', params.year.toString());
+      if (params.page) searchParams.append('page', params.page.toString());
+      if (params.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-compatibilities/compatible-vehicles?${queryString}`);
+    },
+
+    // Create new vehicle compatibility
+    create: (data: {
+      product_id: string;
+      vehicle_model_id: string;
+      year_from?: number;
+      year_to?: number;
+      notes?: string;
+    }) => apiClient.post('/vehicle-compatibilities', data),
+
+    // Update existing vehicle compatibility
+    update: (id: string, data: {
+      product_id?: string;
+      vehicle_model_id?: string;
+      year_from?: number;
+      year_to?: number;
+      notes?: string;
+      is_verified?: boolean;
+      is_active?: boolean;
+    }) => apiClient.put(`/vehicle-compatibilities/${id}`, data),
+
+    // Delete vehicle compatibility
+    delete: (id: string) => apiClient.delete(`/vehicle-compatibilities/${id}`),
+
+    // Verify compatibility
+    verify: (id: string) => apiClient.post(`/vehicle-compatibilities/${id}/verify`),
+
+    // Unverify compatibility
+    unverify: (id: string) => apiClient.post(`/vehicle-compatibilities/${id}/unverify`),
+
+    // Activate compatibility
+    activate: (id: string) => apiClient.post(`/vehicle-compatibilities/${id}/activate`),
+
+    // Deactivate compatibility
+    deactivate: (id: string) => apiClient.post(`/vehicle-compatibilities/${id}/deactivate`),
+
+    // Bulk operations
+    bulkCreate: (data: {
+      compatibilities: Array<{
+        product_id: string;
+        vehicle_model_id: string;
+        year_from?: number;
+        year_to?: number;
+        notes?: string;
+      }>;
+    }) => apiClient.post('/vehicle-compatibilities/bulk', data),
+
+    bulkVerify: (data: { ids: string[] }) => 
+      apiClient.post('/vehicle-compatibilities/bulk/verify', data),
+
+    bulkUnverify: (data: { ids: string[] }) => 
+      apiClient.post('/vehicle-compatibilities/bulk/unverify', data),
+
+    bulkActivate: (data: { ids: string[] }) => 
+      apiClient.post('/vehicle-compatibilities/bulk/activate', data),
+
+    bulkDeactivate: (data: { ids: string[] }) => 
+      apiClient.post('/vehicle-compatibilities/bulk/deactivate', data),
+
+    // Get compatibility statistics
+    getStats: () => apiClient.get('/vehicle-compatibilities/stats'),
+  },
 };

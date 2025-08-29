@@ -15,6 +15,7 @@ import CustomersPage from './pages/CustomersPage';
 import BrandsPage from './pages/BrandsPage';
 import VehicleBrandsPage from './pages/VehicleBrandsPage';
 import VehicleModelsPage from './pages/VehicleModelsPage';
+import CompatibilitiesPage from './pages/CompatibilitiesPage';
 import AuditPage from './pages/AuditPage';
 
 // Layout
@@ -166,6 +167,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <VehicleModelsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/compatibilities"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CompatibilitiesPage />
                   </Layout>
                 </ProtectedRoute>
               }
