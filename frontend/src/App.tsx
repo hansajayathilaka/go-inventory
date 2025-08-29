@@ -14,6 +14,7 @@ import UsersPage from './pages/UsersPage';
 import CustomersPage from './pages/CustomersPage';
 import BrandsPage from './pages/BrandsPage';
 import VehicleBrandsPage from './pages/VehicleBrandsPage';
+import VehicleModelsPage from './pages/VehicleModelsPage';
 import AuditPage from './pages/AuditPage';
 
 // Layout
@@ -154,6 +155,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <VehicleBrandsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/vehicle-models"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <VehicleModelsPage />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -368,4 +368,86 @@ export const api = {
     // Get customer statistics
     getStats: () => apiClient.get('/customers/stats'),
   },
+
+  // Vehicle Models Management
+  vehicleModels: {
+    // List all vehicle models with pagination and filtering
+    list: (params?: { 
+      page?: number; 
+      limit?: number; 
+      search?: string;
+      vehicle_brand_id?: string;
+      is_active?: boolean;
+      year_from?: number;
+      year_to?: number;
+      fuel_type?: string;
+      transmission?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.vehicle_brand_id) searchParams.append('vehicle_brand_id', params.vehicle_brand_id);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      if (params?.year_from) searchParams.append('year_from', params.year_from.toString());
+      if (params?.year_to) searchParams.append('year_to', params.year_to.toString());
+      if (params?.fuel_type) searchParams.append('fuel_type', params.fuel_type);
+      if (params?.transmission) searchParams.append('transmission', params.transmission);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/vehicle-models${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get active vehicle models for dropdowns
+    getActive: () => apiClient.get('/vehicle-models?is_active=true&limit=1000'),
+
+    // Get single vehicle model by ID
+    getById: (id: string) => apiClient.get(`/vehicle-models/${id}`),
+
+    // Get vehicle models by brand
+    getByBrand: (brandId: string) => apiClient.get(`/vehicle-models?vehicle_brand_id=${brandId}&is_active=true`),
+
+    // Create new vehicle model
+    create: (data: {
+      name: string;
+      code?: string;
+      description?: string;
+      vehicle_brand_id: string;
+      year_from: number;
+      year_to?: number;
+      fuel_type?: string;
+      transmission?: string;
+      engine_size?: string;
+    }) => apiClient.post('/vehicle-models', data),
+
+    // Update existing vehicle model
+    update: (id: string, data: {
+      name?: string;
+      code?: string;
+      description?: string;
+      vehicle_brand_id?: string;
+      year_from?: number;
+      year_to?: number;
+      fuel_type?: string;
+      transmission?: string;
+      engine_size?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/vehicle-models/${id}`, data),
+
+    // Delete vehicle model
+    delete: (id: string) => apiClient.delete(`/vehicle-models/${id}`),
+
+    // Activate vehicle model
+    activate: (id: string) => apiClient.put(`/vehicle-models/${id}/activate`),
+
+    // Deactivate vehicle model
+    deactivate: (id: string) => apiClient.put(`/vehicle-models/${id}/deactivate`),
+
+    // Search vehicle models
+    search: (query: string) => 
+      apiClient.get(`/vehicle-models?search=${encodeURIComponent(query)}&is_active=true&limit=50`),
+
+    // Generate model code
+    generateCode: (brandId: string) => apiClient.post('/vehicle-models/generate-code', { vehicle_brand_id: brandId }),
+  },
 };
