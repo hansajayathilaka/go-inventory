@@ -12,6 +12,7 @@ import SuppliersPage from './pages/SuppliersPage';
 import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import CustomersPage from './pages/CustomersPage';
+import BrandsPage from './pages/BrandsPage';
 import AuditPage from './pages/AuditPage';
 
 // Layout
@@ -130,6 +131,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <CustomersPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/brands"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BrandsPage />
                   </Layout>
                 </ProtectedRoute>
               }
