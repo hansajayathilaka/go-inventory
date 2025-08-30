@@ -52,8 +52,51 @@ Execute the next step in the vehicle spare parts shop backend revamp process.
 - Step 4.1: Update React frontend types
 - Step 4.2: Update product forms with brand selection
 - Step 4.3: Create customer management UI
-- Step 4.4: Create vehicle management UI
-- Step 4.5: Create GRN processing UI
-- Step 4.6: Performance optimization
+- Step 4.4: Create part brands management UI (CRUD)
+- Step 4.5: Create vehicle brands management UI (CRUD)
+- Step 4.6: Create vehicle models management UI (CRUD)
+- Step 4.7: Create vehicle compatibility management UI
+- Step 4.8: Create purchase order management UI
+- Step 4.9: Create GRN processing UI
+- Step 4.10: Performance optimization and testing
+
+### Phase 5: Database Structure Simplification
+- Step 5.1: Database Model Updates (Backend)
+  - Step 5.1.1: Remove Location model and dependencies
+  - Step 5.1.2: Update Inventory model to remove location_id field
+  - Step 5.1.3: Update StockMovement model to remove location_id field
+  - Step 5.1.4: Create unified PurchaseReceipt model
+  - Step 5.1.5: Update database migration scripts
+- Step 5.2: Backend API Updates
+  - Step 5.2.1: Remove location-based API endpoints
+  - Step 5.2.2: Create PurchaseReceipt API endpoints
+  - Step 5.2.3: Update business logic layer
+  - Step 5.2.4: Update Swagger documentation
+- Step 5.3: Frontend Updates
+  - Step 5.3.1: Remove location management UI
+  - Step 5.3.2: Create PurchaseReceipt management UI
+  - Step 5.3.3: Update inventory and stock management UI
+  - Step 5.3.4: Update API service calls
+- Step 5.4: Testing & Validation
+  - Step 5.4.1: Update integration tests
+  - Step 5.4.2: End-to-end testing
+
+### Phase 6: Frontend Navigation & UI Optimization
+- Step 6.1: Navigation & UI Analysis
+  - Step 6.1.1: Analyze current navigation issues
+  - Step 6.1.2: Document navigation restructure plan
+- Step 6.2: Fix Broken Functionality
+  - Step 6.2.1: Fix Purchase Receipts system
+  - Step 6.2.2: Fix Admin (Users) management
+  - Step 6.2.3: Fix Suppliers management
+- Step 6.3: Navigation Restructuring
+  - Step 6.3.1: Create unified Vehicle Management page
+  - Step 6.3.2: Integrate compatibility as product attributes
+- Step 6.4: UI/UX Improvements
+  - Step 6.4.1: Simplify navigation menu structure
+  - Step 6.4.2: Improve overall user experience
+- Step 6.5: Testing & Documentation
+  - Step 6.5.1: Comprehensive end-to-end testing
+  - Step 6.5.2: Update documentation and commands
 
 The command will automatically determine which step to execute next based on the progress tracking file.
