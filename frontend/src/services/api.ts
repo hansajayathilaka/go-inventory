@@ -597,4 +597,114 @@ export const api = {
     // Get compatibility statistics
     getStats: () => apiClient.get('/vehicle-compatibilities/stats'),
   },
+
+  // Purchase Order Management
+  purchaseOrders: {
+    // List purchase orders with filters
+    list: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: string;
+      supplier_id?: string;
+      start_date?: string;
+      end_date?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.supplier_id) searchParams.append('supplier_id', params.supplier_id);
+      if (params?.start_date) searchParams.append('start_date', params.start_date);
+      if (params?.end_date) searchParams.append('end_date', params.end_date);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/purchase-orders${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get single purchase order by ID with items
+    getById: (id: string) => apiClient.get(`/purchase-orders/${id}`),
+
+    // Create new purchase order
+    create: (data: {
+      supplier_id: string;
+      order_date: string;
+      expected_date?: string;
+      tax_rate?: number;
+      shipping_cost?: number;
+      discount_amount?: number;
+      currency?: string;
+      notes?: string;
+      terms?: string;
+      reference?: string;
+      items?: Array<{
+        product_id: string;
+        quantity: number;
+        unit_price: number;
+        discount_amount?: number;
+        notes?: string;
+      }>;
+    }) => apiClient.post('/purchase-orders', data),
+
+    // Update existing purchase order
+    update: (id: string, data: {
+      supplier_id?: string;
+      order_date?: string;
+      expected_date?: string;
+      delivery_date?: string;
+      tax_rate?: number;
+      shipping_cost?: number;
+      discount_amount?: number;
+      currency?: string;
+      notes?: string;
+      terms?: string;
+      reference?: string;
+    }) => apiClient.put(`/purchase-orders/${id}`, data),
+
+    // Delete purchase order
+    delete: (id: string) => apiClient.delete(`/purchase-orders/${id}`),
+
+    // Status management operations
+    approve: (id: string) => apiClient.post(`/purchase-orders/${id}/approve`),
+    send: (id: string) => apiClient.post(`/purchase-orders/${id}/send`),
+    cancel: (id: string) => apiClient.post(`/purchase-orders/${id}/cancel`),
+
+    // Purchase order items management
+    addItem: (poId: string, data: {
+      product_id: string;
+      quantity: number;
+      unit_price: number;
+      discount_amount?: number;
+      notes?: string;
+    }) => apiClient.post(`/purchase-orders/${poId}/items`, data),
+
+    updateItem: (poId: string, itemId: string, data: {
+      quantity?: number;
+      unit_price?: number;
+      discount_amount?: number;
+      notes?: string;
+    }) => apiClient.put(`/purchase-orders/${poId}/items/${itemId}`, data),
+
+    removeItem: (poId: string, itemId: string) => 
+      apiClient.delete(`/purchase-orders/${poId}/items/${itemId}`),
+
+    // Get purchase order items
+    getItems: (poId: string) => apiClient.get(`/purchase-orders/${poId}/items`),
+
+    // Search purchase orders
+    search: (params: {
+      query: string;
+      page?: number;
+      limit?: number;
+    }) => {
+      const searchParams = new URLSearchParams();
+      searchParams.append('query', params.query);
+      if (params.page) searchParams.append('page', params.page.toString());
+      if (params.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/purchase-orders/search?${queryString}`);
+    },
+  },
 };
