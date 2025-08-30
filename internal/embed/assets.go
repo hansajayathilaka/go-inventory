@@ -8,7 +8,7 @@ import (
 // EmbedReactApp embeds the React application build files
 // Note: This embed directive is only active when the files exist
 //
-//go:embed all:frontend/dist
+//go:embed frontend/dist/*
 var reactBuildFiles embed.FS
 
 // GetReactFiles returns a filesystem containing the React build files

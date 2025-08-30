@@ -37,6 +37,7 @@ type Context struct {
 	VehicleModelRepo          interfaces.VehicleModelRepository
 	PurchaseOrderRepo         interfaces.PurchaseOrderRepository
 	GRNRepo                   interfaces.GRNRepository
+	PurchaseReceiptRepo       interfaces.PurchaseReceiptRepository
 	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
 	// Services
@@ -101,6 +102,7 @@ func (ctx *Context) initRepositories() {
 	ctx.VehicleModelRepo = repository.NewVehicleModelRepository(ctx.Database.DB)
 	ctx.PurchaseOrderRepo = repository.NewPurchaseOrderRepository(ctx.Database.DB)
 	ctx.GRNRepo = repository.NewGRNRepository(ctx.Database.DB)
+	ctx.PurchaseReceiptRepo = repository.NewPurchaseReceiptRepository(ctx.Database.DB)
 	ctx.VehicleCompatibilityRepo = repository.NewVehicleCompatibilityRepository(ctx.Database.DB)
 }
 

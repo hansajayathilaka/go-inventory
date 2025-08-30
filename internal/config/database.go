@@ -60,7 +60,11 @@ func (db *Database) AutoMigrate() error {
 		&models.VehicleBrand{},
 		&models.VehicleModel{},
 		&models.PurchaseOrder{},
+		&models.PurchaseOrderItem{},
 		&models.GRN{},
+		&models.GRNItem{},
+		&models.PurchaseReceipt{},
+		&models.PurchaseReceiptItem{},
 		&models.VehicleCompatibility{},
 	)
 }
