@@ -13,7 +13,8 @@ import {
   LogOut,
   User,
   Car,
-  FileCheck
+  FileCheck,
+  LucideIcon
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -122,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 // Sidebar content component
 const SidebarContent: React.FC<{
-  navigation: Array<{ name: string; href: string; icon: any; badge?: string }>;
+  navigation: Array<{ name: string; href: string; icon: LucideIcon; badge?: string }>;
   currentPath: string;
 }> = ({ navigation, currentPath }) => {
   return (
