@@ -116,22 +116,25 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       const response = await api.vehicleCompatibilities.list(params);
       
       if (response.status === 200) {
-        setCompatibilities(response.data?.data || []);
+        const data = response.data?.data;
+        setCompatibilities(Array.isArray(data) ? data : []);
         setTotalPages(response.data?.pagination?.total_pages || 1);
         setTotalCompatibilities(response.data?.pagination?.total || 0);
       } else {
         setError('Failed to load compatibilities');
+        setCompatibilities([]);
       }
     } catch (err: any) {
       console.error('Error loading compatibilities:', err);
       setError(err.response?.data?.message || 'Failed to load compatibilities');
+      setCompatibilities([]);
     } finally {
       setLoading(false);
     }
   };
 
   // Filter compatibilities by search term (client-side)
-  const filteredCompatibilities = compatibilities.filter((compatibility) => {
+  const filteredCompatibilities = Array.isArray(compatibilities) ? compatibilities.filter((compatibility) => {
     if (!searchTerm.trim()) return true;
     
     const searchLower = searchTerm.toLowerCase();
@@ -146,7 +149,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
            vehicleModelName.includes(searchLower) ||
            vehicleBrandName.includes(searchLower) ||
            notes.includes(searchLower);
-  });
+  }) : [];
 
   // Bulk actions
   const [selectedCompatibilities, setSelectedCompatibilities] = useState<string[]>([]);
