@@ -182,6 +182,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Remove location-related endpoints from docs ✅
   - Add PurchaseReceipt endpoints documentation ✅
   - Update existing endpoint docs for simplified structure ✅
+  - Remove Swagger comments from legacy GRN and PO handler files ✅
+  - Regenerated comprehensive documentation with unified purchase receipt system ✅
 
 ### Phase 5.3: Frontend Updates 📋 PENDING
 - [ ] **Step 5.3.1**: Remove location management UI
@@ -213,8 +215,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.2.3 - Update business logic layer (COMPLETE)
-- **Next Step**: Step 5.2.4 - Update Swagger documentation
+- **Current Step**: Step 5.2.4 - Update Swagger documentation (COMPLETE)
+- **Next Step**: Step 5.3.1 - Remove location management UI
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -258,6 +260,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 5.1.4 (2025-08-30)**: Unified PurchaseReceipt model creation - created comprehensive PurchaseReceipt and PurchaseReceiptItem models combining PurchaseOrder and GRN functionality with unified status workflow (draft→pending→approved→ordered→received→partial→completed/cancelled); created PurchaseReceiptRepository interface with complete CRUD operations, status management (approve, send, receive, complete, cancel), item management, financial operations, search capabilities, and reporting functions; implemented PurchaseReceiptRepository with comprehensive database operations, search with multiple filters, status workflow management, item quantity tracking (ordered/received/accepted/rejected/damaged), financial calculations, and statistics generation; added PurchaseReceipt models to database AutoMigrate, updated app context with new repository initialization; achieved successful compilation establishing foundation for simplified single-table purchase/receipt workflow system
 - **Step 5.1.5 (2025-08-30)**: Database migration and seeding simplification - updated database migration scripts to remove obsolete location tables (locations, purchase_orders, purchase_order_items, grns, grn_items) and location_id columns from inventories and stock_movements tables; implemented cleanupObsoleteStructures() method with safe table/column dropping and warning logging; updated seeding scripts with comprehensive PurchaseReceipt seeding function demonstrating unified purchase workflow with proper time parsing, admin user association, and multi-item purchase receipts; added time import and resolved all compilation errors; achieved successful build with simplified single-location database structure and sample purchase receipt data for testing
 - **Step 5.2.1 (2025-08-30)**: Location-based API endpoints removal - removed location handlers and routes from API layer, updated inventory APIs to work without location context, and updated stock movement APIs for single-location operations; removed LocationID and LocationName fields from StockMovementResponse DTO; removed LocationID and LocationName fields from ProductInventoryResponse DTO; removed TotalLocations field and StockByLocation field from InventorySummaryResponse DTO and deleted LocationStockSummary DTO; removed dummy location assignments in audit_handler.go and product_handler.go; removed location-related Swagger comments from inventory handlers; removed location parameter from GRN handler Swagger docs; achieved successful compilation with complete removal of location-based API functionality for single-location inventory system
+- **Step 5.2.2 (2025-08-30)**: PurchaseReceipt API endpoints creation and legacy system removal - confirmed comprehensive PurchaseReceipt API handlers already exist with 25+ endpoints covering unified purchase workflow (order → receive → complete), verified PurchaseReceipt DTOs and request/response models are complete, confirmed PurchaseReceiptService integration in app context, removed legacy PO and GRN handler initializations from router, removed legacy Purchase Order and GRN route groups (40+ endpoints), replaced with unified Purchase Receipt system (/purchase-receipts), successful compilation after legacy system removal, simplified API surface from 2 separate systems to 1 unified system
 
 ## Notes
 - Each step should be committed separately for better tracking

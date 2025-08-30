@@ -25,24 +25,6 @@ func NewPurchaseOrderHandler(purchaseService purchase.Service) *PurchaseOrderHan
 }
 
 // GetPurchaseOrders godoc
-// @Summary List purchase orders
-// @Description Get a paginated list of purchase orders with optional filtering
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Param search query string false "Search by PO number or reference"
-// @Param status query string false "Filter by status" Enums(draft, pending, approved, ordered, received, cancelled)
-// @Param supplier_id query string false "Filter by supplier ID" format(uuid)
-// @Param start_date query string false "Filter by start date" format(date)
-// @Param end_date query string false "Filter by end date" format(date)
-// @Security BearerAuth
-// @Success 200 {object} dto.PaginatedResponse{data=[]dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders [get]
 func (h *PurchaseOrderHandler) GetPurchaseOrders(c *gin.Context) {
 	var req dto.PurchaseOrderListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -121,19 +103,6 @@ func (h *PurchaseOrderHandler) GetPurchaseOrders(c *gin.Context) {
 }
 
 // GetPurchaseOrder godoc
-// @Summary Get purchase order by ID
-// @Description Get a specific purchase order by its ID
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id} [get]
 func (h *PurchaseOrderHandler) GetPurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -161,19 +130,6 @@ func (h *PurchaseOrderHandler) GetPurchaseOrder(c *gin.Context) {
 }
 
 // GetPurchaseOrderByNumber godoc
-// @Summary Get purchase order by PO number
-// @Description Get a specific purchase order by its PO number
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param po_number path string true "Purchase Order Number" example("PO-2024-001")
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/number/{po_number} [get]
 func (h *PurchaseOrderHandler) GetPurchaseOrderByNumber(c *gin.Context) {
 	poNumber := c.Param("po_number")
 	if poNumber == "" {
@@ -200,18 +156,6 @@ func (h *PurchaseOrderHandler) GetPurchaseOrderByNumber(c *gin.Context) {
 }
 
 // CreatePurchaseOrder godoc
-// @Summary Create new purchase order
-// @Description Create a new purchase order with items
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param purchase_order body dto.CreatePurchaseOrderRequest true "Purchase order data"
-// @Security BearerAuth
-// @Success 201 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders [post]
 func (h *PurchaseOrderHandler) CreatePurchaseOrder(c *gin.Context) {
 	var req dto.CreatePurchaseOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -251,20 +195,6 @@ func (h *PurchaseOrderHandler) CreatePurchaseOrder(c *gin.Context) {
 }
 
 // UpdatePurchaseOrder godoc
-// @Summary Update purchase order
-// @Description Update an existing purchase order
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Param purchase_order body dto.UpdatePurchaseOrderRequest true "Updated purchase order data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id} [put]
 func (h *PurchaseOrderHandler) UpdatePurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -318,19 +248,6 @@ func (h *PurchaseOrderHandler) UpdatePurchaseOrder(c *gin.Context) {
 }
 
 // DeletePurchaseOrder godoc
-// @Summary Delete purchase order
-// @Description Delete a purchase order (soft delete)
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id} [delete]
 func (h *PurchaseOrderHandler) DeletePurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -359,19 +276,6 @@ func (h *PurchaseOrderHandler) DeletePurchaseOrder(c *gin.Context) {
 }
 
 // ApprovePurchaseOrder godoc
-// @Summary Approve purchase order
-// @Description Approve a purchase order (changes status to approved)
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id}/approve [post]
 func (h *PurchaseOrderHandler) ApprovePurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -417,19 +321,6 @@ func (h *PurchaseOrderHandler) ApprovePurchaseOrder(c *gin.Context) {
 }
 
 // SendPurchaseOrder godoc
-// @Summary Send purchase order
-// @Description Send purchase order to supplier (changes status to ordered)
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id}/send [post]
 func (h *PurchaseOrderHandler) SendPurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -467,19 +358,6 @@ func (h *PurchaseOrderHandler) SendPurchaseOrder(c *gin.Context) {
 }
 
 // CancelPurchaseOrder godoc
-// @Summary Cancel purchase order
-// @Description Cancel a purchase order (changes status to cancelled)
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id}/cancel [post]
 func (h *PurchaseOrderHandler) CancelPurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -517,19 +395,6 @@ func (h *PurchaseOrderHandler) CancelPurchaseOrder(c *gin.Context) {
 }
 
 // GetPurchaseOrderItems godoc
-// @Summary Get purchase order items
-// @Description Get all items for a specific purchase order
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=[]dto.PurchaseOrderItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id}/items [get]
 func (h *PurchaseOrderHandler) GetPurchaseOrderItems(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -557,20 +422,6 @@ func (h *PurchaseOrderHandler) GetPurchaseOrderItems(c *gin.Context) {
 }
 
 // AddPurchaseOrderItem godoc
-// @Summary Add item to purchase order
-// @Description Add a new item to an existing purchase order
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Order ID" format(uuid)
-// @Param item body dto.CreatePurchaseOrderItemRequest true "Purchase order item data"
-// @Security BearerAuth
-// @Success 201 {object} dto.BaseResponse{data=dto.PurchaseOrderItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{id}/items [post]
 func (h *PurchaseOrderHandler) AddPurchaseOrderItem(c *gin.Context) {
 	idStr := c.Param("id")
 	poID, err := uuid.Parse(idStr)
@@ -614,21 +465,6 @@ func (h *PurchaseOrderHandler) AddPurchaseOrderItem(c *gin.Context) {
 }
 
 // UpdatePurchaseOrderItem godoc
-// @Summary Update purchase order item
-// @Description Update an existing purchase order item
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param po_id path string true "Purchase Order ID" format(uuid)
-// @Param item_id path string true "Purchase Order Item ID" format(uuid)
-// @Param item body dto.UpdatePurchaseOrderItemRequest true "Updated item data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.PurchaseOrderItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{po_id}/items/{item_id} [put]
 func (h *PurchaseOrderHandler) UpdatePurchaseOrderItem(c *gin.Context) {
 	itemIDStr := c.Param("item_id")
 	itemID, err := uuid.Parse(itemIDStr)
@@ -702,20 +538,6 @@ func (h *PurchaseOrderHandler) UpdatePurchaseOrderItem(c *gin.Context) {
 }
 
 // RemovePurchaseOrderItem godoc
-// @Summary Remove item from purchase order
-// @Description Remove an item from a purchase order
-// @Tags PurchaseOrders
-// @Accept json
-// @Produce json
-// @Param po_id path string true "Purchase Order ID" format(uuid)
-// @Param item_id path string true "Purchase Order Item ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{po_id}/items/{item_id} [delete]
 func (h *PurchaseOrderHandler) RemovePurchaseOrderItem(c *gin.Context) {
 	itemIDStr := c.Param("item_id")
 	itemID, err := uuid.Parse(itemIDStr)

@@ -25,25 +25,6 @@ func NewGRNHandler(purchaseService purchase.Service) *GRNHandler {
 }
 
 // GetGRNs godoc
-// @Summary List GRNs
-// @Description Get a paginated list of GRNs with optional filtering
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Param search query string false "Search by GRN number or delivery note"
-// @Param status query string false "Filter by status" Enums(draft, received, partial, completed, cancelled)
-// @Param purchase_order_id query string false "Filter by purchase order ID" format(uuid)
-// @Param supplier_id query string false "Filter by supplier ID" format(uuid)
-// @Param start_date query string false "Filter by start date" format(date)
-// @Param end_date query string false "Filter by end date" format(date)
-// @Security BearerAuth
-// @Success 200 {object} dto.PaginatedResponse{data=[]dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns [get]
 func (h *GRNHandler) GetGRNs(c *gin.Context) {
 	var req dto.GRNListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -134,19 +115,6 @@ func (h *GRNHandler) GetGRNs(c *gin.Context) {
 }
 
 // GetGRN godoc
-// @Summary Get GRN by ID
-// @Description Get a specific GRN by its ID
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id} [get]
 func (h *GRNHandler) GetGRN(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -174,19 +142,6 @@ func (h *GRNHandler) GetGRN(c *gin.Context) {
 }
 
 // GetGRNByNumber godoc
-// @Summary Get GRN by GRN number
-// @Description Get a specific GRN by its GRN number
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param grn_number path string true "GRN Number" example("GRN-2024-001")
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/number/{grn_number} [get]
 func (h *GRNHandler) GetGRNByNumber(c *gin.Context) {
 	grnNumber := c.Param("grn_number")
 	if grnNumber == "" {
@@ -213,20 +168,6 @@ func (h *GRNHandler) GetGRNByNumber(c *gin.Context) {
 }
 
 // CreateGRN godoc
-// @Summary Create a new GRN
-// @Description Create a new Goods Received Note
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param grn body dto.CreateGRNRequest true "GRN data"
-// @Security BearerAuth
-// @Success 201 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 409 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns [post]
 func (h *GRNHandler) CreateGRN(c *gin.Context) {
 	var req dto.CreateGRNRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -264,22 +205,6 @@ func (h *GRNHandler) CreateGRN(c *gin.Context) {
 }
 
 // UpdateGRN godoc
-// @Summary Update an existing GRN
-// @Description Update an existing Goods Received Note
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Param grn body dto.UpdateGRNRequest true "Updated GRN data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 409 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id} [put]
 func (h *GRNHandler) UpdateGRN(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -330,20 +255,6 @@ func (h *GRNHandler) UpdateGRN(c *gin.Context) {
 }
 
 // DeleteGRN godoc
-// @Summary Delete a GRN
-// @Description Delete a Goods Received Note
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id} [delete]
 func (h *GRNHandler) DeleteGRN(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -370,21 +281,6 @@ func (h *GRNHandler) DeleteGRN(c *gin.Context) {
 }
 
 // ProcessGRNReceipt godoc
-// @Summary Process GRN receipt
-// @Description Process the receipt of goods for a GRN
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Param request body dto.ProcessGRNRequest true "Process receipt data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id}/process-receipt [post]
 func (h *GRNHandler) ProcessGRNReceipt(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -430,21 +326,6 @@ func (h *GRNHandler) ProcessGRNReceipt(c *gin.Context) {
 }
 
 // VerifyGRN godoc
-// @Summary Verify a GRN
-// @Description Verify the received goods in a GRN
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Param request body dto.VerifyGRNRequest true "Verification data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id}/verify [post]
 func (h *GRNHandler) VerifyGRN(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -490,20 +371,6 @@ func (h *GRNHandler) VerifyGRN(c *gin.Context) {
 }
 
 // CompleteGRN godoc
-// @Summary Complete a GRN
-// @Description Complete the GRN processing
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id}/complete [post]
 func (h *GRNHandler) CompleteGRN(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -542,19 +409,6 @@ func (h *GRNHandler) CompleteGRN(c *gin.Context) {
 }
 
 // GetGRNItems godoc
-// @Summary Get GRN items
-// @Description Get all items for a specific GRN
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=[]dto.GRNItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id}/items [get]
 func (h *GRNHandler) GetGRNItems(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -577,21 +431,6 @@ func (h *GRNHandler) GetGRNItems(c *gin.Context) {
 }
 
 // AddGRNItem godoc
-// @Summary Add item to GRN
-// @Description Add a new item to an existing GRN
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param id path string true "GRN ID" format(uuid)
-// @Param item body dto.CreateGRNItemRequest true "GRN item data"
-// @Security BearerAuth
-// @Success 201 {object} dto.BaseResponse{data=dto.GRNItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{id}/items [post]
 func (h *GRNHandler) AddGRNItem(c *gin.Context) {
 	idStr := c.Param("id")
 	grnID, err := uuid.Parse(idStr)
@@ -623,22 +462,6 @@ func (h *GRNHandler) AddGRNItem(c *gin.Context) {
 }
 
 // UpdateGRNItem godoc
-// @Summary Update GRN item
-// @Description Update an existing GRN item
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param grn_id path string true "GRN ID" format(uuid)
-// @Param item_id path string true "GRN Item ID" format(uuid)
-// @Param item body dto.UpdateGRNItemRequest true "Updated GRN item data"
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=dto.GRNItemResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{grn_id}/items/{item_id} [put]
 func (h *GRNHandler) UpdateGRNItem(c *gin.Context) {
 	grnIDStr := c.Param("id")
 	grnID, err := uuid.Parse(grnIDStr)
@@ -701,21 +524,6 @@ func (h *GRNHandler) UpdateGRNItem(c *gin.Context) {
 }
 
 // RemoveGRNItem godoc
-// @Summary Remove GRN item
-// @Description Remove an item from a GRN
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param grn_id path string true "GRN ID" format(uuid)
-// @Param item_id path string true "GRN Item ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 403 {object} dto.BaseResponse
-// @Failure 404 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /grns/{grn_id}/items/{item_id} [delete]
 func (h *GRNHandler) RemoveGRNItem(c *gin.Context) {
 	itemIDStr := c.Param("item_id")
 	itemID, err := uuid.Parse(itemIDStr)
@@ -742,18 +550,6 @@ func (h *GRNHandler) RemoveGRNItem(c *gin.Context) {
 }
 
 // GetGRNsByPurchaseOrder godoc
-// @Summary Get GRNs by purchase order
-// @Description Get all GRNs for a specific purchase order
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param purchase_order_id path string true "Purchase Order ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=[]dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /purchase-orders/{purchase_order_id}/grns [get]
 func (h *GRNHandler) GetGRNsByPurchaseOrder(c *gin.Context) {
 	idStr := c.Param("id")
 	purchaseOrderID, err := uuid.Parse(idStr)
@@ -776,18 +572,6 @@ func (h *GRNHandler) GetGRNsByPurchaseOrder(c *gin.Context) {
 }
 
 // GetGRNsBySupplier godoc
-// @Summary Get GRNs by supplier
-// @Description Get all GRNs for a specific supplier
-// @Tags GRNs
-// @Accept json
-// @Produce json
-// @Param supplier_id path string true "Supplier ID" format(uuid)
-// @Security BearerAuth
-// @Success 200 {object} dto.BaseResponse{data=[]dto.GRNResponse}
-// @Failure 400 {object} dto.BaseResponse
-// @Failure 401 {object} dto.BaseResponse
-// @Failure 500 {object} dto.BaseResponse
-// @Router /suppliers/{supplier_id}/grns [get]
 func (h *GRNHandler) GetGRNsBySupplier(c *gin.Context) {
 	idStr := c.Param("supplier_id")
 	supplierID, err := uuid.Parse(idStr)
