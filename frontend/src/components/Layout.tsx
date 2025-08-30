@@ -12,11 +12,7 @@ import {
   X,
   LogOut,
   User,
-  ShoppingCart,
-  Tag,
   Car,
-  Settings,
-  Link as LinkIcon,
   FileCheck
 } from 'lucide-react';
 
@@ -35,13 +31,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Categories', href: '/categories', icon: FolderTree },
     { name: 'Inventory', href: '/inventory', icon: Warehouse },
     { name: 'Customers', href: '/customers', icon: Users },
-    { name: 'Part Brands', href: '/brands', icon: Tag },
-    { name: 'Vehicle Brands', href: '/vehicle-brands', icon: Car },
-    { name: 'Vehicle Models', href: '/vehicle-models', icon: Settings },
-    { name: 'Compatibilities', href: '/compatibilities', icon: LinkIcon },
+    { name: 'Vehicle Management', href: '/vehicle-management', icon: Car },
     { name: 'Purchase Receipts', href: '/purchase-receipts', icon: FileCheck },
     { name: 'Suppliers', href: '/suppliers', icon: Truck },
-    { name: 'POS Ready', href: '/pos', icon: ShoppingCart, badge: 'Coming Soon' },
     { name: 'Admin', href: '/users', icon: User },
     { name: 'Audit Logs', href: '/audit', icon: FileText },
   ];

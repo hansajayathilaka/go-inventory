@@ -15,6 +15,7 @@ import BrandsPage from './pages/BrandsPage';
 import VehicleBrandsPage from './pages/VehicleBrandsPage';
 import VehicleModelsPage from './pages/VehicleModelsPage';
 import CompatibilitiesPage from './pages/CompatibilitiesPage';
+import VehicleManagementPage from './pages/VehicleManagementPage';
 import PurchaseReceiptsPage from './pages/PurchaseReceiptsPage';
 import AuditPage from './pages/AuditPage';
 
@@ -190,6 +191,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <UsersPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/vehicle-management"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <VehicleManagementPage />
                   </Layout>
                 </ProtectedRoute>
               }
