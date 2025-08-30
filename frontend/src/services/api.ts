@@ -598,14 +598,14 @@ export const api = {
     getStats: () => apiClient.get('/vehicle-compatibilities/stats'),
   },
 
-  // Purchase Order Management
-  purchaseOrders: {
-    // List purchase orders with filters
+  // Purchase Receipt Management (Unified PO + GRN)
+  purchaseReceipts: {
+    // List purchase receipts with filters
     list: (params?: {
       page?: number;
       limit?: number;
       search?: string;
-      status?: string;
+      status?: 'draft' | 'pending' | 'approved' | 'ordered' | 'received' | 'partial' | 'completed' | 'cancelled';
       supplier_id?: string;
       start_date?: string;
       end_date?: string;
@@ -620,160 +620,45 @@ export const api = {
       if (params?.end_date) searchParams.append('end_date', params.end_date);
       
       const queryString = searchParams.toString();
-      return apiClient.get(`/purchase-orders${queryString ? '?' + queryString : ''}`);
+      return apiClient.get(`/purchase-receipts${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get single purchase order by ID with items
-    getById: (id: string) => apiClient.get(`/purchase-orders/${id}`),
+    // Get all purchase receipts (simplified list for dropdowns)
+    getAll: () => apiClient.get('/purchase-receipts'),
 
-    // Create new purchase order
+    // Get single purchase receipt by ID with items
+    getById: (id: string) => apiClient.get(`/purchase-receipts/${id}`),
+
+    // Create new purchase receipt
     create: (data: {
       supplier_id: string;
       order_date: string;
       expected_date?: string;
+      reference?: string;
+      terms?: string;
+      order_notes?: string;
       tax_rate?: number;
       shipping_cost?: number;
       discount_amount?: number;
       currency?: string;
-      notes?: string;
-      terms?: string;
-      reference?: string;
       items?: Array<{
         product_id: string;
-        quantity: number;
+        ordered_quantity: number;
         unit_price: number;
         discount_amount?: number;
-        notes?: string;
+        order_notes?: string;
       }>;
-    }) => apiClient.post('/purchase-orders', data),
+    }) => apiClient.post('/purchase-receipts', data),
 
-    // Update existing purchase order
+    // Update existing purchase receipt
     update: (id: string, data: {
       supplier_id?: string;
       order_date?: string;
       expected_date?: string;
       delivery_date?: string;
-      tax_rate?: number;
-      shipping_cost?: number;
-      discount_amount?: number;
-      currency?: string;
-      notes?: string;
-      terms?: string;
       reference?: string;
-    }) => apiClient.put(`/purchase-orders/${id}`, data),
-
-    // Delete purchase order
-    delete: (id: string) => apiClient.delete(`/purchase-orders/${id}`),
-
-    // Status management operations
-    approve: (id: string) => apiClient.post(`/purchase-orders/${id}/approve`),
-    send: (id: string) => apiClient.post(`/purchase-orders/${id}/send`),
-    cancel: (id: string) => apiClient.post(`/purchase-orders/${id}/cancel`),
-
-    // Purchase order items management
-    addItem: (poId: string, data: {
-      product_id: string;
-      quantity: number;
-      unit_price: number;
-      discount_amount?: number;
-      notes?: string;
-    }) => apiClient.post(`/purchase-orders/${poId}/items`, data),
-
-    updateItem: (poId: string, itemId: string, data: {
-      quantity?: number;
-      unit_price?: number;
-      discount_amount?: number;
-      notes?: string;
-    }) => apiClient.put(`/purchase-orders/${poId}/items/${itemId}`, data),
-
-    removeItem: (poId: string, itemId: string) => 
-      apiClient.delete(`/purchase-orders/${poId}/items/${itemId}`),
-
-    // Get purchase order items
-    getItems: (poId: string) => apiClient.get(`/purchase-orders/${poId}/items`),
-
-    // Search purchase orders
-    search: (params: {
-      query: string;
-      page?: number;
-      limit?: number;
-    }) => {
-      const searchParams = new URLSearchParams();
-      searchParams.append('query', params.query);
-      if (params.page) searchParams.append('page', params.page.toString());
-      if (params.limit) searchParams.append('limit', params.limit.toString());
-      
-      const queryString = searchParams.toString();
-      return apiClient.get(`/purchase-orders/search?${queryString}`);
-    },
-  },
-
-  // GRN (Goods Received Note) Management
-  grn: {
-    // List GRNs with filters
-    list: (params?: {
-      page?: number;
-      limit?: number;
-      search?: string;
-      status?: 'draft' | 'received' | 'partial' | 'completed' | 'cancelled';
-      purchase_order_id?: string;
-      supplier_id?: string;
-      start_date?: string;
-      end_date?: string;
-    }) => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.append('page', params.page.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
-      if (params?.search) searchParams.append('search', params.search);
-      if (params?.status) searchParams.append('status', params.status);
-      if (params?.purchase_order_id) searchParams.append('purchase_order_id', params.purchase_order_id);
-      if (params?.supplier_id) searchParams.append('supplier_id', params.supplier_id);
-      if (params?.start_date) searchParams.append('start_date', params.start_date);
-      if (params?.end_date) searchParams.append('end_date', params.end_date);
-      
-      const queryString = searchParams.toString();
-      return apiClient.get(`/grn${queryString ? '?' + queryString : ''}`);
-    },
-
-    // Get all GRNs (simplified list for dropdowns)
-    getAll: () => apiClient.get('/grn'),
-
-    // Get single GRN by ID
-    getById: (id: string) => apiClient.get(`/grn/${id}`),
-
-    // Create new GRN
-    create: (data: {
-      purchase_order_id: string;
-      received_date: string;
-      delivery_note?: string;
-      invoice_number?: string;
-      invoice_date?: string;
-      vehicle_number?: string;
-      driver_name?: string;
-      quality_check: boolean;
-      quality_notes?: string;
-      tax_rate?: number;
-      discount_amount?: number;
-      currency?: string;
-      notes?: string;
-      received_by_id: string;
-      items?: {
-        purchase_order_item_id: string;
-        received_quantity: number;
-        accepted_quantity: number;
-        rejected_quantity?: number;
-        damaged_quantity?: number;
-        unit_price: number;
-        expiry_date?: string;
-        batch_number?: string;
-        serial_numbers?: string;
-        quality_status?: string;
-        quality_notes?: string;
-      }[];
-    }) => apiClient.post('/grn', data),
-
-    // Update existing GRN
-    update: (id: string, data: {
+      terms?: string;
+      order_notes?: string;
       received_date?: string;
       delivery_note?: string;
       invoice_number?: string;
@@ -782,56 +667,69 @@ export const api = {
       driver_name?: string;
       quality_check?: boolean;
       quality_notes?: string;
+      receipt_notes?: string;
       tax_rate?: number;
+      shipping_cost?: number;
       discount_amount?: number;
       currency?: string;
-      notes?: string;
-      received_by_id?: string;
-    }) => apiClient.put(`/grn/${id}`, data),
+    }) => apiClient.put(`/purchase-receipts/${id}`, data),
 
-    // Delete GRN
-    delete: (id: string) => apiClient.delete(`/grn/${id}`),
+    // Delete purchase receipt
+    delete: (id: string) => apiClient.delete(`/purchase-receipts/${id}`),
 
-    // GRN processing operations
-    receipt: (id: string) => apiClient.post(`/grn/${id}/receipt`),
-    verify: (id: string) => apiClient.post(`/grn/${id}/verify`),
-    complete: (id: string) => apiClient.post(`/grn/${id}/complete`),
+    // Status management operations (Order phase)
+    approve: (id: string) => apiClient.post(`/purchase-receipts/${id}/approve`),
+    send: (id: string) => apiClient.post(`/purchase-receipts/${id}/send`),
+    cancel: (id: string) => apiClient.post(`/purchase-receipts/${id}/cancel`),
 
-    // GRN items management
-    addItem: (grnId: string, data: {
-      purchase_order_item_id: string;
-      received_quantity: number;
-      accepted_quantity: number;
-      rejected_quantity?: number;
-      damaged_quantity?: number;
-      unit_price: number;
-      expiry_date?: string;
-      batch_number?: string;
-      serial_numbers?: string;
-      quality_status?: string;
+    // Receipt processing operations
+    receive: (id: string, data: {
+      received_date: string;
+      delivery_note?: string;
+      invoice_number?: string;
+      invoice_date?: string;
+      vehicle_number?: string;
+      driver_name?: string;
+      quality_check: boolean;
       quality_notes?: string;
-    }) => apiClient.post(`/grn/${grnId}/items`, data),
+      receipt_notes?: string;
+    }) => apiClient.post(`/purchase-receipts/${id}/receive`, data),
+    
+    complete: (id: string) => apiClient.post(`/purchase-receipts/${id}/complete`),
 
-    updateItem: (grnId: string, itemId: string, data: {
+    // Purchase receipt items management
+    addItem: (receiptId: string, data: {
+      product_id: string;
+      ordered_quantity: number;
+      unit_price: number;
+      discount_amount?: number;
+      order_notes?: string;
+    }) => apiClient.post(`/purchase-receipts/${receiptId}/items`, data),
+
+    updateItem: (receiptId: string, itemId: string, data: {
+      ordered_quantity?: number;
+      unit_price?: number;
+      discount_amount?: number;
+      order_notes?: string;
       received_quantity?: number;
       accepted_quantity?: number;
       rejected_quantity?: number;
       damaged_quantity?: number;
-      unit_price?: number;
       expiry_date?: string;
       batch_number?: string;
       serial_numbers?: string;
       quality_status?: string;
       quality_notes?: string;
-    }) => apiClient.put(`/grn/${grnId}/items/${itemId}`, data),
+      receipt_notes?: string;
+    }) => apiClient.put(`/purchase-receipts/${receiptId}/items/${itemId}`, data),
 
-    removeItem: (grnId: string, itemId: string) => 
-      apiClient.delete(`/grn/${grnId}/items/${itemId}`),
+    removeItem: (receiptId: string, itemId: string) => 
+      apiClient.delete(`/purchase-receipts/${receiptId}/items/${itemId}`),
 
-    // Get GRN items
-    getItems: (grnId: string) => apiClient.get(`/grn/${grnId}/items`),
+    // Get purchase receipt items
+    getItems: (receiptId: string) => apiClient.get(`/purchase-receipts/${receiptId}/items`),
 
-    // Search GRNs
+    // Search purchase receipts
     search: (params: {
       query: string;
       page?: number;
@@ -843,7 +741,30 @@ export const api = {
       if (params.limit) searchParams.append('limit', params.limit.toString());
       
       const queryString = searchParams.toString();
-      return apiClient.get(`/grn/search?${queryString}`);
+      return apiClient.get(`/purchase-receipts/search?${queryString}`);
+    },
+
+    // Financial operations
+    calculateTotals: (receiptId: string) => apiClient.get(`/purchase-receipts/${receiptId}/calculate-totals`),
+    
+    // Reporting
+    getStatistics: () => apiClient.get('/purchase-receipts/statistics'),
+    generateReport: (params: {
+      start_date?: string;
+      end_date?: string;
+      status?: string;
+      supplier_id?: string;
+      format?: 'json' | 'csv' | 'excel';
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params.start_date) searchParams.append('start_date', params.start_date);
+      if (params.end_date) searchParams.append('end_date', params.end_date);
+      if (params.status) searchParams.append('status', params.status);
+      if (params.supplier_id) searchParams.append('supplier_id', params.supplier_id);
+      if (params.format) searchParams.append('format', params.format);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/purchase-receipts/report${queryString ? '?' + queryString : ''}`);
     },
   },
 

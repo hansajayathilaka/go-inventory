@@ -10,7 +10,6 @@ import (
 	"inventory-api/internal/business/hierarchy"
 	"inventory-api/internal/business/inventory"
 	"inventory-api/internal/business/product"
-	"inventory-api/internal/business/purchase"
 	"inventory-api/internal/business/purchase_receipt"
 	"inventory-api/internal/business/supplier"
 	"inventory-api/internal/business/user"
@@ -36,8 +35,6 @@ type Context struct {
 	BrandRepo                 interfaces.BrandRepository
 	VehicleBrandRepo          interfaces.VehicleBrandRepository
 	VehicleModelRepo          interfaces.VehicleModelRepository
-	PurchaseOrderRepo         interfaces.PurchaseOrderRepository
-	GRNRepo                   interfaces.GRNRepository
 	PurchaseReceiptRepo       interfaces.PurchaseReceiptRepository
 	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
@@ -47,7 +44,6 @@ type Context struct {
 	CustomerService       customer.Service
 	BrandService          brand.Service
 	VehicleService        vehicle.Service
-	PurchaseService       purchase.Service
 	PurchaseReceiptService purchase_receipt.Service
 	ProductService        product.Service
 	HierarchyService      hierarchy.Service
@@ -102,8 +98,6 @@ func (ctx *Context) initRepositories() {
 	ctx.BrandRepo = repository.NewBrandRepository(ctx.Database.DB)
 	ctx.VehicleBrandRepo = repository.NewVehicleBrandRepository(ctx.Database.DB)
 	ctx.VehicleModelRepo = repository.NewVehicleModelRepository(ctx.Database.DB)
-	ctx.PurchaseOrderRepo = repository.NewPurchaseOrderRepository(ctx.Database.DB)
-	ctx.GRNRepo = repository.NewGRNRepository(ctx.Database.DB)
 	ctx.PurchaseReceiptRepo = repository.NewPurchaseReceiptRepository(ctx.Database.DB)
 	ctx.VehicleCompatibilityRepo = repository.NewVehicleCompatibilityRepository(ctx.Database.DB)
 }
@@ -114,13 +108,6 @@ func (ctx *Context) initServices() {
 	ctx.CustomerService = customer.NewService(ctx.CustomerRepo)
 	ctx.BrandService = brand.NewService(ctx.BrandRepo)
 	ctx.VehicleService = vehicle.NewService(ctx.VehicleBrandRepo, ctx.VehicleModelRepo)
-	ctx.PurchaseService = purchase.NewService(
-		ctx.PurchaseOrderRepo,
-		ctx.GRNRepo,
-		ctx.SupplierRepo,
-		ctx.ProductRepo,
-		ctx.InventoryRepo,
-	)
 	ctx.PurchaseReceiptService = purchase_receipt.NewService(
 		ctx.PurchaseReceiptRepo,
 		ctx.SupplierRepo,

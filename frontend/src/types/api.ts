@@ -833,3 +833,175 @@ export interface VehicleCompatibilityListResponse {
     total_pages: number;
   };
 }
+
+// =============================================================================
+// PURCHASE RECEIPT (UNIFIED PO + GRN) TYPES
+// =============================================================================
+
+export type PurchaseReceiptStatus = 'draft' | 'pending' | 'approved' | 'ordered' | 'received' | 'partial' | 'completed' | 'cancelled';
+
+// Purchase Receipt Management (Unified Purchase Order + GRN)
+export interface PurchaseReceipt {
+  id: string;
+  receipt_number: string;
+  supplier_id: string;
+  supplier?: Supplier;
+  status: PurchaseReceiptStatus;
+  
+  // Order Information
+  order_date: string;
+  expected_date?: string;
+  reference?: string;
+  terms?: string;
+  order_notes?: string;
+  
+  // Receipt Information (populated when goods are received)
+  received_date?: string;
+  delivery_date?: string;
+  delivery_note?: string;
+  invoice_number?: string;
+  invoice_date?: string;
+  vehicle_number?: string;
+  driver_name?: string;
+  quality_check: boolean;
+  quality_notes?: string;
+  receipt_notes?: string;
+  
+  // Financial Information
+  sub_total: number;
+  tax_amount: number;
+  tax_rate: number;
+  shipping_cost: number;
+  discount_amount: number;
+  total_amount: number;
+  currency: string;
+  
+  // User Tracking
+  created_by_id: string;
+  created_by?: User;
+  approved_by_id?: string;
+  approved_by?: User;
+  approved_at?: string;
+  received_by_id?: string;
+  received_by?: User;
+  verified_by_id?: string;
+  verified_by?: User;
+  verified_at?: string;
+  
+  created_at: string;
+  updated_at: string;
+  items?: PurchaseReceiptItem[];
+}
+
+export interface PurchaseReceiptItem {
+  id: string;
+  purchase_receipt_id: string;
+  product_id: string;
+  product?: Product;
+  
+  // Order Information
+  ordered_quantity: number;
+  unit_price: number;
+  total_price: number;
+  discount_amount: number;
+  tax_amount: number;
+  order_notes?: string;
+  
+  // Receipt Information (populated during goods receipt)
+  received_quantity: number;
+  accepted_quantity: number;
+  rejected_quantity: number;
+  damaged_quantity: number;
+  expiry_date?: string;
+  batch_number?: string;
+  serial_numbers?: string;
+  quality_status: string;
+  quality_notes?: string;
+  receipt_notes?: string;
+  stock_updated: boolean;
+  
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePurchaseReceiptRequest {
+  supplier_id: string;
+  order_date: string;
+  expected_date?: string;
+  reference?: string;
+  terms?: string;
+  order_notes?: string;
+  tax_rate?: number;
+  shipping_cost?: number;
+  discount_amount?: number;
+  currency?: string;
+  items?: CreatePurchaseReceiptItemRequest[];
+}
+
+export interface CreatePurchaseReceiptItemRequest {
+  product_id: string;
+  ordered_quantity: number;
+  unit_price: number;
+  discount_amount?: number;
+  order_notes?: string;
+}
+
+export interface UpdatePurchaseReceiptRequest {
+  supplier_id?: string;
+  order_date?: string;
+  expected_date?: string;
+  delivery_date?: string;
+  reference?: string;
+  terms?: string;
+  order_notes?: string;
+  received_date?: string;
+  delivery_note?: string;
+  invoice_number?: string;
+  invoice_date?: string;
+  vehicle_number?: string;
+  driver_name?: string;
+  quality_check?: boolean;
+  quality_notes?: string;
+  receipt_notes?: string;
+  tax_rate?: number;
+  shipping_cost?: number;
+  discount_amount?: number;
+  currency?: string;
+}
+
+export interface UpdatePurchaseReceiptItemRequest {
+  ordered_quantity?: number;
+  unit_price?: number;
+  discount_amount?: number;
+  order_notes?: string;
+  received_quantity?: number;
+  accepted_quantity?: number;
+  rejected_quantity?: number;
+  damaged_quantity?: number;
+  expiry_date?: string;
+  batch_number?: string;
+  serial_numbers?: string;
+  quality_status?: string;
+  quality_notes?: string;
+  receipt_notes?: string;
+}
+
+export interface PurchaseReceiptListRequest {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: PurchaseReceiptStatus;
+  supplier_id?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface PurchaseReceiptListResponse {
+  data: PurchaseReceipt[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+  };
+}
