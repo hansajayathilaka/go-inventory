@@ -72,8 +72,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		vehicleBrandHandler := handlers.NewVehicleBrandHandler(appCtx.VehicleService)
 		vehicleModelHandler := handlers.NewVehicleModelHandler(appCtx.VehicleService)
 		vehicleCompatibilityHandler := handlers.NewVehicleCompatibilityHandler(appCtx.CompatibilityService)
-		purchaseOrderHandler := handlers.NewPurchaseOrderHandler(appCtx.PurchaseService)
-		grnHandler := handlers.NewGRNHandler(appCtx.PurchaseService)
+		// Legacy handlers removed - replaced by unified PurchaseReceiptHandler
 		purchaseReceiptHandler := handlers.NewPurchaseReceiptHandler(appCtx.PurchaseReceiptService)
 
 		// Authentication routes (public)
@@ -214,56 +213,8 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			vehicleCompatibilities.GET("/stats", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibilityStats)
 		}
 
-		// Purchase Order management routes (protected)
-		purchaseOrders := v1.Group("/purchase-orders")
-		purchaseOrders.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			// Basic CRUD operations
-			purchaseOrders.GET("", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrders)
-			purchaseOrders.POST("", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.CreatePurchaseOrder)
-			purchaseOrders.GET("/number/:po_number", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrderByNumber)
-			purchaseOrders.GET("/:id", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrder)
-			purchaseOrders.PUT("/:id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrder)
-			purchaseOrders.DELETE("/:id", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.DeletePurchaseOrder)
-			
-			// Status management operations
-			purchaseOrders.POST("/:id/approve", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.ApprovePurchaseOrder)
-			purchaseOrders.POST("/:id/send", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.SendPurchaseOrder)
-			purchaseOrders.POST("/:id/cancel", middleware.RequireMinimumRole("manager"), purchaseOrderHandler.CancelPurchaseOrder)
-			
-			// Item management operations
-			purchaseOrders.GET("/:id/items", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrderItems)
-			purchaseOrders.POST("/:id/items", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.AddPurchaseOrderItem)
-			purchaseOrders.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrderItem)
-			purchaseOrders.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.RemovePurchaseOrderItem)
-			
-			// GRN relationship routes  
-			purchaseOrders.GET("/:id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsByPurchaseOrder)
-		}
-
-		// GRN (Goods Received Note) management routes (protected)
-		grns := v1.Group("/grns")
-		grns.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			// Basic CRUD operations
-			grns.GET("", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNs)
-			grns.POST("", middleware.RequireMinimumRole("staff"), grnHandler.CreateGRN)
-			grns.GET("/number/:grn_number", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNByNumber)
-			grns.GET("/:id", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRN)
-			grns.PUT("/:id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRN)
-			grns.DELETE("/:id", middleware.RequireMinimumRole("manager"), grnHandler.DeleteGRN)
-			
-			// Processing operations
-			grns.POST("/:id/process-receipt", middleware.RequireMinimumRole("staff"), grnHandler.ProcessGRNReceipt)
-			grns.POST("/:id/verify", middleware.RequireMinimumRole("manager"), grnHandler.VerifyGRN)
-			grns.POST("/:id/complete", middleware.RequireMinimumRole("manager"), grnHandler.CompleteGRN)
-			
-			// Item management operations
-			grns.GET("/:id/items", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNItems)
-			grns.POST("/:id/items", middleware.RequireMinimumRole("staff"), grnHandler.AddGRNItem)
-			grns.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRNItem)
-			grns.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.RemoveGRNItem)
-		}
+		// Legacy Purchase Order and GRN routes removed
+		// Replaced by unified Purchase Receipt system (/purchase-receipts)
 
 		// Purchase Receipt management routes (protected) - NEW UNIFIED SYSTEM
 		purchaseReceipts := v1.Group("/purchase-receipts")
