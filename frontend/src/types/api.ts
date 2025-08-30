@@ -714,7 +714,7 @@ export interface VehicleCompatibility {
 
 export interface VehicleCompatibilityWithDetails extends VehicleCompatibility {
   product?: Product;
-  vehicle_model?: VehicleModel;
+  vehicle_model?: VehicleModelWithBrand;
 }
 
 export interface CreateVehicleCompatibilityRequest {
