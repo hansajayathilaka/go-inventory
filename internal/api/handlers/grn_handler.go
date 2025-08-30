@@ -36,7 +36,6 @@ func NewGRNHandler(purchaseService purchase.Service) *GRNHandler {
 // @Param status query string false "Filter by status" Enums(draft, received, partial, completed, cancelled)
 // @Param purchase_order_id query string false "Filter by purchase order ID" format(uuid)
 // @Param supplier_id query string false "Filter by supplier ID" format(uuid)
-// @Param location_id query string false "Filter by location ID" format(uuid)
 // @Param start_date query string false "Filter by start date" format(date)
 // @Param end_date query string false "Filter by end date" format(date)
 // @Security BearerAuth

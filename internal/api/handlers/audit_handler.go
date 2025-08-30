@@ -456,41 +456,12 @@ func (h *AuditHandler) GetInventorySummary(c *gin.Context) {
 		}
 	}
 
-	// Get all inventory for single-location system
-	allInventory, err := h.inventoryRepo.List(c.Request.Context(), 0, 0)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to fetch inventory",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	var totalItems int
-	var totalValue float64
-	for _, inv := range allInventory {
-		totalItems += inv.Quantity
-		if product, err := h.productRepo.GetByID(c.Request.Context(), inv.ProductID); err == nil && product != nil {
-			totalValue += float64(inv.Quantity) * product.CostPrice
-		}
-	}
-
-	// Create single location summary for backward compatibility
-	locationStockSummary := []dto.LocationStockSummary{{
-		LocationID:   uuid.New(), // Dummy ID for single location
-		LocationName: "Main Store",
-		TotalItems:   totalItems,
-		TotalValue:   totalValue,
-	}}
-
 	response := &dto.InventorySummaryResponse{
 		TotalProducts:   len(products),
-		TotalLocations:  1, // Single location system
 		TotalStockValue: totalStockValue,
 		LowStockItems:   lowStockSummary,
 		ZeroStockItems:  zeroStockSummary,
 		TopProducts:     []dto.InventorySummaryItem{}, // TODO: Implement top products logic
-		StockByLocation: locationStockSummary,
 		StockByCategory: []dto.CategoryStockSummary{}, // TODO: Implement category summary
 	}
 

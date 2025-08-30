@@ -286,15 +286,12 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 // @Tags inventory
 // @Accept json
 // @Produce json
-// @Param location_id query string false "Filter by location ID"
 // @Success 200 {object} dto.ApiResponse{data=[]dto.LowStockItemResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
 // @Router /inventory/low-stock [get]
 func (h *InventoryHandler) GetLowStockItems(c *gin.Context) {
 	ctx := c.Request.Context()
-	// TODO: Implement location filtering when service supports it
-	// For now, get all low stock items
 	items, err := h.inventoryService.GetLowStock(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
@@ -329,15 +326,12 @@ func (h *InventoryHandler) GetLowStockItems(c *gin.Context) {
 // @Tags inventory
 // @Accept json
 // @Produce json
-// @Param location_id query string false "Filter by location ID"
 // @Success 200 {object} dto.ApiResponse{data=[]dto.ZeroStockItemResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
 // @Router /inventory/zero-stock [get]
 func (h *InventoryHandler) GetZeroStockItems(c *gin.Context) {
 	ctx := c.Request.Context()
-	// TODO: Implement location filtering when service supports it
-	// For now, get all zero stock items
 	items, err := h.inventoryService.GetZeroStock(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{

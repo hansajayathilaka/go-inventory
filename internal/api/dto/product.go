@@ -99,8 +99,6 @@ type SupplierResponse struct {
 
 // ProductInventoryResponse represents inventory info for products
 type ProductInventoryResponse struct {
-	LocationID       uuid.UUID `json:"location_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	LocationName     string    `json:"location_name" example:"Main Warehouse"`
 	Quantity         int       `json:"quantity" example:"50"`
 	ReservedQuantity int       `json:"reserved_quantity" example:"5"`
 	AvailableQuantity int      `json:"available_quantity" example:"45"`

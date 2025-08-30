@@ -165,11 +165,11 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Create migration for unified PurchaseReceipt structure ✅
   - Update seeding scripts for simplified data ✅
 
-### Phase 5.2: Backend API Updates 📋 PENDING  
-- [ ] **Step 5.2.1**: Remove location-based API endpoints
-  - Remove location handlers and routes
-  - Update inventory APIs to work without location context
-  - Update stock movement APIs for single-location operations
+### Phase 5.2: Backend API Updates 🚧 IN PROGRESS  
+- [x] **Step 5.2.1**: Remove location-based API endpoints ✅
+  - Remove location handlers and routes ✅
+  - Update inventory APIs to work without location context ✅
+  - Update stock movement APIs for single-location operations ✅
 - [ ] **Step 5.2.2**: Create PurchaseReceipt API endpoints
   - Replace PO and GRN endpoints with unified PurchaseReceipt
   - Implement simplified purchase workflow (order → receive → complete)
@@ -213,8 +213,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.2.1 - Remove location-based API endpoints
-- **Next Step**: Remove location handlers and routes, update inventory APIs to work without location context, and update stock movement APIs for single-location operations
+- **Current Step**: Step 5.2.2 - Create PurchaseReceipt API endpoints
+- **Next Step**: Replace PO and GRN endpoints with unified PurchaseReceipt, implement simplified purchase workflow (order → receive → complete), and update DTOs and request/response models
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -257,6 +257,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 5.1.3 (2025-08-30)**: StockMovement model and repository single-location conversion - removed location_id field dependencies from StockMovement repository and business logic; updated StockMovementRepository interface removing GetByLocation method, cleaned all repository methods removing Location preloading (GetByID, List, GetByProduct, GetByUser, GetByMovementType, GetByDateRange, GetByReference, GetMovementsByProductAndDateRange), updated business logic tests removing location-based mock methods and fixing service constructor calls to match single-location interface signatures, achieved successful compilation and test execution for simplified single-location stock movement tracking system
 - **Step 5.1.4 (2025-08-30)**: Unified PurchaseReceipt model creation - created comprehensive PurchaseReceipt and PurchaseReceiptItem models combining PurchaseOrder and GRN functionality with unified status workflow (draft→pending→approved→ordered→received→partial→completed/cancelled); created PurchaseReceiptRepository interface with complete CRUD operations, status management (approve, send, receive, complete, cancel), item management, financial operations, search capabilities, and reporting functions; implemented PurchaseReceiptRepository with comprehensive database operations, search with multiple filters, status workflow management, item quantity tracking (ordered/received/accepted/rejected/damaged), financial calculations, and statistics generation; added PurchaseReceipt models to database AutoMigrate, updated app context with new repository initialization; achieved successful compilation establishing foundation for simplified single-table purchase/receipt workflow system
 - **Step 5.1.5 (2025-08-30)**: Database migration and seeding simplification - updated database migration scripts to remove obsolete location tables (locations, purchase_orders, purchase_order_items, grns, grn_items) and location_id columns from inventories and stock_movements tables; implemented cleanupObsoleteStructures() method with safe table/column dropping and warning logging; updated seeding scripts with comprehensive PurchaseReceipt seeding function demonstrating unified purchase workflow with proper time parsing, admin user association, and multi-item purchase receipts; added time import and resolved all compilation errors; achieved successful build with simplified single-location database structure and sample purchase receipt data for testing
+- **Step 5.2.1 (2025-08-30)**: Location-based API endpoints removal - removed location handlers and routes from API layer, updated inventory APIs to work without location context, and updated stock movement APIs for single-location operations; removed LocationID and LocationName fields from StockMovementResponse DTO; removed LocationID and LocationName fields from ProductInventoryResponse DTO; removed TotalLocations field and StockByLocation field from InventorySummaryResponse DTO and deleted LocationStockSummary DTO; removed dummy location assignments in audit_handler.go and product_handler.go; removed location-related Swagger comments from inventory handlers; removed location parameter from GRN handler Swagger docs; achieved successful compilation with complete removal of location-based API functionality for single-location inventory system
 
 ## Notes
 - Each step should be committed separately for better tracking

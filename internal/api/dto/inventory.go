@@ -40,8 +40,6 @@ type StockMovementResponse struct {
 	ProductID    uuid.UUID  `json:"product_id"`
 	ProductName  string     `json:"product_name"`
 	ProductSKU   string     `json:"product_sku"`
-	LocationID   *uuid.UUID `json:"location_id"`
-	LocationName *string    `json:"location_name"`
 	MovementType string     `json:"movement_type"`
 	Quantity     int        `json:"quantity"`
 	ReferenceID  *uuid.UUID `json:"reference_id"`

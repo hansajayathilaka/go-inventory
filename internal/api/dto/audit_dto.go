@@ -72,12 +72,10 @@ type StockMovementReportResponse struct {
 // InventorySummaryResponse represents inventory summary data
 type InventorySummaryResponse struct {
 	TotalProducts     int                          `json:"total_products"`
-	TotalLocations    int                          `json:"total_locations"`
 	TotalStockValue   float64                      `json:"total_stock_value"`
 	LowStockItems     []InventorySummaryItem       `json:"low_stock_items"`
 	ZeroStockItems    []InventorySummaryItem       `json:"zero_stock_items"`
 	TopProducts       []InventorySummaryItem       `json:"top_products"`
-	StockByLocation   []LocationStockSummary       `json:"stock_by_location"`
 	StockByCategory   []CategoryStockSummary       `json:"stock_by_category"`
 }
 
@@ -90,14 +88,6 @@ type InventorySummaryItem struct {
 	StockValue   float64   `json:"stock_value"`
 	ReorderLevel int       `json:"reorder_level"`
 	Category     string    `json:"category,omitempty"`
-}
-
-// LocationStockSummary represents stock summary by location
-type LocationStockSummary struct {
-	LocationID   uuid.UUID `json:"location_id"`
-	LocationName string    `json:"location_name"`
-	TotalItems   int       `json:"total_items"`
-	TotalValue   float64   `json:"total_value"`
 }
 
 // CategoryStockSummary represents stock summary by category

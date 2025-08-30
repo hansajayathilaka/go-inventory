@@ -669,8 +669,6 @@ func (h *ProductHandler) convertInventoryToResponse(inventory *models.Inventory)
 	}
 	
 	response := dto.ProductInventoryResponse{
-		LocationID:        uuid.Nil, // No location in single-location system
-		LocationName:      "Main Store", // Default location name
 		Quantity:          inventory.Quantity,
 		ReservedQuantity:  inventory.ReservedQuantity,
 		AvailableQuantity: inventory.AvailableQuantity(),
