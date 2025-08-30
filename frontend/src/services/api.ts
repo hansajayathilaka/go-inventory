@@ -718,7 +718,6 @@ export const api = {
       status?: 'draft' | 'received' | 'partial' | 'completed' | 'cancelled';
       purchase_order_id?: string;
       supplier_id?: string;
-      location_id?: string;
       start_date?: string;
       end_date?: string;
     }) => {
@@ -729,7 +728,6 @@ export const api = {
       if (params?.status) searchParams.append('status', params.status);
       if (params?.purchase_order_id) searchParams.append('purchase_order_id', params.purchase_order_id);
       if (params?.supplier_id) searchParams.append('supplier_id', params.supplier_id);
-      if (params?.location_id) searchParams.append('location_id', params.location_id);
       if (params?.start_date) searchParams.append('start_date', params.start_date);
       if (params?.end_date) searchParams.append('end_date', params.end_date);
       
@@ -746,7 +744,6 @@ export const api = {
     // Create new GRN
     create: (data: {
       purchase_order_id: string;
-      location_id: string;
       received_date: string;
       delivery_note?: string;
       invoice_number?: string;
@@ -777,7 +774,6 @@ export const api = {
 
     // Update existing GRN
     update: (id: string, data: {
-      location_id?: string;
       received_date?: string;
       delivery_note?: string;
       invoice_number?: string;
@@ -1009,25 +1005,6 @@ export const api = {
     getPOSReady: () => apiClient.get('/products/pos-ready'),
   },
 
-  // Location Management
-  locations: {
-    // Get all locations (simplified list for dropdowns)
-    getAll: () => apiClient.get('/store/locations'),
-
-    // Get active locations for dropdowns
-    getActive: () => apiClient.get('/store/locations?is_active=true'),
-
-    // For now, return a default location to prevent errors
-    // TODO: Replace with actual location management when backend is implemented
-    getDefault: () => Promise.resolve({
-      data: [{
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        name: 'Main Store',
-        address: 'Main Store Location',
-        is_active: true
-      }]
-    })
-  },
 
   // User Management
   users: {

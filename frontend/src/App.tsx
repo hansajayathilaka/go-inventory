@@ -9,7 +9,6 @@ import CategoriesPage from './pages/CategoriesPage';
 import ProductsPage from './pages/ProductsPage';
 import InventoryPage from './pages/InventoryPage';
 import SuppliersPage from './pages/SuppliersPage';
-import LocationsPage from './pages/LocationsPage';
 import UsersPage from './pages/UsersPage';
 import CustomersPage from './pages/CustomersPage';
 import BrandsPage from './pages/BrandsPage';
@@ -119,16 +118,6 @@ function App() {
               }
             />
             
-            <Route
-              path="/locations"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <LocationsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
             
             <Route
               path="/customers"

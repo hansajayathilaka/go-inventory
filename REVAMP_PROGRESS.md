@@ -185,11 +185,11 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Remove Swagger comments from legacy GRN and PO handler files ✅
   - Regenerated comprehensive documentation with unified purchase receipt system ✅
 
-### Phase 5.3: Frontend Updates 📋 PENDING
-- [ ] **Step 5.3.1**: Remove location management UI
-  - Remove location-related components and pages
-  - Update inventory UI to work without location selection
-  - Remove location filtering from all components
+### Phase 5.3: Frontend Updates 🚧 IN PROGRESS
+- [x] **Step 5.3.1**: Remove location management UI ✅
+  - Remove location-related components and pages ✅
+  - Update inventory UI to work without location selection ✅
+  - Remove location filtering from all components ✅
 - [ ] **Step 5.3.2**: Create PurchaseReceipt management UI
   - Replace separate PO and GRN pages with unified PurchaseReceipt
   - Implement simplified workflow (order → receive → complete)
@@ -215,8 +215,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.2.4 - Update Swagger documentation (COMPLETE)
-- **Next Step**: Step 5.3.1 - Remove location management UI
+- **Current Step**: Step 5.3.1 - Remove location management UI (COMPLETE)
+- **Next Step**: Step 5.3.2 - Create PurchaseReceipt management UI
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation

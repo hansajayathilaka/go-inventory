@@ -19,7 +19,6 @@ interface GRNModalProps {
 
 interface GRNFormData {
   purchase_order_id: string;
-  location_id: string;
   received_date: string;
   delivery_note: string;
   invoice_number: string;
@@ -49,8 +48,6 @@ interface GRNItemFormData {
   quality_notes: string;
 }
 
-// Use default location ID for single store
-const DEFAULT_LOCATION_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 const GRNModal: React.FC<GRNModalProps> = ({
   isOpen,
@@ -60,7 +57,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<GRNFormData>({
     purchase_order_id: '',
-    location_id: DEFAULT_LOCATION_ID, // Use default location for single store
     received_date: new Date().toISOString().split('T')[0],
     delivery_note: '',
     invoice_number: '',
@@ -124,7 +120,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
     if (grn) {
       setFormData({
         purchase_order_id: grn.purchase_order_id || '',
-        location_id: grn.location_id || DEFAULT_LOCATION_ID,
         received_date: grn.received_date?.split('T')[0] || '',
         delivery_note: grn.delivery_note || '',
         invoice_number: grn.invoice_number || '',
@@ -146,7 +141,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
       // Reset form for new GRN
       setFormData({
         purchase_order_id: '',
-        location_id: DEFAULT_LOCATION_ID,
         received_date: new Date().toISOString().split('T')[0],
         delivery_note: '',
         invoice_number: '',
@@ -329,7 +323,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
       if (grn) {
         // Update existing GRN
         const updateData: UpdateGRNRequest = {
-          location_id: formData.location_id,
           received_date: formData.received_date,
           delivery_note: formData.delivery_note || undefined,
           invoice_number: formData.invoice_number || undefined,
@@ -350,7 +343,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
         // Create new GRN
         const createData: CreateGRNRequest = {
           purchase_order_id: formData.purchase_order_id,
-          location_id: formData.location_id,
           received_date: formData.received_date,
           delivery_note: formData.delivery_note || undefined,
           invoice_number: formData.invoice_number || undefined,

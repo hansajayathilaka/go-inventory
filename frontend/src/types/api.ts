@@ -59,16 +59,6 @@ export interface Supplier {
   updated_at?: string;
 }
 
-export interface Location {
-  id: string;
-  name: string;
-  type: 'warehouse' | 'store' | 'supplier';
-  address: string;
-  capacity?: number;
-  status: 'active' | 'inactive';
-  created_at: string;
-  updated_at: string;
-}
 
 export interface InventoryRecord {
   id: string;
@@ -86,8 +76,6 @@ export interface StockMovement {
   id: string;
   product_id: string;
   product?: Product;
-  location_id: string;
-  location?: Location;
   movement_type: 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT';
   quantity: number;
   reference_id?: string;
@@ -582,7 +570,6 @@ export interface GRN {
   grn_number: string;
   purchase_order_id: string;
   supplier_id: string;
-  location_id: string;
   status: GRNStatus;
   received_date: string;
   delivery_note?: string;
@@ -631,7 +618,6 @@ export interface GRNItem {
 
 export interface CreateGRNRequest {
   purchase_order_id: string;
-  location_id: string;
   received_date: string;
   delivery_note?: string;
   invoice_number?: string;
@@ -663,7 +649,6 @@ export interface CreateGRNItemRequest {
 }
 
 export interface UpdateGRNRequest {
-  location_id?: string;
   received_date?: string;
   delivery_note?: string;
   invoice_number?: string;
@@ -699,7 +684,6 @@ export interface GRNListRequest {
   status?: GRNStatus;
   purchase_order_id?: string;
   supplier_id?: string;
-  location_id?: string;
   start_date?: string;
   end_date?: string;
 }
