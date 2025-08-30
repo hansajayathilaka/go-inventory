@@ -47,7 +47,6 @@ type AuditStatisticsResponse struct {
 // StockMovementReportRequest represents query parameters for stock movement reports
 type StockMovementReportRequest struct {
 	ProductID    string `form:"product_id"`
-	LocationID   string `form:"location_id"`
 	MovementType string `form:"movement_type"`
 	StartDate    string `form:"start_date"`
 	EndDate      string `form:"end_date"`
@@ -61,8 +60,6 @@ type StockMovementReportResponse struct {
 	ProductID     uuid.UUID            `json:"product_id"`
 	ProductName   string               `json:"product_name"`
 	ProductSKU    string               `json:"product_sku"`
-	LocationID    uuid.UUID            `json:"location_id"`
-	LocationName  string               `json:"location_name"`
 	MovementType  models.MovementType  `json:"movement_type"`
 	Quantity      int                  `json:"quantity"`
 	ReferenceID   string               `json:"reference_id,omitempty"`

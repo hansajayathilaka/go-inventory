@@ -16,7 +16,6 @@ var (
 	ErrInvalidQuantity      = errors.New("invalid quantity")
 	ErrInventoryExists      = errors.New("inventory record already exists")
 	ErrProductNotFound      = errors.New("product not found")
-	ErrLocationNotFound     = errors.New("location not found")
 	ErrGRNNotFound          = errors.New("grn not found")
 	ErrGRNItemNotFound      = errors.New("grn item not found")
 	ErrGRNStockAlreadyUpdated = errors.New("grn stock already updated")
@@ -25,23 +24,21 @@ var (
 )
 
 type Service interface {
-	CreateInventory(ctx context.Context, productID, locationID uuid.UUID, initialQuantity, reorderLevel, maxLevel int) (*models.Inventory, error)
-	GetInventory(ctx context.Context, productID, locationID uuid.UUID) (*models.Inventory, error)
-	UpdateStock(ctx context.Context, productID, locationID uuid.UUID, quantity int, userID uuid.UUID, notes string) error
-	AdjustStock(ctx context.Context, productID, locationID uuid.UUID, adjustment int, userID uuid.UUID, notes string) error
-	ReserveStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error
-	ReleaseReservedStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error
-	TransferStock(ctx context.Context, productID, fromLocationID, toLocationID uuid.UUID, quantity int, userID uuid.UUID, notes string) error
+	CreateInventory(ctx context.Context, productID uuid.UUID, initialQuantity, reorderLevel, maxLevel int) (*models.Inventory, error)
+	GetInventory(ctx context.Context, productID uuid.UUID) (*models.Inventory, error)
+	UpdateStock(ctx context.Context, productID uuid.UUID, quantity int, userID uuid.UUID, notes string) error
+	AdjustStock(ctx context.Context, productID uuid.UUID, adjustment int, userID uuid.UUID, notes string) error
+	ReserveStock(ctx context.Context, productID uuid.UUID, quantity int) error
+	ReleaseReservedStock(ctx context.Context, productID uuid.UUID, quantity int) error
 	GetLowStock(ctx context.Context) ([]*models.Inventory, error)
 	GetZeroStock(ctx context.Context) ([]*models.Inventory, error)
-	GetInventoryByProduct(ctx context.Context, productID uuid.UUID) ([]*models.Inventory, error)
-	GetInventoryByLocation(ctx context.Context, locationID uuid.UUID) ([]*models.Inventory, error)
+	GetInventoryByProduct(ctx context.Context, productID uuid.UUID) (*models.Inventory, error)
 	GetTotalStockByProduct(ctx context.Context, productID uuid.UUID) (int, error)
-	UpdateReorderLevels(ctx context.Context, productID, locationID uuid.UUID, reorderLevel, maxLevel int) error
+	UpdateReorderLevels(ctx context.Context, productID uuid.UUID, reorderLevel, maxLevel int) error
 	
 	// GRN Integration methods
 	ProcessGRNStockUpdate(ctx context.Context, grn *models.GRN, userID uuid.UUID) error
-	ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNItem, locationID uuid.UUID, userID uuid.UUID, notes string) error
+	ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNItem, userID uuid.UUID, notes string) error
 	ReverseGRNStockUpdate(ctx context.Context, grn *models.GRN, userID uuid.UUID) error
 	ValidateGRNStockCapacity(ctx context.Context, grn *models.GRN) error
 }
@@ -64,7 +61,7 @@ func NewService(
 	}
 }
 
-func (s *service) CreateInventory(ctx context.Context, productID, locationID uuid.UUID, initialQuantity, reorderLevel, maxLevel int) (*models.Inventory, error) {
+func (s *service) CreateInventory(ctx context.Context, productID uuid.UUID, initialQuantity, reorderLevel, maxLevel int) (*models.Inventory, error) {
 	if initialQuantity < 0 || reorderLevel < 0 || maxLevel < 0 {
 		return nil, ErrInvalidQuantity
 	}
@@ -74,16 +71,13 @@ func (s *service) CreateInventory(ctx context.Context, productID, locationID uui
 		return nil, ErrProductNotFound
 	}
 
-	// Skip location validation - using default hardware store location
-
-	existing, _ := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+	existing, _ := s.inventoryRepo.GetByProduct(ctx, productID)
 	if existing != nil {
 		return nil, ErrInventoryExists
 	}
 
 	inventory := &models.Inventory{
 		ProductID:    productID,
-		LocationID:   &locationID,
 		Quantity:     initialQuantity,
 		ReorderLevel: reorderLevel,
 		MaxLevel:     maxLevel,
@@ -96,16 +90,16 @@ func (s *service) CreateInventory(ctx context.Context, productID, locationID uui
 	return inventory, nil
 }
 
-func (s *service) GetInventory(ctx context.Context, productID, locationID uuid.UUID) (*models.Inventory, error) {
-	return s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+func (s *service) GetInventory(ctx context.Context, productID uuid.UUID) (*models.Inventory, error) {
+	return s.inventoryRepo.GetByProduct(ctx, productID)
 }
 
-func (s *service) UpdateStock(ctx context.Context, productID, locationID uuid.UUID, quantity int, userID uuid.UUID, notes string) error {
+func (s *service) UpdateStock(ctx context.Context, productID uuid.UUID, quantity int, userID uuid.UUID, notes string) error {
 	if quantity < 0 {
 		return ErrInvalidQuantity
 	}
 
-	inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+	inventory, err := s.inventoryRepo.GetByProduct(ctx, productID)
 	if err != nil {
 		return ErrInventoryNotFound
 	}
@@ -130,7 +124,6 @@ func (s *service) UpdateStock(ctx context.Context, productID, locationID uuid.UU
 	if movementQuantity != 0 {
 		movement := &models.StockMovement{
 			ProductID:    productID,
-			LocationID:   locationID,
 			MovementType: movementType,
 			Quantity:     movementQuantity,
 			UserID:       userID,
@@ -143,8 +136,8 @@ func (s *service) UpdateStock(ctx context.Context, productID, locationID uuid.UU
 	return nil
 }
 
-func (s *service) AdjustStock(ctx context.Context, productID, locationID uuid.UUID, adjustment int, userID uuid.UUID, notes string) error {
-	inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+func (s *service) AdjustStock(ctx context.Context, productID uuid.UUID, adjustment int, userID uuid.UUID, notes string) error {
+	inventory, err := s.inventoryRepo.GetByProduct(ctx, productID)
 	if err != nil {
 		return ErrInventoryNotFound
 	}
@@ -173,7 +166,6 @@ func (s *service) AdjustStock(ctx context.Context, productID, locationID uuid.UU
 	if adjustment != 0 {
 		movement := &models.StockMovement{
 			ProductID:    productID,
-			LocationID:   locationID,
 			MovementType: movementType,
 			Quantity:     movementQuantity,
 			UserID:       userID,
@@ -186,12 +178,12 @@ func (s *service) AdjustStock(ctx context.Context, productID, locationID uuid.UU
 	return nil
 }
 
-func (s *service) ReserveStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error {
+func (s *service) ReserveStock(ctx context.Context, productID uuid.UUID, quantity int) error {
 	if quantity <= 0 {
 		return ErrInvalidQuantity
 	}
 
-	inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+	inventory, err := s.inventoryRepo.GetByProduct(ctx, productID)
 	if err != nil {
 		return ErrInventoryNotFound
 	}
@@ -200,82 +192,17 @@ func (s *service) ReserveStock(ctx context.Context, productID, locationID uuid.U
 		return ErrInsufficientStock
 	}
 
-	return s.inventoryRepo.ReserveStock(ctx, productID, locationID, quantity)
+	return s.inventoryRepo.ReserveStock(ctx, productID, quantity)
 }
 
-func (s *service) ReleaseReservedStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error {
+func (s *service) ReleaseReservedStock(ctx context.Context, productID uuid.UUID, quantity int) error {
 	if quantity <= 0 {
 		return ErrInvalidQuantity
 	}
 
-	return s.inventoryRepo.ReleaseReservedStock(ctx, productID, locationID, quantity)
+	return s.inventoryRepo.ReleaseReservedStock(ctx, productID, quantity)
 }
 
-func (s *service) TransferStock(ctx context.Context, productID, fromLocationID, toLocationID uuid.UUID, quantity int, userID uuid.UUID, notes string) error {
-	if quantity <= 0 {
-		return ErrInvalidQuantity
-	}
-
-	fromInventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, fromLocationID)
-	if err != nil {
-		return fmt.Errorf("source inventory not found: %w", err)
-	}
-
-	if fromInventory.AvailableQuantity() < quantity {
-		return ErrInsufficientStock
-	}
-
-	toInventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, toLocationID)
-	if err != nil {
-		toInventory = &models.Inventory{
-			ProductID:  productID,
-			LocationID: &toLocationID,
-			Quantity:   0,
-		}
-		if err := s.inventoryRepo.Create(ctx, toInventory); err != nil {
-			return err
-		}
-	}
-
-	fromInventory.Quantity -= quantity
-	toInventory.Quantity += quantity
-
-	if err := s.inventoryRepo.Update(ctx, fromInventory); err != nil {
-		return err
-	}
-
-	if err := s.inventoryRepo.Update(ctx, toInventory); err != nil {
-		return err
-	}
-
-	referenceID := uuid.New().String()
-
-	outMovement := &models.StockMovement{
-		ProductID:    productID,
-		LocationID:   fromLocationID,
-		MovementType: models.MovementTRANSFER,
-		Quantity:     quantity,
-		ReferenceID:  referenceID,
-		UserID:       userID,
-		Notes:        fmt.Sprintf("Transfer OUT to location %s: %s", toLocationID, notes),
-	}
-
-	inMovement := &models.StockMovement{
-		ProductID:    productID,
-		LocationID:   toLocationID,
-		MovementType: models.MovementTRANSFER,
-		Quantity:     quantity,
-		ReferenceID:  referenceID,
-		UserID:       userID,
-		Notes:        fmt.Sprintf("Transfer IN from location %s: %s", fromLocationID, notes),
-	}
-
-	if err := s.stockMovementRepo.Create(ctx, outMovement); err != nil {
-		return err
-	}
-
-	return s.stockMovementRepo.Create(ctx, inMovement)
-}
 
 func (s *service) GetLowStock(ctx context.Context) ([]*models.Inventory, error) {
 	return s.inventoryRepo.GetLowStock(ctx)
@@ -285,24 +212,20 @@ func (s *service) GetZeroStock(ctx context.Context) ([]*models.Inventory, error)
 	return s.inventoryRepo.GetZeroStock(ctx)
 }
 
-func (s *service) GetInventoryByProduct(ctx context.Context, productID uuid.UUID) ([]*models.Inventory, error) {
+func (s *service) GetInventoryByProduct(ctx context.Context, productID uuid.UUID) (*models.Inventory, error) {
 	return s.inventoryRepo.GetByProduct(ctx, productID)
-}
-
-func (s *service) GetInventoryByLocation(ctx context.Context, locationID uuid.UUID) ([]*models.Inventory, error) {
-	return s.inventoryRepo.GetByLocation(ctx, locationID)
 }
 
 func (s *service) GetTotalStockByProduct(ctx context.Context, productID uuid.UUID) (int, error) {
 	return s.inventoryRepo.GetTotalQuantityByProduct(ctx, productID)
 }
 
-func (s *service) UpdateReorderLevels(ctx context.Context, productID, locationID uuid.UUID, reorderLevel, maxLevel int) error {
+func (s *service) UpdateReorderLevels(ctx context.Context, productID uuid.UUID, reorderLevel, maxLevel int) error {
 	if reorderLevel < 0 || maxLevel < 0 {
 		return ErrInvalidQuantity
 	}
 
-	inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, productID, locationID)
+	inventory, err := s.inventoryRepo.GetByProduct(ctx, productID)
 	if err != nil {
 		return ErrInventoryNotFound
 	}
@@ -341,7 +264,7 @@ func (s *service) ProcessGRNStockUpdate(ctx context.Context, grn *models.GRN, us
 			continue
 		}
 
-		err := s.ProcessGRNItemStock(ctx, item, grn.LocationID, userID, 
+		err := s.ProcessGRNItemStock(ctx, item, userID, 
 			fmt.Sprintf("GRN %s - %s", grn.GRNNumber, grn.DeliveryNote))
 		if err != nil {
 			return fmt.Errorf("failed to process GRN item %s: %w", item.ID, err)
@@ -351,7 +274,7 @@ func (s *service) ProcessGRNStockUpdate(ctx context.Context, grn *models.GRN, us
 	return nil
 }
 
-func (s *service) ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNItem, locationID uuid.UUID, userID uuid.UUID, notes string) error {
+func (s *service) ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNItem, userID uuid.UUID, notes string) error {
 	if grnItem == nil {
 		return ErrGRNItemNotFound
 	}
@@ -367,12 +290,11 @@ func (s *service) ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNIt
 	}
 
 	// Get or create inventory record
-	inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, grnItem.ProductID, locationID)
+	inventory, err := s.inventoryRepo.GetByProduct(ctx, grnItem.ProductID)
 	if err != nil {
 		// Create new inventory record if it doesn't exist
 		inventory = &models.Inventory{
 			ProductID:    grnItem.ProductID,
-			LocationID:   &locationID,
 			Quantity:     0,
 			ReorderLevel: 10, // Default reorder level
 			MaxLevel:     1000, // Default max level
@@ -391,7 +313,6 @@ func (s *service) ProcessGRNItemStock(ctx context.Context, grnItem *models.GRNIt
 	// Create stock movement record
 	movement := &models.StockMovement{
 		ProductID:    grnItem.ProductID,
-		LocationID:   locationID,
 		MovementType: models.MovementIN,
 		Quantity:     grnItem.AcceptedQuantity,
 		ReferenceID:  grnItem.GRNID.String(),
@@ -434,7 +355,7 @@ func (s *service) ReverseGRNStockUpdate(ctx context.Context, grn *models.GRN, us
 		}
 
 		// Get inventory record
-		inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, item.ProductID, grn.LocationID)
+		inventory, err := s.inventoryRepo.GetByProduct(ctx, item.ProductID)
 		if err != nil {
 			return fmt.Errorf("inventory record not found for reversal: %w", err)
 		}
@@ -454,7 +375,6 @@ func (s *service) ReverseGRNStockUpdate(ctx context.Context, grn *models.GRN, us
 		// Create reversal stock movement record
 		movement := &models.StockMovement{
 			ProductID:    item.ProductID,
-			LocationID:   grn.LocationID,
 			MovementType: models.MovementOUT,
 			Quantity:     item.AcceptedQuantity,
 			ReferenceID:  item.GRNID.String(),
@@ -482,7 +402,7 @@ func (s *service) ValidateGRNStockCapacity(ctx context.Context, grn *models.GRN)
 		}
 
 		// Get current inventory
-		inventory, err := s.inventoryRepo.GetByProductAndLocation(ctx, item.ProductID, grn.LocationID)
+		inventory, err := s.inventoryRepo.GetByProduct(ctx, item.ProductID)
 		if err != nil {
 			// If no inventory exists, validation passes (will be created)
 			continue

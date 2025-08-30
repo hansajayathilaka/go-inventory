@@ -51,7 +51,8 @@
       "Bash(git commit:*)",
       "Bash(psql:*)",
       "Bash(git reset:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gofmt:*)"
     ],
     "deny": [],
     "ask": []

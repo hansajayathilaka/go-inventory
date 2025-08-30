@@ -113,16 +113,6 @@ func (h *GRNHandler) GetGRNs(c *gin.Context) {
 		grns = filtered
 	}
 
-	// Filter by location ID if specified
-	if req.LocationID != nil {
-		filtered := make([]*models.GRN, 0)
-		for _, grn := range grns {
-			if grn.LocationID == *req.LocationID {
-				filtered = append(filtered, grn)
-			}
-		}
-		grns = filtered
-	}
 
 	grnResponses := dto.ToGRNResponseList(grns)
 

@@ -960,10 +960,6 @@ func (s *service) ValidateGRN(ctx context.Context, grn *models.GRN, isUpdate boo
 		return errors.New("supplier ID is required")
 	}
 	
-	if grn.LocationID == uuid.Nil {
-		return errors.New("location ID is required")
-	}
-	
 	if grn.ReceivedByID == uuid.Nil {
 		return errors.New("received by ID is required")
 	}

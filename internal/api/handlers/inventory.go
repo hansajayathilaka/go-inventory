@@ -90,13 +90,14 @@ func (h *InventoryHandler) GetInventoryRecords(c *gin.Context) {
 	// Get filtered records based on parameters
 	if productUUID != nil {
 		// Get by product
-		records, err = h.inventoryRepo.GetByProduct(ctx, *productUUID)
+		record, err := h.inventoryRepo.GetByProduct(ctx, *productUUID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 				Error: "failed to retrieve inventory records",
 			})
 			return
 		}
+		records = []*models.Inventory{record}
 		total = int64(len(records))
 	} else {
 		// Get all with pagination
@@ -166,10 +167,9 @@ func (h *InventoryHandler) CreateInventoryRecord(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	defaultLocationID := models.GetDefaultLocationID()
 	
 	// Use the service's CreateInventory method which includes validation
-	record, err := h.inventoryService.CreateInventory(ctx, req.ProductID, defaultLocationID, req.Quantity, req.ReorderLevel, 1000) // Using 1000 as default max level
+	record, err := h.inventoryService.CreateInventory(ctx, req.ProductID, req.Quantity, req.ReorderLevel, 1000) // Using 1000 as default max level
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error: "failed to create inventory record",
@@ -234,7 +234,6 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 
 	// For now, use a default user ID - in production this would come from JWT
 	defaultUserID := uuid.MustParse("550e8400-e29b-41d4-a716-446655440000")
-	defaultLocationID := models.GetDefaultLocationID()
 	ctx := c.Request.Context()
 
 	var notes string
@@ -245,7 +244,7 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 	}
 
 	// Use the service's AdjustStock method
-	err := h.inventoryService.AdjustStock(ctx, req.ProductID, defaultLocationID, req.Quantity, defaultUserID, notes)
+	err := h.inventoryService.AdjustStock(ctx, req.ProductID, req.Quantity, defaultUserID, notes)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error: "failed to adjust stock",
@@ -263,22 +262,12 @@ func (h *InventoryHandler) AdjustStock(c *gin.Context) {
 	}
 
 	movement := movements[0]
-	var locationID *uuid.UUID
-	var locationName *string
-	if movement.LocationID != uuid.Nil {
-		locationID = &movement.LocationID
-		if movement.Location.Name != "" {
-			locationName = &movement.Location.Name
-		}
-	}
 
 	response := dto.StockMovementResponse{
 		ID:           movement.ID,
 		ProductID:    movement.ProductID,
 		ProductName:  movement.Product.Name,
 		ProductSKU:   movement.Product.SKU,
-		LocationID:   locationID,
-		LocationName: locationName,
 		MovementType: string(movement.MovementType),
 		Quantity:     movement.Quantity,
 		ReferenceID:  parseStringToUUID(movement.ReferenceID),
@@ -397,10 +386,9 @@ func (h *InventoryHandler) UpdateReorderLevels(c *gin.Context) {
 
 	ctx := c.Request.Context()
 	
-	defaultLocationID := models.GetDefaultLocationID()
 	for _, level := range req.ReorderLevels {
 		// Use UpdateReorderLevels method with default max level
-		err := h.inventoryService.UpdateReorderLevels(ctx, level.ProductID, defaultLocationID, level.ReorderLevel, 1000)
+		err := h.inventoryService.UpdateReorderLevels(ctx, level.ProductID, level.ReorderLevel, 1000)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 				Error: "failed to update reorder levels",

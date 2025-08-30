@@ -65,6 +65,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			appCtx.ProductRepo,
 			appCtx.StockMovementRepo,
 			appCtx.CategoryRepo,
+			appCtx.InventoryRepo,
 		)
 		customerHandler := handlers.NewCustomerHandler(appCtx.CustomerService)
 		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)

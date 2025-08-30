@@ -18,9 +18,6 @@ func (ctx *Context) SeedDatabase() error {
 		return fmt.Errorf("failed to seed users: %w", err)
 	}
 	
-	if err := ctx.seedLocations(context); err != nil {
-		return fmt.Errorf("failed to seed locations: %w", err)
-	}
 	
 	if err := ctx.seedSuppliers(context); err != nil {
 		return fmt.Errorf("failed to seed suppliers: %w", err)
@@ -92,22 +89,6 @@ func (ctx *Context) seedUsers(ctxBg context.Context) error {
 	return nil
 }
 
-func (ctx *Context) seedLocations(ctxBg context.Context) error {
-	// Check if default hardware store location already exists
-	if _, err := ctx.LocationRepo.GetByID(ctxBg, models.GetDefaultLocationID()); err == nil {
-		log.Println("Default hardware store location already exists, skipping location seeding")
-		return nil
-	}
-	
-	// Create single default hardware store location
-	location := models.GetDefaultLocation()
-	if err := ctx.LocationRepo.Create(ctxBg, location); err != nil {
-		return fmt.Errorf("failed to seed default hardware store location: %w", err)
-	}
-	
-	log.Printf("Seeded default hardware store location: %s", location.Name)
-	return nil
-}
 
 func (ctx *Context) seedSuppliers(ctxBg context.Context) error {
 	// Check if suppliers already exist
@@ -225,28 +206,23 @@ func (ctx *Context) seedInventory(ctxBg context.Context) error {
 		return nil
 	}
 	
-	// Get products and locations
+	// Get products
 	products, err := ctx.ProductRepo.List(ctxBg, 10, 0)
 	if err != nil {
 		return fmt.Errorf("failed to get products: %w", err)
 	}
 	
-	// For single hardware store, use default location only
-	defaultLocation := models.GetDefaultLocation()
-	locations := []*models.Location{defaultLocation}
-	
-	if len(products) == 0 || len(locations) == 0 {
-		return fmt.Errorf("need products and locations for inventory seeding")
+	if len(products) == 0 {
+		return fmt.Errorf("need products for inventory seeding")
 	}
 	
-	// Create inventory records for each product in the main warehouse
-	warehouse := locations[0]
+	// Create inventory records for each product (single location system)
 	for _, product := range products {
-		_, err := ctx.InventoryService.CreateInventory(ctxBg, product.ID, warehouse.ID, 50, 10, 100)
+		_, err := ctx.InventoryService.CreateInventory(ctxBg, product.ID, 50, 10, 100)
 		if err != nil {
 			return fmt.Errorf("failed to create inventory for product %s: %w", product.Name, err)
 		}
-		log.Printf("Created inventory: %s at %s (50 units)", product.Name, warehouse.Name)
+		log.Printf("Created inventory: %s (50 units)", product.Name)
 	}
 	
 	return nil

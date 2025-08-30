@@ -21,6 +21,7 @@ type AuditHandler struct {
 	productRepo      interfaces.ProductRepository
 	stockMovementRepo interfaces.StockMovementRepository
 	categoryRepo     interfaces.CategoryRepository
+	inventoryRepo    interfaces.InventoryRepository
 }
 
 func NewAuditHandler(
@@ -30,6 +31,7 @@ func NewAuditHandler(
 	productRepo interfaces.ProductRepository,
 	stockMovementRepo interfaces.StockMovementRepository,
 	categoryRepo interfaces.CategoryRepository,
+	inventoryRepo interfaces.InventoryRepository,
 ) *AuditHandler {
 	return &AuditHandler{
 		auditService:      auditService,
@@ -38,6 +40,7 @@ func NewAuditHandler(
 		productRepo:       productRepo,
 		stockMovementRepo: stockMovementRepo,
 		categoryRepo:      categoryRepo,
+		inventoryRepo:     inventoryRepo,
 	}
 }
 
@@ -224,7 +227,6 @@ func (h *AuditHandler) GetAuditStatistics(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param product_id query string false "Filter by product ID"
-// @Param location_id query string false "Filter by location ID"
 // @Param movement_type query string false "Filter by movement type (IN, OUT, TRANSFER, ADJUSTMENT)"
 // @Param start_date query string false "Start date (YYYY-MM-DD)"
 // @Param end_date query string false "End date (YYYY-MM-DD)"
@@ -266,16 +268,6 @@ func (h *AuditHandler) GetStockMovementReport(c *gin.Context) {
 			return
 		}
 		movements, err = h.stockMovementRepo.GetByProduct(c.Request.Context(), productID, req.Limit, req.Offset)
-	} else if req.LocationID != "" {
-		locationID, parseErr := uuid.Parse(req.LocationID)
-		if parseErr != nil {
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Error:   "Invalid location ID format",
-				Message: parseErr.Error(),
-			})
-			return
-		}
-		movements, err = h.stockMovementRepo.GetByLocation(c.Request.Context(), locationID, req.Limit, req.Offset)
 	} else if req.MovementType != "" {
 		var movementType models.MovementType
 		switch req.MovementType {
@@ -332,7 +324,6 @@ func (h *AuditHandler) GetStockMovementReport(c *gin.Context) {
 		response[i] = &dto.StockMovementReportResponse{
 			ID:           movement.ID,
 			ProductID:    movement.ProductID,
-			LocationID:   movement.LocationID,
 			MovementType: movement.MovementType,
 			Quantity:     movement.Quantity,
 			ReferenceID:  movement.ReferenceID,
@@ -347,10 +338,6 @@ func (h *AuditHandler) GetStockMovementReport(c *gin.Context) {
 			response[i].ProductSKU = product.SKU
 		}
 
-		// Get location info
-		if location, err := h.locationRepo.GetByID(c.Request.Context(), movement.LocationID); err == nil && location != nil {
-			response[i].LocationName = location.Name
-		}
 
 		// Get user info
 		if user, err := h.userRepo.GetByID(c.Request.Context(), movement.UserID); err == nil && user != nil {
@@ -392,9 +379,8 @@ func (h *AuditHandler) GetInventorySummary(c *gin.Context) {
 		return
 	}
 
-	// For single hardware store, use default location only
-	defaultLocation := models.GetDefaultLocation()
-	locations := []*models.Location{defaultLocation}
+	// For single hardware store, no need for location concept
+	// All inventory is managed as a single pool
 
 	// Get low stock and zero stock items
 	lowStockItems, err := h.inventoryService.GetLowStock(c.Request.Context())
@@ -470,34 +456,36 @@ func (h *AuditHandler) GetInventorySummary(c *gin.Context) {
 		}
 	}
 
-	// Prepare location stock summary
-	locationStockSummary := make([]dto.LocationStockSummary, len(locations))
-	for i, location := range locations {
-		locationInventory, err := h.inventoryService.GetInventoryByLocation(c.Request.Context(), location.ID)
-		if err != nil {
-			continue
-		}
+	// Get all inventory for single-location system
+	allInventory, err := h.inventoryRepo.List(c.Request.Context(), 0, 0)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "Failed to fetch inventory",
+			Message: err.Error(),
+		})
+		return
+	}
 
-		var totalItems int
-		var totalValue float64
-		for _, inv := range locationInventory {
-			totalItems += inv.Quantity
-			if product, err := h.productRepo.GetByID(c.Request.Context(), inv.ProductID); err == nil && product != nil {
-				totalValue += float64(inv.Quantity) * product.CostPrice
-			}
-		}
-
-		locationStockSummary[i] = dto.LocationStockSummary{
-			LocationID:   location.ID,
-			LocationName: location.Name,
-			TotalItems:   totalItems,
-			TotalValue:   totalValue,
+	var totalItems int
+	var totalValue float64
+	for _, inv := range allInventory {
+		totalItems += inv.Quantity
+		if product, err := h.productRepo.GetByID(c.Request.Context(), inv.ProductID); err == nil && product != nil {
+			totalValue += float64(inv.Quantity) * product.CostPrice
 		}
 	}
 
+	// Create single location summary for backward compatibility
+	locationStockSummary := []dto.LocationStockSummary{{
+		LocationID:   uuid.New(), // Dummy ID for single location
+		LocationName: "Main Store",
+		TotalItems:   totalItems,
+		TotalValue:   totalValue,
+	}}
+
 	response := &dto.InventorySummaryResponse{
 		TotalProducts:   len(products),
-		TotalLocations:  len(locations),
+		TotalLocations:  1, // Single location system
 		TotalStockValue: totalStockValue,
 		LowStockItems:   lowStockSummary,
 		ZeroStockItems:  zeroStockSummary,

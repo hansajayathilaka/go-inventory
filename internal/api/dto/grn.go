@@ -13,7 +13,6 @@ type GRNResponse struct {
 	GRNNumber       string          `json:"grn_number" example:"GRN-2024-001"`
 	PurchaseOrderID uuid.UUID       `json:"purchase_order_id" example:"550e8400-e29b-41d4-a716-446655440001"`
 	SupplierID      uuid.UUID       `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	LocationID      uuid.UUID       `json:"location_id" example:"550e8400-e29b-41d4-a716-446655440003"`
 	Status          models.GRNStatus `json:"status" example:"draft"`
 	ReceivedDate    time.Time       `json:"received_date" example:"2023-01-01T12:00:00Z"`
 	DeliveryNote    string          `json:"delivery_note,omitempty" example:"DN-001"`
@@ -64,7 +63,6 @@ type GRNItemResponse struct {
 // CreateGRNRequest represents a request to create a new GRN
 type CreateGRNRequest struct {
 	PurchaseOrderID uuid.UUID  `json:"purchase_order_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	LocationID      uuid.UUID  `json:"location_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
 	ReceivedDate    time.Time  `json:"received_date" binding:"required" example:"2023-01-01T12:00:00Z"`
 	DeliveryNote    string     `json:"delivery_note,omitempty" binding:"omitempty,max=100" example:"DN-001"`
 	InvoiceNumber   string     `json:"invoice_number,omitempty" binding:"omitempty,max=100" example:"INV-001"`
@@ -98,7 +96,6 @@ type CreateGRNItemRequest struct {
 
 // UpdateGRNRequest represents a request to update an existing GRN
 type UpdateGRNRequest struct {
-	LocationID     *uuid.UUID `json:"location_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
 	ReceivedDate   *time.Time `json:"received_date,omitempty" example:"2023-01-01T12:00:00Z"`
 	DeliveryNote   string     `json:"delivery_note,omitempty" binding:"omitempty,max=100" example:"DN-001"`
 	InvoiceNumber  string     `json:"invoice_number,omitempty" binding:"omitempty,max=100" example:"INV-001"`
@@ -136,7 +133,6 @@ type GRNListRequest struct {
 	Status          models.GRNStatus `form:"status,omitempty" example:"draft"`
 	PurchaseOrderID *uuid.UUID      `form:"purchase_order_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
 	SupplierID      *uuid.UUID      `form:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440002"`
-	LocationID      *uuid.UUID      `form:"location_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
 	StartDate       *time.Time      `form:"start_date,omitempty" example:"2023-01-01T00:00:00Z"`
 	EndDate         *time.Time      `form:"end_date,omitempty" example:"2023-12-31T23:59:59Z"`
 }
@@ -163,7 +159,6 @@ func ToGRNResponse(grn *models.GRN) GRNResponse {
 		GRNNumber:       grn.GRNNumber,
 		PurchaseOrderID: grn.PurchaseOrderID,
 		SupplierID:      grn.SupplierID,
-		LocationID:      grn.LocationID,
 		Status:          grn.Status,
 		ReceivedDate:    grn.ReceivedDate,
 		DeliveryNote:    grn.DeliveryNote,
@@ -247,7 +242,6 @@ func ToGRNItemResponseList(items []*models.GRNItem) []GRNItemResponse {
 func (req *CreateGRNRequest) ToGRNModel() *models.GRN {
 	grn := &models.GRN{
 		PurchaseOrderID: req.PurchaseOrderID,
-		LocationID:      req.LocationID,
 		Status:          models.GRNStatusDraft,
 		ReceivedDate:    req.ReceivedDate,
 		DeliveryNote:    req.DeliveryNote,
@@ -311,9 +305,6 @@ func (req *CreateGRNItemRequest) ToGRNItemModel(grnID uuid.UUID) *models.GRNItem
 
 // ApplyToGRNModel applies UpdateGRNRequest to existing GRN model
 func (req *UpdateGRNRequest) ApplyToGRNModel(grn *models.GRN) {
-	if req.LocationID != nil {
-		grn.LocationID = *req.LocationID
-	}
 	if req.ReceivedDate != nil {
 		grn.ReceivedDate = *req.ReceivedDate
 	}

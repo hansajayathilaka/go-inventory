@@ -275,14 +275,11 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 	response := h.convertToResponse(product)
 	
 	// Add inventory information
-	if inventoryList, err := h.inventoryService.GetInventoryByProduct(c.Request.Context(), product.ID); err == nil {
-		response.Inventory = h.convertInventoryToResponse(inventoryList)
+	if inventory, err := h.inventoryService.GetInventoryByProduct(c.Request.Context(), product.ID); err == nil {
+		response.Inventory = h.convertInventoryToResponse(inventory)
 		
-		// Calculate total stock
-		totalStock := 0
-		for _, inv := range inventoryList {
-			totalStock += inv.Quantity
-		}
+		// Set total stock (single inventory record)
+		totalStock := inventory.Quantity
 		response.TotalStock = &totalStock
 	}
 
@@ -574,7 +571,7 @@ func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 		return
 	}
 
-	inventoryList, err := h.inventoryService.GetInventoryByProduct(c.Request.Context(), id)
+	inventory, err := h.inventoryService.GetInventoryByProduct(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error:   "Failed to fetch inventory",
@@ -583,7 +580,7 @@ func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 		return
 	}
 
-	response := h.convertInventoryToResponse(inventoryList)
+	response := h.convertInventoryToResponse(inventory)
 	c.JSON(http.StatusOK, dto.ApiResponse{
 		Success: true,
 		Message: "Product inventory retrieved successfully",
@@ -666,31 +663,22 @@ func (h *ProductHandler) convertToResponseList(products []*models.Product) []dto
 	return responses
 }
 
-func (h *ProductHandler) convertInventoryToResponse(inventoryList []*models.Inventory) []dto.ProductInventoryResponse {
-	responses := make([]dto.ProductInventoryResponse, len(inventoryList))
-	for i, inv := range inventoryList {
-		var locationID uuid.UUID
-		if inv.LocationID != nil {
-			locationID = *inv.LocationID
-		}
-		
-		response := dto.ProductInventoryResponse{
-			LocationID:        locationID,
-			Quantity:          inv.Quantity,
-			ReservedQuantity:  inv.ReservedQuantity,
-			AvailableQuantity: inv.AvailableQuantity(),
-			ReorderLevel:      inv.ReorderLevel,
-			MaxLevel:          inv.MaxLevel,
-		}
-
-		// Include location name if loaded
-		if inv.LocationID != nil && inv.Location != nil && inv.Location.ID != uuid.Nil {
-			response.LocationName = inv.Location.Name
-		}
-
-		responses[i] = response
+func (h *ProductHandler) convertInventoryToResponse(inventory *models.Inventory) []dto.ProductInventoryResponse {
+	if inventory == nil {
+		return []dto.ProductInventoryResponse{}
 	}
-	return responses
+	
+	response := dto.ProductInventoryResponse{
+		LocationID:        uuid.Nil, // No location in single-location system
+		LocationName:      "Main Store", // Default location name
+		Quantity:          inventory.Quantity,
+		ReservedQuantity:  inventory.ReservedQuantity,
+		AvailableQuantity: inventory.AvailableQuantity(),
+		ReorderLevel:      inventory.ReorderLevel,
+		MaxLevel:          inventory.MaxLevel,
+	}
+
+	return []dto.ProductInventoryResponse{response}
 }
 
 // POSLookup godoc
@@ -735,10 +723,7 @@ func (h *ProductHandler) POSLookup(c *gin.Context) {
 			continue // Skip products with inventory errors
 		}
 
-		var totalQuantity int
-		for _, inv := range inventory {
-			totalQuantity += inv.Quantity
-		}
+		totalQuantity := inventory.Quantity
 
 		posProduct := dto.POSProduct{
 			ID:          product.ID,
@@ -813,10 +798,7 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 			continue // Skip products with inventory errors
 		}
 
-		var totalQuantity int
-		for _, inv := range inventory {
-			totalQuantity += inv.Quantity
-		}
+		totalQuantity := inventory.Quantity
 
 		posProduct := dto.POSProduct{
 			ID:          product.ID,
