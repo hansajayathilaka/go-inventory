@@ -125,12 +125,6 @@ const PurchaseOrdersPage: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
 
   return (
     <div className="space-y-6">
@@ -183,46 +177,12 @@ const PurchaseOrdersPage: React.FC = () => {
         onConfirm={confirmDelete}
         title="Delete Purchase Order"
         message={
-          selectedPurchaseOrder ? (
-            <div className="space-y-2">
-              <p>
-                Are you sure you want to delete purchase order{' '}
-                <span className="font-medium">{selectedPurchaseOrder.po_number}</span>?
-              </p>
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Total Amount:</p>
-                    <p className="font-medium">
-                      {formatCurrency(selectedPurchaseOrder.total_amount, selectedPurchaseOrder.currency)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Status:</p>
-                    <p className="font-medium capitalize">{selectedPurchaseOrder.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Items:</p>
-                    <p className="font-medium">{selectedPurchaseOrder.items?.length || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Order Date:</p>
-                    <p className="font-medium">
-                      {new Date(selectedPurchaseOrder.order_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-red-600 text-sm font-medium">
-                This action cannot be undone.
-              </p>
-            </div>
-          ) : (
-            'Are you sure you want to delete this purchase order?'
-          )
+          selectedPurchaseOrder
+            ? `Are you sure you want to delete purchase order "${selectedPurchaseOrder.po_number}"? This action cannot be undone.`
+            : 'Are you sure you want to delete this purchase order?'
         }
-        confirmLabel="Delete"
-        confirmVariant="danger"
+        confirmButtonText="Delete"
+        confirmButtonStyle="danger"
         isLoading={isLoading}
       />
 
@@ -236,45 +196,12 @@ const PurchaseOrdersPage: React.FC = () => {
         onConfirm={confirmApprove}
         title="Approve Purchase Order"
         message={
-          selectedPurchaseOrder ? (
-            <div className="space-y-2">
-              <p>
-                Are you sure you want to approve purchase order{' '}
-                <span className="font-medium">{selectedPurchaseOrder.po_number}</span>?
-              </p>
-              <div className="bg-blue-50 p-3 rounded-lg text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Total Amount:</p>
-                    <p className="font-medium">
-                      {formatCurrency(selectedPurchaseOrder.total_amount, selectedPurchaseOrder.currency)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Items:</p>
-                    <p className="font-medium">{selectedPurchaseOrder.items?.length || 0}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-gray-600">Expected Date:</p>
-                    <p className="font-medium">
-                      {selectedPurchaseOrder.expected_date 
-                        ? new Date(selectedPurchaseOrder.expected_date).toLocaleDateString()
-                        : 'Not specified'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-blue-600 text-sm">
-                Once approved, this purchase order will be ready to be sent to the supplier.
-              </p>
-            </div>
-          ) : (
-            'Are you sure you want to approve this purchase order?'
-          )
+          selectedPurchaseOrder
+            ? `Are you sure you want to approve purchase order "${selectedPurchaseOrder.po_number}"? Once approved, this purchase order will be ready to be sent to the supplier.`
+            : 'Are you sure you want to approve this purchase order?'
         }
-        confirmLabel="Approve"
-        confirmVariant="primary"
+        confirmButtonText="Approve"
+        confirmButtonStyle="primary"
         isLoading={isLoading}
       />
 
@@ -288,46 +215,12 @@ const PurchaseOrdersPage: React.FC = () => {
         onConfirm={confirmSend}
         title="Send Purchase Order"
         message={
-          selectedPurchaseOrder ? (
-            <div className="space-y-2">
-              <p>
-                Are you sure you want to send purchase order{' '}
-                <span className="font-medium">{selectedPurchaseOrder.po_number}</span>{' '}
-                to the supplier?
-              </p>
-              <div className="bg-green-50 p-3 rounded-lg text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Total Amount:</p>
-                    <p className="font-medium">
-                      {formatCurrency(selectedPurchaseOrder.total_amount, selectedPurchaseOrder.currency)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Items:</p>
-                    <p className="font-medium">{selectedPurchaseOrder.items?.length || 0}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-gray-600">Expected Delivery:</p>
-                    <p className="font-medium">
-                      {selectedPurchaseOrder.expected_date 
-                        ? new Date(selectedPurchaseOrder.expected_date).toLocaleDateString()
-                        : 'Not specified'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-green-600 text-sm">
-                This will change the status to "Ordered" and the order will be tracked for delivery.
-              </p>
-            </div>
-          ) : (
-            'Are you sure you want to send this purchase order to the supplier?'
-          )
+          selectedPurchaseOrder
+            ? `Are you sure you want to send purchase order "${selectedPurchaseOrder.po_number}" to the supplier? This will change the status to "Ordered" and the order will be tracked for delivery.`
+            : 'Are you sure you want to send this purchase order to the supplier?'
         }
-        confirmLabel="Send Order"
-        confirmVariant="success"
+        confirmButtonText="Send Order"
+        confirmButtonStyle="primary"
         isLoading={isLoading}
       />
 
@@ -341,49 +234,14 @@ const PurchaseOrdersPage: React.FC = () => {
         onConfirm={confirmCancel}
         title="Cancel Purchase Order"
         message={
-          selectedPurchaseOrder ? (
-            <div className="space-y-2">
-              <p>
-                Are you sure you want to cancel purchase order{' '}
-                <span className="font-medium">{selectedPurchaseOrder.po_number}</span>?
-              </p>
-              <div className="bg-red-50 p-3 rounded-lg text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Current Status:</p>
-                    <p className="font-medium capitalize">{selectedPurchaseOrder.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Total Amount:</p>
-                    <p className="font-medium">
-                      {formatCurrency(selectedPurchaseOrder.total_amount, selectedPurchaseOrder.currency)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Items:</p>
-                    <p className="font-medium">{selectedPurchaseOrder.items?.length || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Order Date:</p>
-                    <p className="font-medium">
-                      {new Date(selectedPurchaseOrder.order_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-red-600 text-sm font-medium">
-                {selectedPurchaseOrder.status === 'ordered' 
-                  ? 'Warning: This order may have already been sent to the supplier. Please confirm with the supplier before cancelling.'
-                  : 'This will permanently cancel the purchase order.'
-                }
-              </p>
-            </div>
-          ) : (
-            'Are you sure you want to cancel this purchase order?'
-          )
+          selectedPurchaseOrder
+            ? `Are you sure you want to cancel purchase order "${selectedPurchaseOrder.po_number}"? ${selectedPurchaseOrder.status === 'ordered' 
+                ? 'Warning: This order may have already been sent to the supplier. Please confirm with the supplier before cancelling.'
+                : 'This will permanently cancel the purchase order.'}`
+            : 'Are you sure you want to cancel this purchase order?'
         }
-        confirmLabel="Cancel Order"
-        confirmVariant="danger"
+        confirmButtonText="Cancel Order"
+        confirmButtonStyle="danger"
         isLoading={isLoading}
       />
     </div>

@@ -646,7 +646,7 @@ func (h *PurchaseOrderHandler) UpdatePurchaseOrderItem(c *gin.Context) {
 	}
 
 	// Get existing item
-	poIDStr := c.Param("po_id")
+	poIDStr := c.Param("id")
 	poID, err := uuid.Parse(poIDStr)
 	if err != nil {
 		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid purchase order ID format", err.Error())

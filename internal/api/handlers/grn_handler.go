@@ -651,7 +651,7 @@ func (h *GRNHandler) AddGRNItem(c *gin.Context) {
 // @Failure 500 {object} dto.BaseResponse
 // @Router /grns/{grn_id}/items/{item_id} [put]
 func (h *GRNHandler) UpdateGRNItem(c *gin.Context) {
-	grnIDStr := c.Param("grn_id")
+	grnIDStr := c.Param("id")
 	grnID, err := uuid.Parse(grnIDStr)
 	if err != nil {
 		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid GRN ID format", err.Error())
@@ -766,7 +766,7 @@ func (h *GRNHandler) RemoveGRNItem(c *gin.Context) {
 // @Failure 500 {object} dto.BaseResponse
 // @Router /purchase-orders/{purchase_order_id}/grns [get]
 func (h *GRNHandler) GetGRNsByPurchaseOrder(c *gin.Context) {
-	idStr := c.Param("purchase_order_id")
+	idStr := c.Param("id")
 	purchaseOrderID, err := uuid.Parse(idStr)
 	if err != nil {
 		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid purchase order ID format", err.Error())

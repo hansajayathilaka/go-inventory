@@ -55,6 +55,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		authHandler := handlers.NewAuthHandler(appCtx.UserService)
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
+		locationHandler := handlers.NewLocationHandler()
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
@@ -104,7 +105,14 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.GET("/:id", middleware.RequireMinimumRole("viewer"), supplierHandler.GetSupplier)
 			suppliers.PUT("/:id", middleware.RequireMinimumRole("manager"), supplierHandler.UpdateSupplier)
 			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
-			suppliers.GET("/:supplier_id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsBySupplier)
+		}
+
+		// Location management routes (protected) - single store setup
+		locations := v1.Group("/locations")
+		locations.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			locations.GET("", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocations)
+			locations.GET("/:id", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocationByID)
 		}
 
 		// Customer management routes (protected)
@@ -233,11 +241,11 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			// Item management operations
 			purchaseOrders.GET("/:id/items", middleware.RequireMinimumRole("viewer"), purchaseOrderHandler.GetPurchaseOrderItems)
 			purchaseOrders.POST("/:id/items", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.AddPurchaseOrderItem)
-			purchaseOrders.PUT("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrderItem)
-			purchaseOrders.DELETE("/:po_id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.RemovePurchaseOrderItem)
+			purchaseOrders.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.UpdatePurchaseOrderItem)
+			purchaseOrders.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseOrderHandler.RemovePurchaseOrderItem)
 			
-			// GRN relationship routes
-			purchaseOrders.GET("/:purchase_order_id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsByPurchaseOrder)
+			// GRN relationship routes  
+			purchaseOrders.GET("/:id/grns", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNsByPurchaseOrder)
 		}
 
 		// GRN (Goods Received Note) management routes (protected)
@@ -260,8 +268,8 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			// Item management operations
 			grns.GET("/:id/items", middleware.RequireMinimumRole("viewer"), grnHandler.GetGRNItems)
 			grns.POST("/:id/items", middleware.RequireMinimumRole("staff"), grnHandler.AddGRNItem)
-			grns.PUT("/:grn_id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRNItem)
-			grns.DELETE("/:grn_id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.RemoveGRNItem)
+			grns.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRNItem)
+			grns.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.RemoveGRNItem)
 		}
 
 		// Category management routes (protected)

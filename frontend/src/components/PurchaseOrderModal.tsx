@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, FileText, Save, Loader2, Plus, Trash2, Calculator } from 'lucide-react';
+import { X, FileText, Save, Loader2, Plus, Trash2 } from 'lucide-react';
 import type { 
   PurchaseOrder, 
-  CreatePurchaseOrderRequest, 
-  UpdatePurchaseOrderRequest,
-  CreatePurchaseOrderItemRequest,
   Supplier,
   Product
 } from '../types/api';
@@ -64,7 +61,6 @@ const PurchaseOrderModal: React.FC<PurchaseOrderModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const isEditing = !!purchaseOrder;
 
@@ -119,7 +115,6 @@ const PurchaseOrderModal: React.FC<PurchaseOrderModalProps> = ({
         setItems([]);
       }
       setErrors({});
-      setTouchedFields({});
     }
   }, [isOpen, purchaseOrder]);
 
@@ -132,8 +127,8 @@ const PurchaseOrderModal: React.FC<PurchaseOrderModalProps> = ({
         api.products.list({ page: 1, limit: 1000 })
       ]);
       
-      setSuppliers(suppliersResponse.data.suppliers || []);
-      setProducts(productsResponse.data.products || []);
+      setSuppliers(suppliersResponse.data.data || []);
+      setProducts(productsResponse.data.data || []);
     } catch (error) {
       console.error('Error loading initial data:', error);
     } finally {
@@ -182,7 +177,6 @@ const PurchaseOrderModal: React.FC<PurchaseOrderModalProps> = ({
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setTouchedFields(prev => ({ ...prev, [field]: true }));
     
     // Clear error when user starts typing
     if (errors[field]) {

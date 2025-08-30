@@ -850,4 +850,242 @@ export const api = {
       return apiClient.get(`/grn/search?${queryString}`);
     },
   },
+
+  // Supplier Management
+  suppliers: {
+    // List suppliers with filters
+    list: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      is_active?: boolean;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/suppliers${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get all suppliers (simplified list for dropdowns)
+    getAll: () => apiClient.get('/suppliers'),
+
+    // Get active suppliers for dropdowns
+    getActive: () => apiClient.get('/suppliers?is_active=true&limit=1000'),
+
+    // Get single supplier by ID
+    getById: (id: string) => apiClient.get(`/suppliers/${id}`),
+
+    // Create new supplier
+    create: (data: {
+      name: string;
+      contact_person?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country: string;
+      tax_number?: string;
+      payment_terms?: string;
+      notes?: string;
+    }) => apiClient.post('/suppliers', data),
+
+    // Update existing supplier
+    update: (id: string, data: {
+      name?: string;
+      contact_person?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+      tax_number?: string;
+      payment_terms?: string;
+      notes?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/suppliers/${id}`, data),
+
+    // Delete supplier
+    delete: (id: string) => apiClient.delete(`/suppliers/${id}`),
+  },
+
+  // Product Management
+  products: {
+    // List products with filters
+    list: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category_id?: string;
+      brand_id?: string;
+      supplier_id?: string;
+      is_active?: boolean;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.category_id) searchParams.append('category_id', params.category_id);
+      if (params?.brand_id) searchParams.append('brand_id', params.brand_id);
+      if (params?.supplier_id) searchParams.append('supplier_id', params.supplier_id);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/products${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get all products (simplified list for dropdowns)
+    getAll: () => apiClient.get('/products'),
+
+    // Get active products for dropdowns
+    getActive: () => apiClient.get('/products?is_active=true&limit=1000'),
+
+    // Get single product by ID
+    getById: (id: string) => apiClient.get(`/products/${id}`),
+
+    // Create new product
+    create: (data: {
+      name: string;
+      sku?: string;
+      description?: string;
+      category_id: string;
+      brand_id?: string;
+      supplier_id?: string;
+      cost_price: number;
+      retail_price: number;
+      wholesale_price?: number;
+      barcode?: string;
+      weight?: number;
+      dimensions?: string;
+      image_urls?: string[];
+    }) => apiClient.post('/products', data),
+
+    // Update existing product
+    update: (id: string, data: {
+      name?: string;
+      sku?: string;
+      description?: string;
+      category_id?: string;
+      brand_id?: string;
+      supplier_id?: string;
+      cost_price?: number;
+      retail_price?: number;
+      wholesale_price?: number;
+      barcode?: string;
+      weight?: number;
+      dimensions?: string;
+      image_urls?: string[];
+      is_active?: boolean;
+    }) => apiClient.put(`/products/${id}`, data),
+
+    // Delete product
+    delete: (id: string) => apiClient.delete(`/products/${id}`),
+
+    // Search products
+    search: (query: string) => 
+      apiClient.get(`/products/search?query=${encodeURIComponent(query)}`),
+
+    // Get product inventory
+    getInventory: (id: string) => apiClient.get(`/products/${id}/inventory`),
+
+    // Brand-related operations
+    getByBrand: (brandId: string) => apiClient.get(`/products/brand/${brandId}`),
+    getWithoutBrand: () => apiClient.get('/products/without-brand'),
+    setBrand: (productId: string, brandId: string) => 
+      apiClient.put(`/products/${productId}/brand`, { brand_id: brandId }),
+    removeBrand: (productId: string) => 
+      apiClient.delete(`/products/${productId}/brand`),
+
+    // POS operations
+    posLookup: (query: string) => 
+      apiClient.get(`/products/pos/lookup?query=${encodeURIComponent(query)}`),
+    getPOSReady: () => apiClient.get('/products/pos-ready'),
+  },
+
+  // Location Management
+  locations: {
+    // Get all locations (simplified list for dropdowns)
+    getAll: () => apiClient.get('/store/locations'),
+
+    // Get active locations for dropdowns
+    getActive: () => apiClient.get('/store/locations?is_active=true'),
+
+    // For now, return a default location to prevent errors
+    // TODO: Replace with actual location management when backend is implemented
+    getDefault: () => Promise.resolve({
+      data: [{
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        name: 'Main Store',
+        address: 'Main Store Location',
+        is_active: true
+      }]
+    })
+  },
+
+  // User Management
+  users: {
+    // List users with filters
+    list: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      role?: string;
+      is_active?: boolean;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.role) searchParams.append('role', params.role);
+      if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/users${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get all users (simplified list for dropdowns)
+    getAll: () => apiClient.get('/users'),
+
+    // Get active users for dropdowns
+    getActive: () => apiClient.get('/users?is_active=true&limit=1000'),
+
+    // Get single user by ID
+    getById: (id: string) => apiClient.get(`/users/${id}`),
+
+    // Create new user
+    create: (data: {
+      username: string;
+      email: string;
+      password: string;
+      role: string;
+      first_name?: string;
+      last_name?: string;
+    }) => apiClient.post('/users', data),
+
+    // Update existing user
+    update: (id: string, data: {
+      username?: string;
+      email?: string;
+      role?: string;
+      first_name?: string;
+      last_name?: string;
+      is_active?: boolean;
+    }) => apiClient.put(`/users/${id}`, data),
+
+    // Delete user
+    delete: (id: string) => apiClient.delete(`/users/${id}`),
+
+    // Change password
+    changePassword: (id: string, data: {
+      current_password: string;
+      new_password: string;
+    }) => apiClient.put(`/users/${id}/password`, data),
+  },
 };

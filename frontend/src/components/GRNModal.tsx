@@ -6,7 +6,6 @@ import type {
   UpdateGRNRequest,
   CreateGRNItemRequest,
   PurchaseOrder,
-  Location,
   User
 } from '../types/api';
 import { api } from '../services/api';
@@ -50,6 +49,9 @@ interface GRNItemFormData {
   quality_notes: string;
 }
 
+// Use default location ID for single store
+const DEFAULT_LOCATION_ID = '550e8400-e29b-41d4-a716-446655440000';
+
 const GRNModal: React.FC<GRNModalProps> = ({
   isOpen,
   onClose,
@@ -58,7 +60,7 @@ const GRNModal: React.FC<GRNModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<GRNFormData>({
     purchase_order_id: '',
-    location_id: '',
+    location_id: DEFAULT_LOCATION_ID, // Use default location for single store
     received_date: new Date().toISOString().split('T')[0],
     delivery_note: '',
     invoice_number: '',
@@ -91,7 +93,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
 
   // Dropdown data
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   
   // Loading and error states
@@ -108,10 +109,9 @@ const GRNModal: React.FC<GRNModalProps> = ({
       const poResponse = await api.purchaseOrders.list({ status: 'approved' });
       setPurchaseOrders(poResponse.data.data || []);
 
-      // For now, set empty arrays for locations and users
-      // TODO: Replace with actual API calls when available
-      setLocations([]);
-      setUsers([]);
+      // Load users for received_by dropdown
+      const userResponse = await api.users.getActive();
+      setUsers(userResponse.data.data || []);
     } catch (error) {
       console.error('Failed to load dropdown data:', error);
     } finally {
@@ -124,7 +124,7 @@ const GRNModal: React.FC<GRNModalProps> = ({
     if (grn) {
       setFormData({
         purchase_order_id: grn.purchase_order_id || '',
-        location_id: grn.location_id || '',
+        location_id: grn.location_id || DEFAULT_LOCATION_ID,
         received_date: grn.received_date?.split('T')[0] || '',
         delivery_note: grn.delivery_note || '',
         invoice_number: grn.invoice_number || '',
@@ -146,7 +146,7 @@ const GRNModal: React.FC<GRNModalProps> = ({
       // Reset form for new GRN
       setFormData({
         purchase_order_id: '',
-        location_id: '',
+        location_id: DEFAULT_LOCATION_ID,
         received_date: new Date().toISOString().split('T')[0],
         delivery_note: '',
         invoice_number: '',
@@ -262,7 +262,6 @@ const GRNModal: React.FC<GRNModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.purchase_order_id) newErrors.purchase_order_id = 'Purchase order is required';
-    if (!formData.location_id) newErrors.location_id = 'Location is required';
     if (!formData.received_date) newErrors.received_date = 'Received date is required';
     if (!formData.received_by_id) newErrors.received_by_id = 'Received by user is required';
 
@@ -438,25 +437,15 @@ const GRNModal: React.FC<GRNModalProps> = ({
                     )}
                   </div>
 
+                  {/* Location is automatically set to default for single store */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location *
+                      Store Location
                     </label>
-                    <select
-                      value={formData.location_id}
-                      onChange={(e) => handleInputChange('location_id', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">Select Location</option>
-                      {locations.map(location => (
-                        <option key={location.id} value={location.id}>
-                          {location.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.location_id && (
-                      <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>
-                    )}
+                    <div className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600">
+                      Main Store Location
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Single store mode - location is automatically set</p>
                   </div>
 
                   <div>
