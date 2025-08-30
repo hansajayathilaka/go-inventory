@@ -160,10 +160,10 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Created PurchaseReceiptRepository interface and implementation ✅
   - Added PurchaseReceipt models to database migration ✅
   - Updated app context with new repository ✅
-- [ ] **Step 5.1.5**: Update database migration scripts
-  - Create migration to remove location tables and fields
-  - Create migration for unified PurchaseReceipt structure
-  - Update seeding scripts for simplified data
+- [x] **Step 5.1.5**: Update database migration scripts ✅
+  - Create migration to remove location tables and fields ✅
+  - Create migration for unified PurchaseReceipt structure ✅
+  - Update seeding scripts for simplified data ✅
 
 ### Phase 5.2: Backend API Updates 📋 PENDING  
 - [ ] **Step 5.2.1**: Remove location-based API endpoints
@@ -213,8 +213,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.1.5 - Update database migration scripts
-- **Next Step**: Create migration to remove location tables and fields, create migration for unified PurchaseReceipt structure, and update seeding scripts for simplified data
+- **Current Step**: Step 5.2.1 - Remove location-based API endpoints
+- **Next Step**: Remove location handlers and routes, update inventory APIs to work without location context, and update stock movement APIs for single-location operations
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -256,6 +256,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 5.1.2 (2025-08-30)**: Inventory model and service single-location conversion - successfully updated Inventory model (already clean of location_id), completely refactored InventoryRepository interface removing location-based methods (GetByProductAndLocation, GetByLocation, location parameters from UpdateQuantity, ReserveStock, ReleaseReservedStock), updated InventoryService interface and implementation removing location parameters from all methods (CreateInventory, GetInventory, UpdateStock, AdjustStock, ReserveStock, ReleaseReservedStock, UpdateReorderLevels), removed TransferStock method entirely, updated GRN integration methods removing location dependencies, fixed all DTOs removing LocationID fields (GRNResponse, CreateGRNRequest, UpdateGRNRequest, SearchGRNRequest), updated all API handlers (audit, grn, inventory, product) removing location references and fixing single-inventory responses, updated database seeding scripts removing location dependencies, achieved complete single-location inventory system operation with successful compilation
 - **Step 5.1.3 (2025-08-30)**: StockMovement model and repository single-location conversion - removed location_id field dependencies from StockMovement repository and business logic; updated StockMovementRepository interface removing GetByLocation method, cleaned all repository methods removing Location preloading (GetByID, List, GetByProduct, GetByUser, GetByMovementType, GetByDateRange, GetByReference, GetMovementsByProductAndDateRange), updated business logic tests removing location-based mock methods and fixing service constructor calls to match single-location interface signatures, achieved successful compilation and test execution for simplified single-location stock movement tracking system
 - **Step 5.1.4 (2025-08-30)**: Unified PurchaseReceipt model creation - created comprehensive PurchaseReceipt and PurchaseReceiptItem models combining PurchaseOrder and GRN functionality with unified status workflow (draft→pending→approved→ordered→received→partial→completed/cancelled); created PurchaseReceiptRepository interface with complete CRUD operations, status management (approve, send, receive, complete, cancel), item management, financial operations, search capabilities, and reporting functions; implemented PurchaseReceiptRepository with comprehensive database operations, search with multiple filters, status workflow management, item quantity tracking (ordered/received/accepted/rejected/damaged), financial calculations, and statistics generation; added PurchaseReceipt models to database AutoMigrate, updated app context with new repository initialization; achieved successful compilation establishing foundation for simplified single-table purchase/receipt workflow system
+- **Step 5.1.5 (2025-08-30)**: Database migration and seeding simplification - updated database migration scripts to remove obsolete location tables (locations, purchase_orders, purchase_order_items, grns, grn_items) and location_id columns from inventories and stock_movements tables; implemented cleanupObsoleteStructures() method with safe table/column dropping and warning logging; updated seeding scripts with comprehensive PurchaseReceipt seeding function demonstrating unified purchase workflow with proper time parsing, admin user association, and multi-item purchase receipts; added time import and resolved all compilation errors; achieved successful build with simplified single-location database structure and sample purchase receipt data for testing
 
 ## Notes
 - Each step should be committed separately for better tracking

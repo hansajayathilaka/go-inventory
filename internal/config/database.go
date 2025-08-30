@@ -47,7 +47,8 @@ func NewDatabase(config *Config) (*Database, error) {
 }
 
 func (db *Database) AutoMigrate() error {
-	return db.DB.AutoMigrate(
+	// First migrate the new simplified structure
+	err := db.DB.AutoMigrate(
 		&models.User{},
 		&models.Category{},
 		&models.Supplier{},
@@ -59,14 +60,58 @@ func (db *Database) AutoMigrate() error {
 		&models.Brand{},
 		&models.VehicleBrand{},
 		&models.VehicleModel{},
-		&models.PurchaseOrder{},
-		&models.PurchaseOrderItem{},
-		&models.GRN{},
-		&models.GRNItem{},
 		&models.PurchaseReceipt{},
 		&models.PurchaseReceiptItem{},
 		&models.VehicleCompatibility{},
 	)
+	if err != nil {
+		return err
+	}
+
+	// Clean up obsolete tables and columns
+	return db.cleanupObsoleteStructures()
+}
+
+// cleanupObsoleteStructures removes old tables and columns that are no longer needed
+func (db *Database) cleanupObsoleteStructures() error {
+	// Drop old purchase/GRN tables if they exist
+	oldTables := []string{
+		"purchase_orders",
+		"purchase_order_items", 
+		"grns",
+		"grn_items",
+		"locations", // Remove location table if it exists
+	}
+
+	for _, tableName := range oldTables {
+		if db.DB.Migrator().HasTable(tableName) {
+			if err := db.DB.Migrator().DropTable(tableName); err != nil {
+				// Log warning but don't fail - table might have constraints
+				fmt.Printf("Warning: Could not drop table %s: %v\n", tableName, err)
+			}
+		}
+	}
+
+	// Remove location_id columns from tables if they exist
+	columnsToRemove := map[string][]string{
+		"inventories":     {"location_id"},
+		"stock_movements": {"location_id"},
+	}
+
+	for tableName, columns := range columnsToRemove {
+		if db.DB.Migrator().HasTable(tableName) {
+			for _, columnName := range columns {
+				if db.DB.Migrator().HasColumn(tableName, columnName) {
+					if err := db.DB.Migrator().DropColumn(tableName, columnName); err != nil {
+						// Log warning but don't fail
+						fmt.Printf("Warning: Could not drop column %s.%s: %v\n", tableName, columnName, err)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (db *Database) Close() error {

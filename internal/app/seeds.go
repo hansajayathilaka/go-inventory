@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"inventory-api/internal/repository/models"
@@ -53,6 +54,10 @@ func (ctx *Context) SeedDatabase() error {
 	
 	if err := ctx.seedVehicleCompatibility(context); err != nil {
 		return fmt.Errorf("failed to seed vehicle compatibility: %w", err)
+	}
+	
+	if err := ctx.seedPurchaseReceipts(context); err != nil {
+		return fmt.Errorf("failed to seed purchase receipts: %w", err)
 	}
 	
 	log.Println("Database seeding completed successfully")
@@ -509,6 +514,137 @@ func (ctx *Context) seedVehicleCompatibility(ctxBg context.Context) error {
 			return fmt.Errorf("failed to create vehicle compatibility: %w", err)
 		}
 		log.Printf("Created vehicle compatibility mapping for product ID %s", compatibility.ProductID.String())
+	}
+	
+	return nil
+}
+
+func (ctx *Context) seedPurchaseReceipts(ctxBg context.Context) error {
+	// Check if purchase receipts already exist by trying to list some
+	existing, _, err := ctx.PurchaseReceiptRepo.List(ctxBg, 0, 1)
+	if err == nil && len(existing) > 0 {
+		log.Println("Purchase receipts already exist, skipping purchase receipt seeding")
+		return nil
+	}
+	
+	// Get suppliers and products for purchase receipts
+	suppliers, err := ctx.SupplierRepo.List(ctxBg, 10, 0)
+	if err != nil {
+		return fmt.Errorf("failed to get suppliers: %w", err)
+	}
+	
+	products, err := ctx.ProductRepo.List(ctxBg, 10, 0)
+	if err != nil {
+		return fmt.Errorf("failed to get products: %w", err)
+	}
+	
+	if len(suppliers) == 0 || len(products) == 0 {
+		log.Println("No suppliers or products found, skipping purchase receipt seeding")
+		return nil
+	}
+
+	// Get first admin user for CreatedByID
+	adminUser, err := ctx.UserRepo.GetByUsername(ctxBg, "admin")
+	if err != nil {
+		return fmt.Errorf("failed to get admin user: %w", err)
+	}
+	
+	// Parse dates
+	orderDate1, _ := time.Parse("2006-01-02", "2024-01-15")
+	expectedDate1, _ := time.Parse("2006-01-02", "2024-01-20")
+	receivedDate1, _ := time.Parse("2006-01-02", "2024-01-19")
+	
+	orderDate2, _ := time.Parse("2006-01-02", "2024-01-20")
+	expectedDate2, _ := time.Parse("2006-01-02", "2024-01-28")
+	
+	orderDate3, _ := time.Parse("2006-01-02", "2024-01-25")
+	expectedDate3, _ := time.Parse("2006-01-02", "2024-02-05")
+	
+	// Create sample purchase receipts showing the unified workflow
+	purchaseReceipts := []models.PurchaseReceipt{
+		{
+			ReceiptNumber:  "PR-2024-001",
+			SupplierID:     suppliers[0].ID,
+			Status:         models.PurchaseReceiptStatusCompleted,
+			OrderDate:      orderDate1,
+			ExpectedDate:   &expectedDate1,
+			ReceivedDate:   &receivedDate1,
+			TotalAmount:    2500.00,
+			TaxRate:        8.5,
+			ShippingCost:   50.00,
+			DiscountAmount: 100.00,
+			Currency:       "USD",
+			OrderNotes:     "First purchase receipt - office equipment",
+			CreatedByID:    adminUser.ID,
+		},
+		{
+			ReceiptNumber:  "PR-2024-002", 
+			SupplierID:     suppliers[1].ID,
+			Status:         models.PurchaseReceiptStatusOrdered,
+			OrderDate:      orderDate2,
+			ExpectedDate:   &expectedDate2,
+			TotalAmount:    1800.00,
+			TaxRate:        8.5,
+			Currency:       "USD",
+			OrderNotes:     "Computer peripherals order",
+			CreatedByID:    adminUser.ID,
+		},
+		{
+			ReceiptNumber:  "PR-2024-003",
+			SupplierID:     suppliers[0].ID, 
+			Status:         models.PurchaseReceiptStatusDraft,
+			OrderDate:      orderDate3,
+			ExpectedDate:   &expectedDate3,
+			TotalAmount:    3200.00,
+			TaxRate:        8.5,
+			ShippingCost:   75.00,
+			Currency:       "USD",
+			OrderNotes:     "Draft purchase for networking equipment",
+			CreatedByID:    adminUser.ID,
+		},
+	}
+	
+	for i, purchaseReceipt := range purchaseReceipts {
+		if err := ctx.PurchaseReceiptRepo.Create(ctxBg, &purchaseReceipt); err != nil {
+			return fmt.Errorf("failed to create purchase receipt %s: %w", purchaseReceipt.ReceiptNumber, err)
+		}
+		log.Printf("Created purchase receipt: %s (%s)", purchaseReceipt.ReceiptNumber, purchaseReceipt.Status)
+		
+		// Add some items to each purchase receipt
+		items := []models.PurchaseReceiptItem{
+			{
+				PurchaseReceiptID: purchaseReceipt.ID,
+				ProductID:         products[i%len(products)].ID,
+				OrderedQuantity:   10,
+				ReceivedQuantity:  10,
+				AcceptedQuantity:  10,
+				UnitPrice:        100.00,
+				TotalPrice:       1000.00,
+			},
+		}
+		
+		// Add a second item for variety
+		if i+1 < len(products) {
+			items = append(items, models.PurchaseReceiptItem{
+				PurchaseReceiptID: purchaseReceipt.ID,
+				ProductID:         products[(i+1)%len(products)].ID,
+				OrderedQuantity:   5,
+				ReceivedQuantity:  5,
+				AcceptedQuantity:  4, // Show some quality control
+				RejectedQuantity:  1,
+				UnitPrice:        200.00,
+				TotalPrice:       1000.00,
+				QualityNotes:     "1 unit damaged in shipping",
+			})
+		}
+		
+		for _, item := range items {
+			if err := ctx.PurchaseReceiptRepo.CreateItem(ctxBg, &item); err != nil {
+				return fmt.Errorf("failed to add item to purchase receipt %s: %w", purchaseReceipt.ReceiptNumber, err)
+			}
+		}
+		
+		log.Printf("Added %d items to purchase receipt: %s", len(items), purchaseReceipt.ReceiptNumber)
 	}
 	
 	return nil
