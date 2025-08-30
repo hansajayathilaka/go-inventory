@@ -24,8 +24,6 @@ type GRN struct {
 	PurchaseOrder     PurchaseOrder   `gorm:"foreignKey:PurchaseOrderID" json:"purchase_order"`
 	SupplierID        uuid.UUID       `gorm:"type:uuid;not null;index" json:"supplier_id"`
 	Supplier          Supplier        `gorm:"foreignKey:SupplierID" json:"supplier"`
-	LocationID        uuid.UUID       `gorm:"type:uuid;not null;index" json:"location_id"`
-	Location          Location        `gorm:"foreignKey:LocationID" json:"location"`
 	Status            GRNStatus       `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
 	ReceivedDate      time.Time       `gorm:"not null" json:"received_date"`
 	DeliveryNote      string          `gorm:"size:100" json:"delivery_note"`

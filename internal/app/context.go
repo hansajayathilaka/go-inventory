@@ -27,7 +27,6 @@ type Context struct {
 	UserRepo                  interfaces.UserRepository
 	CategoryRepo              interfaces.CategoryRepository
 	SupplierRepo              interfaces.SupplierRepository
-	LocationRepo              interfaces.LocationRepository
 	ProductRepo               interfaces.ProductRepository
 	InventoryRepo             interfaces.InventoryRepository
 	StockMovementRepo         interfaces.StockMovementRepository
@@ -92,7 +91,6 @@ func (ctx *Context) initRepositories() {
 	ctx.UserRepo = repository.NewUserRepository(ctx.Database.DB)
 	ctx.CategoryRepo = repository.NewCategoryRepository(ctx.Database.DB)
 	ctx.SupplierRepo = repository.NewSupplierRepository(ctx.Database.DB)
-	ctx.LocationRepo = repository.NewLocationRepository(ctx.Database.DB)
 	ctx.ProductRepo = repository.NewProductRepository(ctx.Database.DB)
 	ctx.InventoryRepo = repository.NewInventoryRepository(ctx.Database.DB)
 	ctx.StockMovementRepo = repository.NewStockMovementRepository(ctx.Database.DB)
@@ -117,7 +115,6 @@ func (ctx *Context) initServices() {
 		ctx.GRNRepo,
 		ctx.SupplierRepo,
 		ctx.ProductRepo,
-		ctx.LocationRepo,
 		ctx.InventoryRepo,
 	)
 	ctx.ProductService = product.NewService(

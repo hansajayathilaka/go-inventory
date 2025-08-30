@@ -19,7 +19,6 @@ type AuditHandler struct {
 	inventoryService inventory.Service
 	userRepo         interfaces.UserRepository
 	productRepo      interfaces.ProductRepository
-	locationRepo     interfaces.LocationRepository
 	stockMovementRepo interfaces.StockMovementRepository
 	categoryRepo     interfaces.CategoryRepository
 }
@@ -29,7 +28,6 @@ func NewAuditHandler(
 	inventoryService inventory.Service,
 	userRepo interfaces.UserRepository,
 	productRepo interfaces.ProductRepository,
-	locationRepo interfaces.LocationRepository,
 	stockMovementRepo interfaces.StockMovementRepository,
 	categoryRepo interfaces.CategoryRepository,
 ) *AuditHandler {
@@ -38,7 +36,6 @@ func NewAuditHandler(
 		inventoryService:  inventoryService,
 		userRepo:          userRepo,
 		productRepo:       productRepo,
-		locationRepo:      locationRepo,
 		stockMovementRepo: stockMovementRepo,
 		categoryRepo:      categoryRepo,
 	}

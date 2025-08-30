@@ -23,8 +23,6 @@ type StockMovement struct {
 	ID           uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ProductID    uuid.UUID      `gorm:"type:uuid;not null;index" json:"product_id"`
 	Product      Product        `gorm:"foreignKey:ProductID" json:"product"`
-	LocationID   uuid.UUID      `gorm:"type:uuid;not null;index" json:"location_id"`
-	Location     Location       `gorm:"foreignKey:LocationID" json:"location"`
 	MovementType MovementType   `gorm:"not null;type:varchar(20)" json:"movement_type"`
 	Quantity     int            `gorm:"not null" json:"quantity"`
 	ReferenceID  string         `gorm:"size:100" json:"reference_id"`

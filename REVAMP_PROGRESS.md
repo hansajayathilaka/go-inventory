@@ -129,16 +129,86 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Navigation and routing integration with "GRN Processing" menu item ✅
   - Grid/table view modes with advanced filtering by status, date range, supplier, and PO ✅
   - TypeScript compilation successful with complete type coverage ✅
-- [ ] **Step 4.10**: Performance optimization and testing
-  - Code splitting for better load times
-  - React component optimization and memoization
-  - Integration testing for all new components
-  - User acceptance testing and bug fixes
+- [x] **Step 4.10**: Performance optimization and testing ✅
+  - Code splitting for better load times ✅
+  - React component optimization and memoization ✅
+  - Integration testing for all new components ✅
+  - User acceptance testing and bug fixes ✅
 
-## Current Status
-- **Current Phase**: Phase 4 - Integration & Frontend Updates  
-- **Current Step**: Step 4.10 - Performance optimization and testing
-- **Next Step**: Ready to implement performance optimization including code splitting for better load times, React component optimization and memoization, integration testing for all new components, and user acceptance testing and bug fixes
+## Phase 5: Database Structure Simplification 🚧 NEW PHASE
+
+### Phase 5.1: Database Model Updates (Backend) 📋 PENDING
+- [ ] **Step 5.1.1**: Remove Location model and all location-related dependencies
+  - Remove Location model from `internal/repository/models/`
+  - Remove LocationRepository and LocationService 
+  - Remove location-related API handlers and endpoints
+- [ ] **Step 5.1.2**: Update Inventory model to remove location_id field
+  - Remove location_id foreign key from Inventory model
+  - Update InventoryRepository for single-location logic
+  - Update InventoryService business logic
+- [ ] **Step 5.1.3**: Update StockMovement model to remove location_id field  
+  - Remove location_id foreign key from StockMovement model
+  - Update StockMovementRepository for simplified tracking
+  - Update stock movement business logic
+- [ ] **Step 5.1.4**: Create unified PurchaseReceipt model
+  - Replace PurchaseOrder and GRN models with PurchaseReceipt
+  - Replace PurchaseOrderItem and GRNItem with PurchaseReceiptItem
+  - Combine all purchase/receipt workflow in single table
+- [ ] **Step 5.1.5**: Update database migration scripts
+  - Create migration to remove location tables and fields
+  - Create migration for unified PurchaseReceipt structure
+  - Update seeding scripts for simplified data
+
+### Phase 5.2: Backend API Updates 📋 PENDING  
+- [ ] **Step 5.2.1**: Remove location-based API endpoints
+  - Remove location handlers and routes
+  - Update inventory APIs to work without location context
+  - Update stock movement APIs for single-location operations
+- [ ] **Step 5.2.2**: Create PurchaseReceipt API endpoints
+  - Replace PO and GRN endpoints with unified PurchaseReceipt
+  - Implement simplified purchase workflow (order → receive → complete)
+  - Update DTOs and request/response models
+- [ ] **Step 5.2.3**: Update business logic layer
+  - Update InventoryService for single-location operations
+  - Create PurchaseReceiptService replacing PO and GRN services
+  - Update stock movement logic without location dependencies
+- [ ] **Step 5.2.4**: Update Swagger documentation
+  - Remove location-related endpoints from docs
+  - Add PurchaseReceipt endpoints documentation
+  - Update existing endpoint docs for simplified structure
+
+### Phase 5.3: Frontend Updates 📋 PENDING
+- [ ] **Step 5.3.1**: Remove location management UI
+  - Remove location-related components and pages
+  - Update inventory UI to work without location selection
+  - Remove location filtering from all components
+- [ ] **Step 5.3.2**: Create PurchaseReceipt management UI
+  - Replace separate PO and GRN pages with unified PurchaseReceipt
+  - Implement simplified workflow (order → receive → complete)
+  - Update navigation and routing
+- [ ] **Step 5.3.3**: Update inventory and stock management UI
+  - Remove location selection from inventory forms
+  - Update stock movement displays for single-location
+  - Simplify inventory tracking interfaces
+- [ ] **Step 5.3.4**: Update API service calls
+  - Remove location-related API calls
+  - Update inventory and stock APIs for simplified endpoints
+  - Integrate new PurchaseReceipt API calls
+
+### Phase 5.4: Testing & Validation 📋 PENDING
+- [ ] **Step 5.4.1**: Update integration tests
+  - Update tests for simplified database structure
+  - Test new PurchaseReceipt workflow
+  - Validate single-location inventory operations
+- [ ] **Step 5.4.2**: End-to-end testing
+  - Test complete purchase workflow with new structure
+  - Validate inventory tracking without locations
+  - Ensure all UI components work with simplified backend
+
+## Current Status  
+- **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
+- **Current Step**: Step 5.1.1 - Remove Location model and dependencies
+- **Next Step**: Ready to begin database simplification by removing location dependencies and creating unified purchase receipt structure
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation

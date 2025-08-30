@@ -55,7 +55,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		authHandler := handlers.NewAuthHandler(appCtx.UserService)
 		userHandler := handlers.NewUserHandler(appCtx.UserService)
 		supplierHandler := handlers.NewSupplierHandler(appCtx.SupplierService)
-		locationHandler := handlers.NewLocationHandler()
 		categoryHandler := handlers.NewCategoryHandler(appCtx.HierarchyService)
 		productHandler := handlers.NewProductHandler(appCtx.ProductService, appCtx.InventoryService)
 		inventoryHandler := handlers.NewInventoryHandler(appCtx.InventoryService, appCtx.UserService, appCtx.InventoryRepo, appCtx.StockMovementRepo)
@@ -64,7 +63,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			appCtx.InventoryService,
 			appCtx.UserRepo,
 			appCtx.ProductRepo,
-			appCtx.LocationRepo,
 			appCtx.StockMovementRepo,
 			appCtx.CategoryRepo,
 		)
@@ -107,13 +105,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			suppliers.DELETE("/:id", middleware.RequireRole("admin"), supplierHandler.DeleteSupplier)
 		}
 
-		// Location management routes (protected) - single store setup
-		locations := v1.Group("/locations")
-		locations.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			locations.GET("", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocations)
-			locations.GET("/:id", middleware.RequireMinimumRole("viewer"), locationHandler.GetLocationByID)
-		}
 
 		// Customer management routes (protected)
 		customers := v1.Group("/customers")

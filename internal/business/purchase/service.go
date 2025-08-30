@@ -93,7 +93,6 @@ type service struct {
 	grnRepo          interfaces.GRNRepository
 	supplierRepo     interfaces.SupplierRepository
 	productRepo      interfaces.ProductRepository
-	locationRepo     interfaces.LocationRepository
 	inventoryRepo    interfaces.InventoryRepository
 }
 
@@ -102,7 +101,6 @@ func NewService(
 	grnRepo interfaces.GRNRepository,
 	supplierRepo interfaces.SupplierRepository,
 	productRepo interfaces.ProductRepository,
-	locationRepo interfaces.LocationRepository,
 	inventoryRepo interfaces.InventoryRepository,
 ) Service {
 	return &service{
@@ -110,7 +108,6 @@ func NewService(
 		grnRepo:          grnRepo,
 		supplierRepo:     supplierRepo,
 		productRepo:      productRepo,
-		locationRepo:     locationRepo,
 		inventoryRepo:    inventoryRepo,
 	}
 }
@@ -470,14 +467,6 @@ func (s *service) CreateGRN(ctx context.Context, grn *models.GRN) (*models.GRN, 
 		return nil, errors.New("supplier must match purchase order supplier")
 	}
 	
-	// Verify location exists
-	location, err := s.locationRepo.GetByID(ctx, grn.LocationID)
-	if err != nil {
-		return nil, errors.New("location not found")
-	}
-	if !location.IsActive {
-		return nil, errors.New("location is inactive")
-	}
 	
 	// Generate GRN number if not provided
 	if grn.GRNNumber == "" {
