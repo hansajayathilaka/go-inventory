@@ -172,6 +172,16 @@ export interface CategoryListResponse {
   };
 }
 
+export interface UserListResponse {
+  users: User[];
+  pagination?: {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+}
+
 export interface SupplierListResponse {
   suppliers: Supplier[];
   pagination?: {
