@@ -707,4 +707,147 @@ export const api = {
       return apiClient.get(`/purchase-orders/search?${queryString}`);
     },
   },
+
+  // GRN (Goods Received Note) Management
+  grn: {
+    // List GRNs with filters
+    list: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      status?: 'draft' | 'received' | 'partial' | 'completed' | 'cancelled';
+      purchase_order_id?: string;
+      supplier_id?: string;
+      location_id?: string;
+      start_date?: string;
+      end_date?: string;
+    }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page) searchParams.append('page', params.page.toString());
+      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.search) searchParams.append('search', params.search);
+      if (params?.status) searchParams.append('status', params.status);
+      if (params?.purchase_order_id) searchParams.append('purchase_order_id', params.purchase_order_id);
+      if (params?.supplier_id) searchParams.append('supplier_id', params.supplier_id);
+      if (params?.location_id) searchParams.append('location_id', params.location_id);
+      if (params?.start_date) searchParams.append('start_date', params.start_date);
+      if (params?.end_date) searchParams.append('end_date', params.end_date);
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/grn${queryString ? '?' + queryString : ''}`);
+    },
+
+    // Get all GRNs (simplified list for dropdowns)
+    getAll: () => apiClient.get('/grn'),
+
+    // Get single GRN by ID
+    getById: (id: string) => apiClient.get(`/grn/${id}`),
+
+    // Create new GRN
+    create: (data: {
+      purchase_order_id: string;
+      location_id: string;
+      received_date: string;
+      delivery_note?: string;
+      invoice_number?: string;
+      invoice_date?: string;
+      vehicle_number?: string;
+      driver_name?: string;
+      quality_check: boolean;
+      quality_notes?: string;
+      tax_rate?: number;
+      discount_amount?: number;
+      currency?: string;
+      notes?: string;
+      received_by_id: string;
+      items?: {
+        purchase_order_item_id: string;
+        received_quantity: number;
+        accepted_quantity: number;
+        rejected_quantity?: number;
+        damaged_quantity?: number;
+        unit_price: number;
+        expiry_date?: string;
+        batch_number?: string;
+        serial_numbers?: string;
+        quality_status?: string;
+        quality_notes?: string;
+      }[];
+    }) => apiClient.post('/grn', data),
+
+    // Update existing GRN
+    update: (id: string, data: {
+      location_id?: string;
+      received_date?: string;
+      delivery_note?: string;
+      invoice_number?: string;
+      invoice_date?: string;
+      vehicle_number?: string;
+      driver_name?: string;
+      quality_check?: boolean;
+      quality_notes?: string;
+      tax_rate?: number;
+      discount_amount?: number;
+      currency?: string;
+      notes?: string;
+      received_by_id?: string;
+    }) => apiClient.put(`/grn/${id}`, data),
+
+    // Delete GRN
+    delete: (id: string) => apiClient.delete(`/grn/${id}`),
+
+    // GRN processing operations
+    receipt: (id: string) => apiClient.post(`/grn/${id}/receipt`),
+    verify: (id: string) => apiClient.post(`/grn/${id}/verify`),
+    complete: (id: string) => apiClient.post(`/grn/${id}/complete`),
+
+    // GRN items management
+    addItem: (grnId: string, data: {
+      purchase_order_item_id: string;
+      received_quantity: number;
+      accepted_quantity: number;
+      rejected_quantity?: number;
+      damaged_quantity?: number;
+      unit_price: number;
+      expiry_date?: string;
+      batch_number?: string;
+      serial_numbers?: string;
+      quality_status?: string;
+      quality_notes?: string;
+    }) => apiClient.post(`/grn/${grnId}/items`, data),
+
+    updateItem: (grnId: string, itemId: string, data: {
+      received_quantity?: number;
+      accepted_quantity?: number;
+      rejected_quantity?: number;
+      damaged_quantity?: number;
+      unit_price?: number;
+      expiry_date?: string;
+      batch_number?: string;
+      serial_numbers?: string;
+      quality_status?: string;
+      quality_notes?: string;
+    }) => apiClient.put(`/grn/${grnId}/items/${itemId}`, data),
+
+    removeItem: (grnId: string, itemId: string) => 
+      apiClient.delete(`/grn/${grnId}/items/${itemId}`),
+
+    // Get GRN items
+    getItems: (grnId: string) => apiClient.get(`/grn/${grnId}/items`),
+
+    // Search GRNs
+    search: (params: {
+      query: string;
+      page?: number;
+      limit?: number;
+    }) => {
+      const searchParams = new URLSearchParams();
+      searchParams.append('query', params.query);
+      if (params.page) searchParams.append('page', params.page.toString());
+      if (params.limit) searchParams.append('limit', params.limit.toString());
+      
+      const queryString = searchParams.toString();
+      return apiClient.get(`/grn/search?${queryString}`);
+    },
+  },
 };

@@ -18,7 +18,8 @@ import {
   Car,
   Settings,
   Link as LinkIcon,
-  FileCheck
+  FileCheck,
+  Clipboard
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -41,6 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Vehicle Models', href: '/vehicle-models', icon: Settings },
     { name: 'Compatibilities', href: '/compatibilities', icon: LinkIcon },
     { name: 'Purchase Orders', href: '/purchase-orders', icon: FileCheck },
+    { name: 'GRN Processing', href: '/grn', icon: Clipboard },
     { name: 'Suppliers', href: '/suppliers', icon: Truck },
     { name: 'Store Info', href: '/locations', icon: Store },
     { name: 'POS Ready', href: '/pos', icon: ShoppingCart, badge: 'Coming Soon' },
