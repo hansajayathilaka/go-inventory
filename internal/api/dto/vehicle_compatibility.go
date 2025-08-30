@@ -27,7 +27,7 @@ type VehicleCompatibilityDetailResponse struct {
 	ProductID      uuid.UUID                `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440002"`
 	Product        *ProductResponse         `json:"product,omitempty"`
 	VehicleModelID uuid.UUID                `json:"vehicle_model_id" example:"550e8400-e29b-41d4-a716-446655440003"`
-	VehicleModel   *VehicleModelResponse    `json:"vehicle_model,omitempty"`
+	VehicleModel   *VehicleModelDetailResponse    `json:"vehicle_model,omitempty"`
 	YearFrom       int                      `json:"year_from" example:"2018"`
 	YearTo         int                      `json:"year_to" example:"2023"`
 	Notes          string                   `json:"notes,omitempty" example:"Compatible with all trim levels"`
@@ -134,7 +134,7 @@ func ToVehicleCompatibilityDetailResponse(compatibility *models.VehicleCompatibi
 
 	// Include vehicle model if loaded (check if ID is not zero)
 	if compatibility.VehicleModel.ID != uuid.Nil {
-		vehicleModelResponse := ToVehicleModelResponse(&compatibility.VehicleModel)
+		vehicleModelResponse := ToVehicleModelDetailResponse(&compatibility.VehicleModel)
 		response.VehicleModel = &vehicleModelResponse
 	}
 
