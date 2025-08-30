@@ -47,10 +47,12 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
   const loadProducts = async () => {
     try {
       setProductsLoading(true);
-      const response = await api.get<{data: Product[]}>('/products?is_active=true&limit=500');
-      setProducts(response.data?.data || []);
+      const response = await api.get<{data: {products: Product[]}}>('/products?is_active=true&limit=500');
+      const products = response.data?.data?.products;
+      setProducts(Array.isArray(products) ? products : []);
     } catch (err) {
       console.error('Error loading products:', err);
+      setProducts([]);
     } finally {
       setProductsLoading(false);
     }
