@@ -277,6 +277,14 @@ definitions:
       username:
         type: string
     type: object
+  dto.ApproveRequest:
+    properties:
+      approver_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+    required:
+    - approver_id
+    type: object
   dto.AuditLogResponse:
     properties:
       action:
@@ -567,9 +575,6 @@ definitions:
         items:
           $ref: '#/definitions/dto.CreateGRNItemRequest'
         type: array
-      location_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
       notes:
         example: All items received in good condition
         maxLength: 1000
@@ -600,7 +605,6 @@ definitions:
         maxLength: 50
         type: string
     required:
-    - location_id
     - purchase_order_id
     - received_by_id
     - received_date
@@ -671,6 +675,79 @@ definitions:
         type: string
       order_date:
         example: "2023-01-01T12:00:00Z"
+        type: string
+      reference:
+        example: REF-001
+        maxLength: 100
+        type: string
+      shipping_cost:
+        example: 50
+        minimum: 0
+        type: number
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      tax_rate:
+        example: 6
+        maximum: 100
+        minimum: 0
+        type: number
+      terms:
+        example: Net 30 days
+        maxLength: 1000
+        type: string
+    required:
+    - order_date
+    - supplier_id
+    type: object
+  dto.CreatePurchaseReceiptItemRequest:
+    properties:
+      discount_amount:
+        example: 0
+        minimum: 0
+        type: number
+      order_notes:
+        example: High priority item
+        maxLength: 500
+        type: string
+      ordered_quantity:
+        example: 10
+        minimum: 1
+        type: integer
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440005
+        type: string
+      unit_price:
+        example: 100
+        minimum: 0
+        type: number
+    required:
+    - ordered_quantity
+    - product_id
+    - unit_price
+    type: object
+  dto.CreatePurchaseReceiptRequest:
+    properties:
+      currency:
+        example: MYR
+        type: string
+      discount_amount:
+        example: 0
+        minimum: 0
+        type: number
+      expected_date:
+        example: "2023-01-15T12:00:00Z"
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/dto.CreatePurchaseReceiptItemRequest'
+        type: array
+      order_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      order_notes:
+        example: Urgent order
+        maxLength: 1000
         type: string
       reference:
         example: REF-001
@@ -977,9 +1054,6 @@ definitions:
         items:
           $ref: '#/definitions/dto.GRNItemResponse'
         type: array
-      location_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
       notes:
         example: All items received in good condition
         type: string
@@ -1078,16 +1152,10 @@ definitions:
         items:
           $ref: '#/definitions/dto.CategoryStockSummary'
         type: array
-      stock_by_location:
-        items:
-          $ref: '#/definitions/dto.LocationStockSummary'
-        type: array
       top_products:
         items:
           $ref: '#/definitions/dto.InventorySummaryItem'
         type: array
-      total_locations:
-        type: integer
       total_products:
         type: integer
       total_stock_value:
@@ -1096,17 +1164,6 @@ definitions:
         items:
           $ref: '#/definitions/dto.InventorySummaryItem'
         type: array
-    type: object
-  dto.LocationStockSummary:
-    properties:
-      location_id:
-        type: string
-      location_name:
-        type: string
-      total_items:
-        type: integer
-      total_value:
-        type: number
     type: object
   dto.LoginRequest:
     properties:
@@ -1276,12 +1333,6 @@ definitions:
       available_quantity:
         example: 45
         type: integer
-      location_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      location_name:
-        example: Main Warehouse
-        type: string
       max_level:
         example: 100
         type: integer
@@ -1530,6 +1581,232 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
     type: object
+  dto.PurchaseReceiptItemResponse:
+    properties:
+      accepted_quantity:
+        example: 9
+        type: integer
+      batch_number:
+        example: BATCH001
+        type: string
+      created_at:
+        description: Timestamps
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      damaged_quantity:
+        example: 1
+        type: integer
+      discount_amount:
+        example: 0
+        type: number
+      expiry_date:
+        example: "2025-12-31T23:59:59Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440004
+        type: string
+      order_notes:
+        example: High priority item
+        type: string
+      ordered_quantity:
+        description: Order Information
+        example: 10
+        type: integer
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440005
+        type: string
+      purchase_receipt_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      quality_notes:
+        example: One unit damaged during transport
+        type: string
+      quality_status:
+        example: good
+        type: string
+      receipt_notes:
+        example: Inspection notes
+        type: string
+      received_quantity:
+        description: Receipt Information
+        example: 10
+        type: integer
+      rejected_quantity:
+        example: 0
+        type: integer
+      serial_numbers:
+        example: '["SN001","SN002"]'
+        type: string
+      stock_updated:
+        example: false
+        type: boolean
+      tax_amount:
+        example: 60
+        type: number
+      total_price:
+        example: 1000
+        type: number
+      unit_price:
+        example: 100
+        type: number
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+    type: object
+  dto.PurchaseReceiptResponse:
+    properties:
+      approved_at:
+        example: "2023-01-02T12:00:00Z"
+        type: string
+      approved_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440003
+        type: string
+      created_at:
+        description: Timestamps
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      created_by_id:
+        description: User Tracking
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      currency:
+        example: MYR
+        type: string
+      delivery_date:
+        example: "2023-01-14T08:00:00Z"
+        type: string
+      delivery_note:
+        example: DN-001
+        type: string
+      discount_amount:
+        example: 0
+        type: number
+      driver_name:
+        example: John Doe
+        type: string
+      expected_date:
+        example: "2023-01-15T12:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      invoice_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      invoice_number:
+        example: INV-001
+        type: string
+      items:
+        description: Items
+        items:
+          $ref: '#/definitions/dto.PurchaseReceiptItemResponse'
+        type: array
+      order_date:
+        description: Order Information
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      order_notes:
+        example: Urgent order
+        type: string
+      quality_check:
+        example: true
+        type: boolean
+      quality_notes:
+        example: All items in good condition
+        type: string
+      receipt_notes:
+        example: All items received in good condition
+        type: string
+      receipt_number:
+        example: PR-2024-001
+        type: string
+      received_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440004
+        type: string
+      received_date:
+        description: Receipt Information
+        example: "2023-01-14T12:00:00Z"
+        type: string
+      reference:
+        example: REF-001
+        type: string
+      shipping_cost:
+        example: 50
+        type: number
+      status:
+        allOf:
+        - $ref: '#/definitions/models.PurchaseReceiptStatus'
+        example: draft
+      sub_total:
+        description: Financial Information
+        example: 1000
+        type: number
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      tax_amount:
+        example: 60
+        type: number
+      tax_rate:
+        example: 6
+        type: number
+      terms:
+        example: Net 30 days
+        type: string
+      total_amount:
+        example: 1110
+        type: number
+      updated_at:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      vehicle_number:
+        example: ABC1234
+        type: string
+      verified_at:
+        example: "2023-01-02T15:00:00Z"
+        type: string
+      verified_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440005
+        type: string
+    type: object
+  dto.ReceiveGoodsRequest:
+    properties:
+      delivery_date:
+        example: "2023-01-14T08:00:00Z"
+        type: string
+      delivery_note:
+        example: DN-001
+        maxLength: 100
+        type: string
+      driver_name:
+        example: John Doe
+        maxLength: 100
+        type: string
+      invoice_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      invoice_number:
+        example: INV-001
+        maxLength: 100
+        type: string
+      receipt_notes:
+        example: All items received
+        maxLength: 1000
+        type: string
+      received_by_id:
+        example: 550e8400-e29b-41d4-a716-446655440004
+        type: string
+      received_date:
+        example: "2023-01-14T12:00:00Z"
+        type: string
+      vehicle_number:
+        example: ABC1234
+        maxLength: 50
+        type: string
+    required:
+    - received_by_id
+    - received_date
+    type: object
   dto.ReorderLevelUpdate:
     properties:
       product_id:
@@ -1540,6 +1817,14 @@ definitions:
     required:
     - product_id
     - reorder_level
+    type: object
+  dto.SendOrderRequest:
+    properties:
+      send_date:
+        example: "2023-01-02T09:00:00Z"
+        type: string
+    required:
+    - send_date
     type: object
   dto.StockAdjustmentRequest:
     properties:
@@ -1579,10 +1864,6 @@ definitions:
       created_at:
         type: string
       id:
-        type: string
-      location_id:
-        type: string
-      location_name:
         type: string
       movement_type:
         type: string
@@ -1774,9 +2055,6 @@ definitions:
         example: INV-001
         maxLength: 100
         type: string
-      location_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
       notes:
         example: Updated notes
         maxLength: 1000
@@ -1864,6 +2142,143 @@ definitions:
       terms:
         example: Updated terms
         maxLength: 1000
+        type: string
+    type: object
+  dto.UpdatePurchaseReceiptItemRequest:
+    properties:
+      accepted_quantity:
+        example: 9
+        minimum: 0
+        type: integer
+      batch_number:
+        example: BATCH001
+        maxLength: 100
+        type: string
+      damaged_quantity:
+        example: 1
+        minimum: 0
+        type: integer
+      discount_amount:
+        example: 5
+        minimum: 0
+        type: number
+      expiry_date:
+        example: "2025-12-31T23:59:59Z"
+        type: string
+      order_notes:
+        example: Updated notes
+        maxLength: 500
+        type: string
+      ordered_quantity:
+        description: Order Information Updates
+        example: 15
+        minimum: 1
+        type: integer
+      quality_notes:
+        example: Updated quality notes
+        maxLength: 500
+        type: string
+      quality_status:
+        example: good
+        maxLength: 20
+        type: string
+      receipt_notes:
+        example: Updated receipt notes
+        maxLength: 500
+        type: string
+      received_quantity:
+        description: Receipt Information Updates
+        example: 10
+        minimum: 0
+        type: integer
+      rejected_quantity:
+        example: 0
+        minimum: 0
+        type: integer
+      serial_numbers:
+        example: '["SN001","SN002"]'
+        maxLength: 2000
+        type: string
+      unit_price:
+        example: 120
+        minimum: 0
+        type: number
+    type: object
+  dto.UpdatePurchaseReceiptRequest:
+    properties:
+      currency:
+        example: MYR
+        type: string
+      delivery_date:
+        example: "2023-01-14T08:00:00Z"
+        type: string
+      delivery_note:
+        example: DN-001
+        maxLength: 100
+        type: string
+      discount_amount:
+        example: 0
+        minimum: 0
+        type: number
+      driver_name:
+        example: John Doe
+        maxLength: 100
+        type: string
+      expected_date:
+        example: "2023-01-15T12:00:00Z"
+        type: string
+      invoice_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      invoice_number:
+        example: INV-001
+        maxLength: 100
+        type: string
+      order_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      order_notes:
+        example: Updated notes
+        maxLength: 1000
+        type: string
+      quality_check:
+        example: true
+        type: boolean
+      quality_notes:
+        example: All items in good condition
+        maxLength: 1000
+        type: string
+      receipt_notes:
+        example: All items received in good condition
+        maxLength: 1000
+        type: string
+      received_date:
+        description: Receipt Information (for receipt phase updates)
+        example: "2023-01-14T12:00:00Z"
+        type: string
+      reference:
+        example: REF-001
+        maxLength: 100
+        type: string
+      shipping_cost:
+        example: 50
+        minimum: 0
+        type: number
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      tax_rate:
+        example: 6
+        maximum: 100
+        minimum: 0
+        type: number
+      terms:
+        example: Updated terms
+        maxLength: 1000
+        type: string
+      vehicle_number:
+        example: ABC1234
+        maxLength: 50
         type: string
     type: object
   dto.UpdateReorderLevelsRequest:
@@ -2267,6 +2682,21 @@ definitions:
     required:
     - verifier_id
     type: object
+  dto.VerifyGoodsRequest:
+    properties:
+      quality_check:
+        example: true
+        type: boolean
+      quality_notes:
+        example: All items verified
+        maxLength: 1000
+        type: string
+      verifier_id:
+        example: 550e8400-e29b-41d4-a716-446655440005
+        type: string
+    required:
+    - verifier_id
+    type: object
   dto.ZeroStockItemResponse:
     properties:
       last_updated:
@@ -2347,6 +2777,44 @@ definitions:
     - PurchaseOrderStatusOrdered
     - PurchaseOrderStatusReceived
     - PurchaseOrderStatusCancelled
+  models.PurchaseReceiptStatus:
+    enum:
+    - draft
+    - pending
+    - approved
+    - ordered
+    - received
+    - partial
+    - completed
+    - cancelled
+    type: string
+    x-enum-comments:
+      PurchaseReceiptStatusApproved: Approved, ready to send
+      PurchaseReceiptStatusCancelled: Order cancelled
+      PurchaseReceiptStatusCompleted: Fully received and processed
+      PurchaseReceiptStatusDraft: Initial creation
+      PurchaseReceiptStatusOrdered: Sent to supplier
+      PurchaseReceiptStatusPartial: Partially received/processed
+      PurchaseReceiptStatusPending: Awaiting approval
+      PurchaseReceiptStatusReceived: Goods received, being processed
+    x-enum-descriptions:
+    - Initial creation
+    - Awaiting approval
+    - Approved, ready to send
+    - Sent to supplier
+    - Goods received, being processed
+    - Partially received/processed
+    - Fully received and processed
+    - Order cancelled
+    x-enum-varnames:
+    - PurchaseReceiptStatusDraft
+    - PurchaseReceiptStatusPending
+    - PurchaseReceiptStatusApproved
+    - PurchaseReceiptStatusOrdered
+    - PurchaseReceiptStatusReceived
+    - PurchaseReceiptStatusPartial
+    - PurchaseReceiptStatusCompleted
+    - PurchaseReceiptStatusCancelled
   router.HealthResponse:
     properties:
       status:
@@ -2365,10 +2833,12 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: A comprehensive vehicle spare parts shop management system with inventory
-    tracking, brand management, vehicle compatibility, purchase orders, GRN processing,
-    customer management, multi-location support, JWT authentication, and role-based
-    access control
+  description: A comprehensive vehicle spare parts shop management system with single-location
+    inventory tracking, brand management, vehicle compatibility, unified purchase
+    receipt processing, customer management, JWT authentication, and role-based access
+    control. Features include product catalogs, vehicle-part compatibility, purchase
+    order/goods receipt workflow, customer relationship management, audit trails,
+    and role-based access control across the entire system.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -3851,11 +4321,6 @@ paths:
         in: query
         name: supplier_id
         type: string
-      - description: Filter by location ID
-        format: uuid
-        in: query
-        name: location_id
-        type: string
       - description: Filter by start date
         format: date
         in: query
@@ -4628,11 +5093,6 @@ paths:
       consumes:
       - application/json
       description: Get items that are at or below their reorder level
-      parameters:
-      - description: Filter by location ID
-        in: query
-        name: location_id
-        type: string
       produces:
       - application/json
       responses:
@@ -4698,11 +5158,6 @@ paths:
       consumes:
       - application/json
       description: Get items that are completely out of stock
-      parameters:
-      - description: Filter by location ID
-        in: query
-        name: location_id
-        type: string
       produces:
       - application/json
       responses:
@@ -5898,6 +6353,723 @@ paths:
       summary: Get purchase order by PO number
       tags:
       - PurchaseOrders
+  /purchase-receipts:
+    get:
+      description: Get a paginated list of purchase receipts with optional filters
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search by receipt number
+        in: query
+        name: search
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by supplier ID
+        in: query
+        name: supplier_id
+        type: string
+      - description: Filter by start date (RFC3339 format)
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (RFC3339 format)
+        in: query
+        name: end_date
+        type: string
+      - default: all
+        description: 'Filter by phase: order, receipt, all'
+        in: query
+        name: phase
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PurchaseReceiptResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List purchase receipts
+      tags:
+      - purchase-receipts
+    post:
+      consumes:
+      - application/json
+      description: Create a new purchase receipt with order details
+      parameters:
+      - description: Purchase receipt data
+        in: body
+        name: purchase_receipt
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePurchaseReceiptRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new purchase receipt
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}:
+    delete:
+      description: Delete a purchase receipt by ID
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete purchase receipt
+      tags:
+      - purchase-receipts
+    get:
+      description: Get a purchase receipt by its ID
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get purchase receipt by ID
+      tags:
+      - purchase-receipts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing purchase receipt
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated purchase receipt data
+        in: body
+        name: purchase_receipt
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePurchaseReceiptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update purchase receipt
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Approve a purchase receipt for ordering
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval data
+        in: body
+        name: approval
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ApproveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Approve purchase receipt
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/cancel:
+    post:
+      description: Cancel a purchase receipt
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel purchase receipt
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/complete:
+    post:
+      description: Mark purchase receipt as completed
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Complete purchase receipt processing
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/items:
+    get:
+      description: Get all items for a specific purchase receipt
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.PurchaseReceiptItemResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get purchase receipt items
+      tags:
+      - purchase-receipts
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a purchase receipt
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Item data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePurchaseReceiptItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add item to purchase receipt
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/items/{item_id}:
+    delete:
+      description: Remove an item from a purchase receipt
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove item from purchase receipt
+      tags:
+      - purchase-receipts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing purchase receipt item
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: string
+      - description: Updated item data
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePurchaseReceiptItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update purchase receipt item
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/receive:
+    post:
+      consumes:
+      - application/json
+      description: Mark goods as received from supplier
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Receive goods data
+        in: body
+        name: receive_goods
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ReceiveGoodsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Receive goods from supplier
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/send:
+    post:
+      consumes:
+      - application/json
+      description: Send approved purchase order to supplier
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Send order data
+        in: body
+        name: send_order
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SendOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send purchase order to supplier
+      tags:
+      - purchase-receipts
+  /purchase-receipts/{id}/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify quality and condition of received goods
+      parameters:
+      - description: Purchase Receipt ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Verify goods data
+        in: body
+        name: verify_goods
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyGoodsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Verify received goods
+      tags:
+      - purchase-receipts
+  /purchase-receipts/summary:
+    get:
+      description: Get purchase receipt analytics summary for a date range
+      parameters:
+      - description: Start date (RFC3339 format)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (RFC3339 format)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get purchase receipt summary
+      tags:
+      - purchase-receipts
+  /purchase-receipts/suppliers/{supplier_id}/performance:
+    get:
+      description: Get performance metrics for a specific supplier
+      parameters:
+      - description: Supplier ID
+        in: path
+        name: supplier_id
+        required: true
+        type: string
+      - description: Start date (RFC3339 format)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (RFC3339 format)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get supplier performance metrics
+      tags:
+      - purchase-receipts
   /reports/inventory-summary:
     get:
       consumes:
@@ -5926,10 +7098,6 @@ paths:
       - description: Filter by product ID
         in: query
         name: product_id
-        type: string
-      - description: Filter by location ID
-        in: query
-        name: location_id
         type: string
       - description: Filter by movement type (IN, OUT, TRANSFER, ADJUSTMENT)
         in: query

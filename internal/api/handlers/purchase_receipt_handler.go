@@ -224,7 +224,7 @@ func (h *PurchaseReceiptHandler) DeletePurchaseReceipt(c *gin.Context) {
 // @Param start_date query string false "Filter by start date (RFC3339 format)"
 // @Param end_date query string false "Filter by end date (RFC3339 format)"
 // @Param phase query string false "Filter by phase: order, receipt, all" default(all)
-// @Success 200 {object} dto.ListResponse[dto.PurchaseReceiptResponse]
+// @Success 200 {object} dto.PaginatedResponse{data=[]dto.PurchaseReceiptResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse

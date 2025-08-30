@@ -2399,13 +2399,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "format": "uuid",
-                        "description": "Filter by location ID",
-                        "name": "location_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "format": "date",
                         "description": "Filter by start date",
                         "name": "start_date",
@@ -3636,14 +3629,6 @@ const docTemplate = `{
                     "inventory"
                 ],
                 "summary": "Get low stock items",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter by location ID",
-                        "name": "location_id",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3752,14 +3737,6 @@ const docTemplate = `{
                     "inventory"
                 ],
                 "summary": "Get zero stock items",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter by location ID",
-                        "name": "location_id",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5670,6 +5647,1122 @@ const docTemplate = `{
                 }
             }
         },
+        "/purchase-receipts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of purchase receipts with optional filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "List purchase receipts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by receipt number",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by supplier ID",
+                        "name": "supplier_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (RFC3339 format)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (RFC3339 format)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "all",
+                        "description": "Filter by phase: order, receipt, all",
+                        "name": "phase",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new purchase receipt with order details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Create a new purchase receipt",
+                "parameters": [
+                    {
+                        "description": "Purchase receipt data",
+                        "name": "purchase_receipt",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePurchaseReceiptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get purchase receipt analytics summary for a date range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Get purchase receipt summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339 format)",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (RFC3339 format)",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/suppliers/{supplier_id}/performance": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get performance metrics for a specific supplier",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Get supplier performance metrics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Supplier ID",
+                        "name": "supplier_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339 format)",
+                        "name": "start_date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (RFC3339 format)",
+                        "name": "end_date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a purchase receipt by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Get purchase receipt by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing purchase receipt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Update purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated purchase receipt data",
+                        "name": "purchase_receipt",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePurchaseReceiptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a purchase receipt by ID",
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Delete purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/approve": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Approve a purchase receipt for ordering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Approve purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Approval data",
+                        "name": "approval",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ApproveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cancel a purchase receipt",
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Cancel purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark purchase receipt as completed",
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Complete purchase receipt processing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/items": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all items for a specific purchase receipt",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Get purchase receipt items",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.PurchaseReceiptItemResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add a new item to a purchase receipt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Add item to purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Item data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePurchaseReceiptItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/items/{item_id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing purchase receipt item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Update purchase receipt item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated item data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePurchaseReceiptItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove an item from a purchase receipt",
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Remove item from purchase receipt",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/receive": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark goods as received from supplier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Receive goods from supplier",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Receive goods data",
+                        "name": "receive_goods",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReceiveGoodsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send approved purchase order to supplier",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Send purchase order to supplier",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Send order data",
+                        "name": "send_order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SendOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/purchase-receipts/{id}/verify": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verify quality and condition of received goods",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "purchase-receipts"
+                ],
+                "summary": "Verify received goods",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purchase Receipt ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Verify goods data",
+                        "name": "verify_goods",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.VerifyGoodsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PurchaseReceiptResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/reports/inventory-summary": {
             "get": {
                 "description": "Get comprehensive inventory summary with statistics",
@@ -5717,12 +6810,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by product ID",
                         "name": "product_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by location ID",
-                        "name": "location_id",
                         "in": "query"
                     },
                     {
@@ -9622,6 +10709,18 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ApproveRequest": {
+            "type": "object",
+            "required": [
+                "approver_id"
+            ],
+            "properties": {
+                "approver_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                }
+            }
+        },
         "dto.AuditLogResponse": {
             "type": "object",
             "properties": {
@@ -9982,7 +11081,6 @@ const docTemplate = `{
         "dto.CreateGRNRequest": {
             "type": "object",
             "required": [
-                "location_id",
                 "purchase_order_id",
                 "received_by_id",
                 "received_date"
@@ -10021,10 +11119,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dto.CreateGRNItemRequest"
                     }
-                },
-                "location_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440003"
                 },
                 "notes": {
                     "type": "string",
@@ -10158,6 +11252,102 @@ const docTemplate = `{
                 "order_date": {
                     "type": "string",
                     "example": "2023-01-01T12:00:00Z"
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "REF-001"
+                },
+                "shipping_cost": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 50
+                },
+                "supplier_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 6
+                },
+                "terms": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Net 30 days"
+                }
+            }
+        },
+        "dto.CreatePurchaseReceiptItemRequest": {
+            "type": "object",
+            "required": [
+                "ordered_quantity",
+                "product_id",
+                "unit_price"
+            ],
+            "properties": {
+                "discount_amount": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "order_notes": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "High priority item"
+                },
+                "ordered_quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 10
+                },
+                "product_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440005"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 100
+                }
+            }
+        },
+        "dto.CreatePurchaseReceiptRequest": {
+            "type": "object",
+            "required": [
+                "order_date",
+                "supplier_id"
+            ],
+            "properties": {
+                "currency": {
+                    "type": "string",
+                    "example": "MYR"
+                },
+                "discount_amount": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "expected_date": {
+                    "type": "string",
+                    "example": "2023-01-15T12:00:00Z"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreatePurchaseReceiptItemRequest"
+                    }
+                },
+                "order_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "order_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Urgent order"
                 },
                 "reference": {
                     "type": "string",
@@ -10559,10 +11749,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.GRNItemResponse"
                     }
                 },
-                "location_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440003"
-                },
                 "notes": {
                     "type": "string",
                     "example": "All items received in good condition"
@@ -10706,20 +11892,11 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.CategoryStockSummary"
                     }
                 },
-                "stock_by_location": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.LocationStockSummary"
-                    }
-                },
                 "top_products": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.InventorySummaryItem"
                     }
-                },
-                "total_locations": {
-                    "type": "integer"
                 },
                 "total_products": {
                     "type": "integer"
@@ -10732,23 +11909,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/dto.InventorySummaryItem"
                     }
-                }
-            }
-        },
-        "dto.LocationStockSummary": {
-            "type": "object",
-            "properties": {
-                "location_id": {
-                    "type": "string"
-                },
-                "location_name": {
-                    "type": "string"
-                },
-                "total_items": {
-                    "type": "integer"
-                },
-                "total_value": {
-                    "type": "number"
                 }
             }
         },
@@ -10992,14 +12152,6 @@ const docTemplate = `{
                 "available_quantity": {
                     "type": "integer",
                     "example": 45
-                },
-                "location_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "location_name": {
-                    "type": "string",
-                    "example": "Main Warehouse"
                 },
                 "max_level": {
                     "type": "integer",
@@ -11343,6 +12495,309 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.PurchaseReceiptItemResponse": {
+            "type": "object",
+            "properties": {
+                "accepted_quantity": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "batch_number": {
+                    "type": "string",
+                    "example": "BATCH001"
+                },
+                "created_at": {
+                    "description": "Timestamps",
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "damaged_quantity": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "discount_amount": {
+                    "type": "number",
+                    "example": 0
+                },
+                "expiry_date": {
+                    "type": "string",
+                    "example": "2025-12-31T23:59:59Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440004"
+                },
+                "order_notes": {
+                    "type": "string",
+                    "example": "High priority item"
+                },
+                "ordered_quantity": {
+                    "description": "Order Information",
+                    "type": "integer",
+                    "example": 10
+                },
+                "product_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440005"
+                },
+                "purchase_receipt_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "quality_notes": {
+                    "type": "string",
+                    "example": "One unit damaged during transport"
+                },
+                "quality_status": {
+                    "type": "string",
+                    "example": "good"
+                },
+                "receipt_notes": {
+                    "type": "string",
+                    "example": "Inspection notes"
+                },
+                "received_quantity": {
+                    "description": "Receipt Information",
+                    "type": "integer",
+                    "example": 10
+                },
+                "rejected_quantity": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "serial_numbers": {
+                    "type": "string",
+                    "example": "[\"SN001\",\"SN002\"]"
+                },
+                "stock_updated": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "tax_amount": {
+                    "type": "number",
+                    "example": 60
+                },
+                "total_price": {
+                    "type": "number",
+                    "example": 1000
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 100
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "dto.PurchaseReceiptResponse": {
+            "type": "object",
+            "properties": {
+                "approved_at": {
+                    "type": "string",
+                    "example": "2023-01-02T12:00:00Z"
+                },
+                "approved_by_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440003"
+                },
+                "created_at": {
+                    "description": "Timestamps",
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "created_by_id": {
+                    "description": "User Tracking",
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440002"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "MYR"
+                },
+                "delivery_date": {
+                    "type": "string",
+                    "example": "2023-01-14T08:00:00Z"
+                },
+                "delivery_note": {
+                    "type": "string",
+                    "example": "DN-001"
+                },
+                "discount_amount": {
+                    "type": "number",
+                    "example": 0
+                },
+                "driver_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "expected_date": {
+                    "type": "string",
+                    "example": "2023-01-15T12:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "invoice_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "invoice_number": {
+                    "type": "string",
+                    "example": "INV-001"
+                },
+                "items": {
+                    "description": "Items",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PurchaseReceiptItemResponse"
+                    }
+                },
+                "order_date": {
+                    "description": "Order Information",
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "order_notes": {
+                    "type": "string",
+                    "example": "Urgent order"
+                },
+                "quality_check": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "quality_notes": {
+                    "type": "string",
+                    "example": "All items in good condition"
+                },
+                "receipt_notes": {
+                    "type": "string",
+                    "example": "All items received in good condition"
+                },
+                "receipt_number": {
+                    "type": "string",
+                    "example": "PR-2024-001"
+                },
+                "received_by_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440004"
+                },
+                "received_date": {
+                    "description": "Receipt Information",
+                    "type": "string",
+                    "example": "2023-01-14T12:00:00Z"
+                },
+                "reference": {
+                    "type": "string",
+                    "example": "REF-001"
+                },
+                "shipping_cost": {
+                    "type": "number",
+                    "example": 50
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PurchaseReceiptStatus"
+                        }
+                    ],
+                    "example": "draft"
+                },
+                "sub_total": {
+                    "description": "Financial Information",
+                    "type": "number",
+                    "example": 1000
+                },
+                "supplier_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "tax_amount": {
+                    "type": "number",
+                    "example": 60
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 6
+                },
+                "terms": {
+                    "type": "string",
+                    "example": "Net 30 days"
+                },
+                "total_amount": {
+                    "type": "number",
+                    "example": 1110
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "vehicle_number": {
+                    "type": "string",
+                    "example": "ABC1234"
+                },
+                "verified_at": {
+                    "type": "string",
+                    "example": "2023-01-02T15:00:00Z"
+                },
+                "verified_by_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440005"
+                }
+            }
+        },
+        "dto.ReceiveGoodsRequest": {
+            "type": "object",
+            "required": [
+                "received_by_id",
+                "received_date"
+            ],
+            "properties": {
+                "delivery_date": {
+                    "type": "string",
+                    "example": "2023-01-14T08:00:00Z"
+                },
+                "delivery_note": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "DN-001"
+                },
+                "driver_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "John Doe"
+                },
+                "invoice_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "invoice_number": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "INV-001"
+                },
+                "receipt_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "All items received"
+                },
+                "received_by_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440004"
+                },
+                "received_date": {
+                    "type": "string",
+                    "example": "2023-01-14T12:00:00Z"
+                },
+                "vehicle_number": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "ABC1234"
+                }
+            }
+        },
         "dto.ReorderLevelUpdate": {
             "type": "object",
             "required": [
@@ -11356,6 +12811,18 @@ const docTemplate = `{
                 "reorder_level": {
                     "type": "integer",
                     "minimum": 0
+                }
+            }
+        },
+        "dto.SendOrderRequest": {
+            "type": "object",
+            "required": [
+                "send_date"
+            ],
+            "properties": {
+                "send_date": {
+                    "type": "string",
+                    "example": "2023-01-02T09:00:00Z"
                 }
             }
         },
@@ -11409,12 +12876,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "location_id": {
-                    "type": "string"
-                },
-                "location_name": {
                     "type": "string"
                 },
                 "movement_type": {
@@ -11667,10 +13128,6 @@ const docTemplate = `{
                     "maxLength": 100,
                     "example": "INV-001"
                 },
-                "location_id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440003"
-                },
                 "notes": {
                     "type": "string",
                     "maxLength": 1000,
@@ -11784,6 +13241,181 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 1000,
                     "example": "Updated terms"
+                }
+            }
+        },
+        "dto.UpdatePurchaseReceiptItemRequest": {
+            "type": "object",
+            "properties": {
+                "accepted_quantity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 9
+                },
+                "batch_number": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "BATCH001"
+                },
+                "damaged_quantity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 1
+                },
+                "discount_amount": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 5
+                },
+                "expiry_date": {
+                    "type": "string",
+                    "example": "2025-12-31T23:59:59Z"
+                },
+                "order_notes": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Updated notes"
+                },
+                "ordered_quantity": {
+                    "description": "Order Information Updates",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 15
+                },
+                "quality_notes": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Updated quality notes"
+                },
+                "quality_status": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "example": "good"
+                },
+                "receipt_notes": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Updated receipt notes"
+                },
+                "received_quantity": {
+                    "description": "Receipt Information Updates",
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 10
+                },
+                "rejected_quantity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "serial_numbers": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "example": "[\"SN001\",\"SN002\"]"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 120
+                }
+            }
+        },
+        "dto.UpdatePurchaseReceiptRequest": {
+            "type": "object",
+            "properties": {
+                "currency": {
+                    "type": "string",
+                    "example": "MYR"
+                },
+                "delivery_date": {
+                    "type": "string",
+                    "example": "2023-01-14T08:00:00Z"
+                },
+                "delivery_note": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "DN-001"
+                },
+                "discount_amount": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "driver_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "John Doe"
+                },
+                "expected_date": {
+                    "type": "string",
+                    "example": "2023-01-15T12:00:00Z"
+                },
+                "invoice_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "invoice_number": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "INV-001"
+                },
+                "order_date": {
+                    "type": "string",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "order_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Updated notes"
+                },
+                "quality_check": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "quality_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "All items in good condition"
+                },
+                "receipt_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "All items received in good condition"
+                },
+                "received_date": {
+                    "description": "Receipt Information (for receipt phase updates)",
+                    "type": "string",
+                    "example": "2023-01-14T12:00:00Z"
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "REF-001"
+                },
+                "shipping_cost": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 50
+                },
+                "supplier_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440001"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 6
+                },
+                "terms": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Updated terms"
+                },
+                "vehicle_number": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "ABC1234"
                 }
             }
         },
@@ -12329,6 +13961,27 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.VerifyGoodsRequest": {
+            "type": "object",
+            "required": [
+                "verifier_id"
+            ],
+            "properties": {
+                "quality_check": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "quality_notes": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "All items verified"
+                },
+                "verifier_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440005"
+                }
+            }
+        },
         "dto.ZeroStockItemResponse": {
             "type": "object",
             "properties": {
@@ -12435,6 +14088,49 @@ const docTemplate = `{
                 "PurchaseOrderStatusCancelled"
             ]
         },
+        "models.PurchaseReceiptStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "pending",
+                "approved",
+                "ordered",
+                "received",
+                "partial",
+                "completed",
+                "cancelled"
+            ],
+            "x-enum-comments": {
+                "PurchaseReceiptStatusApproved": "Approved, ready to send",
+                "PurchaseReceiptStatusCancelled": "Order cancelled",
+                "PurchaseReceiptStatusCompleted": "Fully received and processed",
+                "PurchaseReceiptStatusDraft": "Initial creation",
+                "PurchaseReceiptStatusOrdered": "Sent to supplier",
+                "PurchaseReceiptStatusPartial": "Partially received/processed",
+                "PurchaseReceiptStatusPending": "Awaiting approval",
+                "PurchaseReceiptStatusReceived": "Goods received, being processed"
+            },
+            "x-enum-descriptions": [
+                "Initial creation",
+                "Awaiting approval",
+                "Approved, ready to send",
+                "Sent to supplier",
+                "Goods received, being processed",
+                "Partially received/processed",
+                "Fully received and processed",
+                "Order cancelled"
+            ],
+            "x-enum-varnames": [
+                "PurchaseReceiptStatusDraft",
+                "PurchaseReceiptStatusPending",
+                "PurchaseReceiptStatusApproved",
+                "PurchaseReceiptStatusOrdered",
+                "PurchaseReceiptStatusReceived",
+                "PurchaseReceiptStatusPartial",
+                "PurchaseReceiptStatusCompleted",
+                "PurchaseReceiptStatusCancelled"
+            ]
+        },
         "router.HealthResponse": {
             "type": "object",
             "properties": {
@@ -12470,7 +14166,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Vehicle Spare Parts Shop Management API",
-	Description:      "A comprehensive vehicle spare parts shop management system with inventory tracking, brand management, vehicle compatibility, purchase orders, GRN processing, customer management, multi-location support, JWT authentication, and role-based access control",
+	Description:      "A comprehensive vehicle spare parts shop management system with single-location inventory tracking, brand management, vehicle compatibility, unified purchase receipt processing, customer management, JWT authentication, and role-based access control. Features include product catalogs, vehicle-part compatibility, purchase order/goods receipt workflow, customer relationship management, audit trails, and role-based access control across the entire system.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -1,6 +1,6 @@
 // @title Vehicle Spare Parts Shop Management API
 // @version 1.0
-// @description A comprehensive vehicle spare parts shop management system with inventory tracking, brand management, vehicle compatibility, purchase orders, GRN processing, customer management, multi-location support, JWT authentication, and role-based access control
+// @description A comprehensive vehicle spare parts shop management system with single-location inventory tracking, brand management, vehicle compatibility, unified purchase receipt processing, customer management, JWT authentication, and role-based access control. Features include product catalogs, vehicle-part compatibility, purchase order/goods receipt workflow, customer relationship management, audit trails, and role-based access control across the entire system.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support

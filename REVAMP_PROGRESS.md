@@ -178,10 +178,10 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Update InventoryService for single-location operations ✅
   - Create PurchaseReceiptService replacing PO and GRN services ✅
   - Update stock movement logic without location dependencies ✅
-- [ ] **Step 5.2.4**: Update Swagger documentation
-  - Remove location-related endpoints from docs
-  - Add PurchaseReceipt endpoints documentation
-  - Update existing endpoint docs for simplified structure
+- [x] **Step 5.2.4**: Update Swagger documentation ✅
+  - Remove location-related endpoints from docs ✅
+  - Add PurchaseReceipt endpoints documentation ✅
+  - Update existing endpoint docs for simplified structure ✅
 
 ### Phase 5.3: Frontend Updates 📋 PENDING
 - [ ] **Step 5.3.1**: Remove location management UI
@@ -213,8 +213,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.2.4 - Update Swagger documentation
-- **Next Step**: Remove location-related endpoints from docs, add PurchaseReceipt endpoints documentation, and update existing endpoint docs for simplified structure
+- **Current Step**: Step 5.3.1 - Remove location management UI
+- **Next Step**: Remove location-related components and pages, update inventory UI to work without location selection, and remove location filtering from all components
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
