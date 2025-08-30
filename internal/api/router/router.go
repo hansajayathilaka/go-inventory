@@ -74,6 +74,7 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		vehicleCompatibilityHandler := handlers.NewVehicleCompatibilityHandler(appCtx.CompatibilityService)
 		purchaseOrderHandler := handlers.NewPurchaseOrderHandler(appCtx.PurchaseService)
 		grnHandler := handlers.NewGRNHandler(appCtx.PurchaseService)
+		purchaseReceiptHandler := handlers.NewPurchaseReceiptHandler(appCtx.PurchaseReceiptService)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -262,6 +263,36 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			grns.POST("/:id/items", middleware.RequireMinimumRole("staff"), grnHandler.AddGRNItem)
 			grns.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.UpdateGRNItem)
 			grns.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), grnHandler.RemoveGRNItem)
+		}
+
+		// Purchase Receipt management routes (protected) - NEW UNIFIED SYSTEM
+		purchaseReceipts := v1.Group("/purchase-receipts")
+		purchaseReceipts.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			// Basic CRUD operations
+			purchaseReceipts.GET("", middleware.RequireMinimumRole("viewer"), purchaseReceiptHandler.ListPurchaseReceipts)
+			purchaseReceipts.POST("", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.CreatePurchaseReceipt)
+			purchaseReceipts.GET("/:id", middleware.RequireMinimumRole("viewer"), purchaseReceiptHandler.GetPurchaseReceipt)
+			purchaseReceipts.PUT("/:id", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.UpdatePurchaseReceipt)
+			purchaseReceipts.DELETE("/:id", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.DeletePurchaseReceipt)
+			
+			// Status management operations
+			purchaseReceipts.POST("/:id/approve", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.ApprovePurchaseReceipt)
+			purchaseReceipts.POST("/:id/send", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.SendOrder)
+			purchaseReceipts.POST("/:id/receive", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.ReceiveGoods)
+			purchaseReceipts.POST("/:id/verify", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.VerifyGoods)
+			purchaseReceipts.POST("/:id/complete", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.CompletePurchaseReceipt)
+			purchaseReceipts.POST("/:id/cancel", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.CancelPurchaseReceipt)
+			
+			// Item management operations
+			purchaseReceipts.GET("/:id/items", middleware.RequireMinimumRole("viewer"), purchaseReceiptHandler.GetPurchaseReceiptItems)
+			purchaseReceipts.POST("/:id/items", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.CreatePurchaseReceiptItem)
+			purchaseReceipts.PUT("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.UpdatePurchaseReceiptItem)
+			purchaseReceipts.DELETE("/:id/items/:item_id", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.DeletePurchaseReceiptItem)
+			
+			// Analytics and reporting
+			purchaseReceipts.GET("/summary", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.GetPurchaseReceiptSummary)
+			purchaseReceipts.GET("/suppliers/:supplier_id/performance", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.GetSupplierPerformance)
 		}
 
 		// Category management routes (protected)

@@ -11,6 +11,7 @@ import (
 	"inventory-api/internal/business/inventory"
 	"inventory-api/internal/business/product"
 	"inventory-api/internal/business/purchase"
+	"inventory-api/internal/business/purchase_receipt"
 	"inventory-api/internal/business/supplier"
 	"inventory-api/internal/business/user"
 	"inventory-api/internal/business/vehicle"
@@ -41,17 +42,18 @@ type Context struct {
 	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
 	// Services
-	UserService         user.Service
-	SupplierService     supplier.Service
-	CustomerService     customer.Service
-	BrandService        brand.Service
-	VehicleService      vehicle.Service
-	PurchaseService     purchase.Service
-	ProductService      product.Service
-	HierarchyService    hierarchy.Service
-	InventoryService    inventory.Service
-	AuditService        audit.Service
-	CompatibilityService compatibility.Service
+	UserService           user.Service
+	SupplierService       supplier.Service
+	CustomerService       customer.Service
+	BrandService          brand.Service
+	VehicleService        vehicle.Service
+	PurchaseService       purchase.Service
+	PurchaseReceiptService purchase_receipt.Service
+	ProductService        product.Service
+	HierarchyService      hierarchy.Service
+	InventoryService      inventory.Service
+	AuditService          audit.Service
+	CompatibilityService  compatibility.Service
 }
 
 func NewContext() (*Context, error) {
@@ -115,6 +117,12 @@ func (ctx *Context) initServices() {
 	ctx.PurchaseService = purchase.NewService(
 		ctx.PurchaseOrderRepo,
 		ctx.GRNRepo,
+		ctx.SupplierRepo,
+		ctx.ProductRepo,
+		ctx.InventoryRepo,
+	)
+	ctx.PurchaseReceiptService = purchase_receipt.NewService(
+		ctx.PurchaseReceiptRepo,
 		ctx.SupplierRepo,
 		ctx.ProductRepo,
 		ctx.InventoryRepo,
