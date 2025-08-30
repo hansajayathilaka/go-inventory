@@ -106,7 +106,7 @@ func BenchmarkHealthCheck(b *testing.B) {
 	
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			req, _ := http.NewRequest("GET", "/api/v1/health", nil)
+			req, _ := http.NewRequest("GET", "/health", nil)
 			w := httptest.NewRecorder()
 			suite.router.ServeHTTP(w, req)
 			
@@ -302,6 +302,128 @@ func BenchmarkAuditLogs(b *testing.B) {
 	})
 }
 
+// Benchmark PurchaseReceipt List endpoint
+func BenchmarkPurchaseReceiptList(b *testing.B) {
+	suite := setupPerformanceTestSuite()
+	
+	b.ResetTimer()
+	b.ReportAllocs()
+	
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			w := suite.makeAuthenticatedRequest("GET", "/api/v1/purchase-receipts", nil)
+			
+			if w.Code != http.StatusOK {
+				b.Errorf("Expected status 200, got %d", w.Code)
+			}
+		}
+	})
+}
+
+// Benchmark PurchaseReceipt Create endpoint
+func BenchmarkPurchaseReceiptCreate(b *testing.B) {
+	suite := setupPerformanceTestSuite()
+	
+	// Get supplier for testing
+	suppliersResponse := suite.makeAuthenticatedRequest("GET", "/api/v1/suppliers", nil)
+	if suppliersResponse.Code != http.StatusOK {
+		b.Fatal("Failed to get suppliers")
+	}
+	
+	var suppliers dto.SupplierListResponse
+	json.Unmarshal(suppliersResponse.Body.Bytes(), &suppliers)
+	if len(suppliers.Suppliers) == 0 {
+		b.Fatal("No suppliers found")
+	}
+	supplierID := suppliers.Suppliers[0].ID
+	
+	b.ResetTimer()
+	b.ReportAllocs()
+	
+	for i := 0; i < b.N; i++ {
+		orderDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
+		expectedDate, _ := time.Parse(time.RFC3339, "2024-01-20T10:00:00Z")
+		
+		createReceiptReq := dto.CreatePurchaseReceiptRequest{
+			SupplierID:   supplierID,
+			OrderDate:    orderDate,
+			ExpectedDate: &expectedDate,
+			TaxRate:      10.0,
+			ShippingCost: 50.0,
+			Currency:     "USD",
+			OrderNotes:   fmt.Sprintf("Benchmark purchase receipt %d", i),
+			Terms:        "Net 30",
+		}
+		
+		w := suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts", createReceiptReq)
+		
+		if w.Code != http.StatusCreated {
+			b.Errorf("Expected status 201, got %d", w.Code)
+		}
+	}
+}
+
+// Benchmark Single-Location Inventory Operations
+func BenchmarkSingleLocationInventory(b *testing.B) {
+	suite := setupPerformanceTestSuite()
+	
+	// Get product for testing
+	productsResponse := suite.makeAuthenticatedRequest("GET", "/api/v1/products", nil)
+	if productsResponse.Code != http.StatusOK {
+		b.Fatal("Failed to get products")
+	}
+	
+	var products dto.ProductListResponse
+	json.Unmarshal(productsResponse.Body.Bytes(), &products)
+	if len(products.Products) == 0 {
+		b.Fatal("No products found")
+	}
+	productID := products.Products[0].ID
+	
+	b.ResetTimer()
+	b.ReportAllocs()
+	
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			// Test inventory lookup without location context
+			w := suite.makeAuthenticatedRequest("GET", "/api/v1/inventory/product/"+productID.String(), nil)
+			
+			if w.Code != http.StatusOK {
+				b.Errorf("Expected status 200, got %d", w.Code)
+			}
+		}
+	})
+}
+
+// Benchmark Vehicle Spare Parts endpoints
+func BenchmarkVehicleSpareParts(b *testing.B) {
+	suite := setupPerformanceTestSuite()
+	
+	endpoints := []string{
+		"/api/v1/customers",
+		"/api/v1/brands",
+		"/api/v1/vehicle-brands",
+		"/api/v1/vehicle-models",
+		"/api/v1/vehicle-compatibility",
+	}
+	
+	b.ResetTimer()
+	b.ReportAllocs()
+	
+	b.RunParallel(func(pb *testing.PB) {
+		i := 0
+		for pb.Next() {
+			endpoint := endpoints[i%len(endpoints)]
+			w := suite.makeAuthenticatedRequest("GET", endpoint, nil)
+			
+			if w.Code != http.StatusOK {
+				b.Errorf("Expected status 200 for %s, got %d", endpoint, w.Code)
+			}
+			i++
+		}
+	})
+}
+
 // Load test with concurrent requests
 func BenchmarkConcurrentMixedRequests(b *testing.B) {
 	suite := setupPerformanceTestSuite()
@@ -312,7 +434,7 @@ func BenchmarkConcurrentMixedRequests(b *testing.B) {
 		"/api/v1/products",
 		"/api/v1/inventory",
 		"/api/v1/suppliers",
-		"/api/v1/locations",
+		"/api/v1/purchase-receipts",
 	}
 	
 	b.ResetTimer()
@@ -360,10 +482,11 @@ func BenchmarkDatabaseQueries(b *testing.B) {
 	// Test complex queries with joins and filtering
 	complexEndpoints := []string{
 		"/api/v1/products?category_id=1&page=1&per_page=20",
-		"/api/v1/inventory?location_id=1&page=1&limit=20", 
+		"/api/v1/inventory?page=1&limit=20", 
 		"/api/v1/reports/inventory-summary",
 		"/api/v1/categories/hierarchy",
 		"/api/v1/audit-logs?table_name=products&limit=10",
+		"/api/v1/purchase-receipts?status=completed&limit=10",
 	}
 	
 	b.ResetTimer()
@@ -388,7 +511,7 @@ func BenchmarkWithRateLimit(b *testing.B) {
 	
 	// Test rate limiting behavior
 	for i := 0; i < b.N; i++ {
-		req, _ := http.NewRequest("GET", "/api/v1/health", nil)
+		req, _ := http.NewRequest("GET", "/health", nil)
 		w := httptest.NewRecorder()
 		suite.router.ServeHTTP(w, req)
 		
@@ -420,11 +543,12 @@ func TestAPILoadTest(t *testing.T) {
 	)
 	
 	endpoints := []string{
-		"/api/v1/health",
+		"/health",
 		"/api/v1/users",
 		"/api/v1/categories",
 		"/api/v1/products",
 		"/api/v1/inventory",
+		"/api/v1/purchase-receipts",
 	}
 	
 	var wg sync.WaitGroup
@@ -448,7 +572,7 @@ func TestAPILoadTest(t *testing.T) {
 				endpoint := endpoints[j%len(endpoints)]
 				
 				var w *httptest.ResponseRecorder
-				if endpoint == "/api/v1/health" {
+				if endpoint == "/health" {
 					req, _ := http.NewRequest("GET", endpoint, nil)
 					w = httptest.NewRecorder()
 					suite.router.ServeHTTP(w, req)

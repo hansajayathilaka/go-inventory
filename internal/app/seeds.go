@@ -469,44 +469,60 @@ func (ctx *Context) seedVehicleCompatibility(ctxBg context.Context) error {
 		return nil
 	}
 	
-	// Create some sample compatibility mappings
+	// Create sample compatibility mappings based on available data
 	// In a real system, this would be much more comprehensive
-	compatibilities := []models.VehicleCompatibility{
-		{
-			ProductID:      products[0].ID, // First product compatible with first 3 vehicle models
+	var compatibilities []models.VehicleCompatibility
+	
+	// Only create compatibilities if we have enough products and vehicle models
+	if len(products) >= 1 && len(vehicleModels) >= 1 {
+		compatibilities = append(compatibilities, models.VehicleCompatibility{
+			ProductID:      products[0].ID,
 			VehicleModelID: vehicleModels[0].ID,
 			YearFrom:       2018,
 			YearTo:         0, // Current (0 means no end year)
 			Notes:          "Direct fit replacement part",
-		},
-		{
+		})
+	}
+	
+	// Add more compatibilities if we have enough data
+	if len(products) >= 1 && len(vehicleModels) >= 2 {
+		compatibilities = append(compatibilities, models.VehicleCompatibility{
 			ProductID:      products[0].ID,
 			VehicleModelID: vehicleModels[1].ID,
 			YearFrom:       2016,
 			YearTo:         0,
 			Notes:          "Compatible with standard trim",
-		},
-		{
+		})
+	}
+	
+	if len(products) >= 1 && len(vehicleModels) >= 3 {
+		compatibilities = append(compatibilities, models.VehicleCompatibility{
 			ProductID:      products[0].ID,
 			VehicleModelID: vehicleModels[2].ID,
 			YearFrom:       2015,
 			YearTo:         2022,
 			Notes:          "Compatible with specific engine configurations",
-		},
-		{
-			ProductID:      products[1].ID, // Second product compatible with different models
+		})
+	}
+	
+	if len(products) >= 2 && len(vehicleModels) >= 4 {
+		compatibilities = append(compatibilities, models.VehicleCompatibility{
+			ProductID:      products[1].ID,
 			VehicleModelID: vehicleModels[3].ID,
 			YearFrom:       2019,
 			YearTo:         0,
 			Notes:          "OEM specification part",
-		},
-		{
+		})
+	}
+	
+	if len(products) >= 2 && len(vehicleModels) >= 5 {
+		compatibilities = append(compatibilities, models.VehicleCompatibility{
 			ProductID:      products[1].ID,
 			VehicleModelID: vehicleModels[4].ID,
 			YearFrom:       2017,
 			YearTo:         0,
 			Notes:          "Performance upgrade option",
-		},
+		})
 	}
 	
 	for _, compatibility := range compatibilities {

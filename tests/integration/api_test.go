@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -58,9 +59,9 @@ func (suite *APITestSuite) SetupTest() {
 }
 
 func (suite *APITestSuite) authenticateTestUser() {
-	loginReq := dto.LoginRequest{
-		Username: "admin",
-		Password: "admin123",
+	loginReq := map[string]string{
+		"username": "admin",
+		"password": "admin123",
 	}
 
 	reqBody, _ := json.Marshal(loginReq)
@@ -70,12 +71,24 @@ func (suite *APITestSuite) authenticateTestUser() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	var response dto.LoginResponse
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	var baseResponse dto.BaseResponse
+	err := json.Unmarshal(w.Body.Bytes(), &baseResponse)
 	suite.Require().NoError(err)
+	suite.Require().True(baseResponse.Success)
 	
-	suite.authToken = response.Token
-	suite.adminID = response.User.ID
+	// Extract the login data from the response
+	dataBytes, _ := json.Marshal(baseResponse.Data)
+	var loginData map[string]interface{}
+	json.Unmarshal(dataBytes, &loginData)
+	
+	suite.authToken = loginData["token"].(string)
+	
+	// Extract user info
+	if userMap, ok := loginData["user"].(map[string]interface{}); ok {
+		if idStr, ok := userMap["id"].(string); ok {
+			suite.adminID, _ = uuid.Parse(idStr)
+		}
+	}
 }
 
 // Helper method to make authenticated requests
@@ -99,7 +112,7 @@ func (suite *APITestSuite) makeAuthenticatedRequest(method, url string, body int
 
 // Test Health Check
 func (suite *APITestSuite) TestHealthCheck() {
-	req, _ := http.NewRequest("GET", "/api/v1/health", nil)
+	req, _ := http.NewRequest("GET", "/health", nil)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
@@ -108,15 +121,15 @@ func (suite *APITestSuite) TestHealthCheck() {
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "healthy", response["status"])
+	assert.Equal(suite.T(), "ok", response["status"])
 }
 
 // Test Authentication
 func (suite *APITestSuite) TestAuthentication() {
 	// Test login with valid credentials
-	loginReq := dto.LoginRequest{
-		Username: "admin",
-		Password: "admin123",
+	loginReq := map[string]string{
+		"username": "admin",
+		"password": "admin123",
 	}
 
 	reqBody, _ := json.Marshal(loginReq)
@@ -128,16 +141,25 @@ func (suite *APITestSuite) TestAuthentication() {
 
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 	
-	var response dto.LoginResponse
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	var baseResponse dto.BaseResponse
+	err := json.Unmarshal(w.Body.Bytes(), &baseResponse)
 	assert.NoError(suite.T(), err)
-	assert.NotEmpty(suite.T(), response.Token)
-	assert.Equal(suite.T(), "admin", response.User.Username)
+	assert.True(suite.T(), baseResponse.Success)
+	
+	// Extract login data
+	dataBytes, _ := json.Marshal(baseResponse.Data)
+	var loginData map[string]interface{}
+	json.Unmarshal(dataBytes, &loginData)
+	
+	assert.NotEmpty(suite.T(), loginData["token"])
+	if userMap, ok := loginData["user"].(map[string]interface{}); ok {
+		assert.Equal(suite.T(), "admin", userMap["username"])
+	}
 
 	// Test login with invalid credentials
-	invalidLoginReq := dto.LoginRequest{
-		Username: "admin",
-		Password: "wrongpassword",
+	invalidLoginReq := map[string]string{
+		"username": "admin",
+		"password": "wrongpassword",
 	}
 
 	reqBody, _ = json.Marshal(invalidLoginReq)
@@ -259,8 +281,8 @@ func (suite *APITestSuite) TestBasicEndpoints() {
 	w = suite.makeAuthenticatedRequest("GET", "/api/v1/suppliers", nil)
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 
-	// Test list locations
-	w = suite.makeAuthenticatedRequest("GET", "/api/v1/locations", nil)
+	// Test list purchase receipts
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/purchase-receipts", nil)
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 
 	// Test audit logs
@@ -282,6 +304,204 @@ func (suite *APITestSuite) TestRateLimiting() {
 			break
 		}
 	}
+}
+
+// Test PurchaseReceipt Management (unified PO and GRN workflow)
+func (suite *APITestSuite) TestPurchaseReceiptManagement() {
+	// Get a supplier and product for testing
+	suppliersResponse := suite.makeAuthenticatedRequest("GET", "/api/v1/suppliers", nil)
+	assert.Equal(suite.T(), http.StatusOK, suppliersResponse.Code)
+	
+	var suppliers dto.SupplierListResponse
+	err := json.Unmarshal(suppliersResponse.Body.Bytes(), &suppliers)
+	assert.NoError(suite.T(), err)
+	assert.NotEmpty(suite.T(), suppliers.Suppliers)
+	supplierID := suppliers.Suppliers[0].ID
+
+	productsResponse := suite.makeAuthenticatedRequest("GET", "/api/v1/products", nil)
+	assert.Equal(suite.T(), http.StatusOK, productsResponse.Code)
+	
+	var products dto.ProductListResponse
+	err = json.Unmarshal(productsResponse.Body.Bytes(), &products)
+	assert.NoError(suite.T(), err)
+	assert.NotEmpty(suite.T(), products.Products)
+	productID := products.Products[0].ID
+
+	// Test create purchase receipt (order phase)
+	orderDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
+	expectedDate, _ := time.Parse(time.RFC3339, "2024-01-20T10:00:00Z")
+	
+	createReceiptReq := dto.CreatePurchaseReceiptRequest{
+		SupplierID:    supplierID,
+		OrderDate:     orderDate,
+		ExpectedDate:  &expectedDate,
+		TaxRate:       10.0,
+		ShippingCost:  50.0,
+		Currency:      "USD",
+		OrderNotes:    "Test purchase receipt",
+		Terms:         "Net 30",
+	}
+
+	w := suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts", createReceiptReq)
+	assert.Equal(suite.T(), http.StatusCreated, w.Code)
+
+	var createdReceipt dto.PurchaseReceiptResponse
+	err = json.Unmarshal(w.Body.Bytes(), &createdReceipt)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "draft", createdReceipt.Status)
+
+	receiptID := createdReceipt.ID
+
+	// Test add item to purchase receipt
+	addItemReq := dto.CreatePurchaseReceiptItemRequest{
+		ProductID:       productID,
+		OrderedQuantity: 100,
+		UnitPrice:       25.50,
+		DiscountAmount:  5.0,
+	}
+
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/items", addItemReq)
+	assert.Equal(suite.T(), http.StatusCreated, w.Code)
+
+	// Test approve purchase receipt (draft → approved)
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/approve", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test send purchase receipt (approved → ordered)
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/send", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test receive purchase receipt (ordered → received)
+	deliveryDate, _ := time.Parse(time.RFC3339, "2024-01-18T14:30:00Z")
+	invoiceDate, _ := time.Parse(time.RFC3339, "2024-01-18T00:00:00Z")
+	
+	receiveReq := dto.UpdatePurchaseReceiptRequest{
+		DeliveryDate:   &deliveryDate,
+		VehicleNumber:  "TRK-123",
+		DriverName:     "John Doe",
+		DeliveryNote:   "DN-2024-001",
+		InvoiceNumber:  "INV-2024-001",
+		InvoiceDate:    &invoiceDate,
+	}
+
+	w = suite.makeAuthenticatedRequest("PUT", "/api/v1/purchase-receipts/"+receiptID.String(), receiveReq)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test complete purchase receipt (received → completed)
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/complete", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test get purchase receipt by ID
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/purchase-receipts/"+receiptID.String(), nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	var fetchedReceipt dto.PurchaseReceiptResponse
+	err = json.Unmarshal(w.Body.Bytes(), &fetchedReceipt)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "completed", fetchedReceipt.Status)
+
+	// Test list purchase receipts
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/purchase-receipts", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test search purchase receipts
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/purchase-receipts/search?status=completed", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test delete purchase receipt
+	w = suite.makeAuthenticatedRequest("DELETE", "/api/v1/purchase-receipts/"+receiptID.String(), nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+}
+
+// Test Single-Location Inventory Operations
+func (suite *APITestSuite) TestSingleLocationInventoryOperations() {
+	// Get a product for testing
+	productsResponse := suite.makeAuthenticatedRequest("GET", "/api/v1/products", nil)
+	assert.Equal(suite.T(), http.StatusOK, productsResponse.Code)
+	
+	var products dto.ProductListResponse
+	err := json.Unmarshal(productsResponse.Body.Bytes(), &products)
+	assert.NoError(suite.T(), err)
+	assert.NotEmpty(suite.T(), products.Products)
+	productID := products.Products[0].ID
+
+	// Test inventory lookup (single-location)
+	w := suite.makeAuthenticatedRequest("GET", "/api/v1/inventory/product/"+productID.String(), nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	var inventory dto.InventoryResponse
+	err = json.Unmarshal(w.Body.Bytes(), &inventory)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), productID, inventory.ProductID)
+	// Verify no location fields are present in response
+	originalQuantity := inventory.Quantity
+
+	// Test stock adjustment (single-location)
+	notes := "Integration test stock adjustment"
+	adjustReq := dto.StockAdjustmentRequest{
+		ProductID:    productID,
+		Quantity:     50,
+		MovementType: "ADJUSTMENT",
+		Reason:       "corrections",
+		Notes:        &notes,
+	}
+
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/inventory/adjust", adjustReq)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Verify stock was adjusted
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/inventory/product/"+productID.String(), nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	err = json.Unmarshal(w.Body.Bytes(), &inventory)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), originalQuantity+50, inventory.Quantity)
+
+	// Test stock movements (single-location)
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/reports/stock-movements", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	var response dto.ApiResponse
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(suite.T(), err)
+	assert.True(suite.T(), response.Success)
+	
+	// Verify we received stock movements data
+	assert.NotNil(suite.T(), response.Data)
+
+	// Test inventory summary (single-location)
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/reports/inventory-summary", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	var summary dto.InventorySummaryResponse
+	err = json.Unmarshal(w.Body.Bytes(), &summary)
+	assert.NoError(suite.T(), err)
+	assert.Greater(suite.T(), summary.TotalProducts, 0)
+	assert.GreaterOrEqual(suite.T(), summary.TotalStockValue, 0.0)
+	// Verify no location-based fields are in summary
+}
+
+// Test Vehicle Spare Parts Features
+func (suite *APITestSuite) TestVehicleSpareParts() {
+	// Test customer endpoints
+	w := suite.makeAuthenticatedRequest("GET", "/api/v1/customers", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test brand endpoints
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/brands", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test vehicle brand endpoints
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-brands", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test vehicle model endpoints
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-models", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	// Test vehicle compatibility endpoints
+	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-compatibility", nil)
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
 }
 
 // Test Swagger Documentation

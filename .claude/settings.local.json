@@ -52,7 +52,14 @@
       "Bash(psql:*)",
       "Bash(git reset:*)",
       "Bash(npx tsc:*)",
-      "Bash(gofmt:*)"
+      "Bash(gofmt:*)",
+      "Bash(pg_isready:*)",
+      "Bash(INTEGRATION_TESTS=1 go test ./tests/integration/... -v -timeout=30m)",
+      "Bash(INTEGRATION_TESTS=1 go test ./tests/integration -v -timeout=30m)",
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m .)",
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run TestAuthentication)",
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestAuthentication\")",
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestHealthCheck\")"
     ],
     "deny": [],
     "ask": []
