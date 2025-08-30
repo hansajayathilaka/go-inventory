@@ -26,7 +26,6 @@ func (r *stockMovementRepository) GetByID(ctx context.Context, id uuid.UUID) (*m
 	var movement models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		First(&movement, id).Error
 	if err != nil {
@@ -47,7 +46,6 @@ func (r *stockMovementRepository) List(ctx context.Context, limit, offset int) (
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Order("created_at DESC").
 		Limit(limit).
@@ -60,7 +58,6 @@ func (r *stockMovementRepository) GetByProduct(ctx context.Context, productID uu
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("product_id = ?", productID).
 		Order("created_at DESC").
@@ -70,25 +67,11 @@ func (r *stockMovementRepository) GetByProduct(ctx context.Context, productID uu
 	return movements, err
 }
 
-func (r *stockMovementRepository) GetByLocation(ctx context.Context, locationID uuid.UUID, limit, offset int) ([]*models.StockMovement, error) {
-	var movements []*models.StockMovement
-	err := r.db.WithContext(ctx).
-		Preload("Product").
-		Preload("Location").
-		Preload("User").
-		Where("location_id = ?", locationID).
-		Order("created_at DESC").
-		Limit(limit).
-		Offset(offset).
-		Find(&movements).Error
-	return movements, err
-}
 
 func (r *stockMovementRepository) GetByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*models.StockMovement, error) {
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("user_id = ?", userID).
 		Order("created_at DESC").
@@ -102,7 +85,6 @@ func (r *stockMovementRepository) GetByMovementType(ctx context.Context, movemen
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("movement_type = ?", movementType).
 		Order("created_at DESC").
@@ -116,7 +98,6 @@ func (r *stockMovementRepository) GetByDateRange(ctx context.Context, start, end
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("created_at BETWEEN ? AND ?", start, end).
 		Order("created_at DESC").
@@ -130,7 +111,6 @@ func (r *stockMovementRepository) GetByReference(ctx context.Context, referenceI
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("reference_id = ?", referenceID).
 		Order("created_at DESC").
@@ -148,7 +128,6 @@ func (r *stockMovementRepository) GetMovementsByProductAndDateRange(ctx context.
 	var movements []*models.StockMovement
 	err := r.db.WithContext(ctx).
 		Preload("Product").
-		Preload("Location").
 		Preload("User").
 		Where("product_id = ? AND created_at BETWEEN ? AND ?", productID, start, end).
 		Order("created_at ASC").

@@ -148,10 +148,10 @@ Converting the existing hardware store inventory system to a complete vehicle sp
   - Update InventoryService business logic
   - Fix location references in DTOs and API handlers
   - Update database seeding scripts for single-location system
-- [ ] **Step 5.1.3**: Update StockMovement model to remove location_id field  
-  - Remove location_id foreign key from StockMovement model
-  - Update StockMovementRepository for simplified tracking
-  - Update stock movement business logic
+- [x] **Step 5.1.3**: Update StockMovement model to remove location_id field ✅
+  - Remove location_id foreign key from StockMovement model ✅
+  - Update StockMovementRepository for simplified tracking ✅
+  - Update stock movement business logic ✅
 - [ ] **Step 5.1.4**: Create unified PurchaseReceipt model
   - Replace PurchaseOrder and GRN models with PurchaseReceipt
   - Replace PurchaseOrderItem and GRNItem with PurchaseReceiptItem
@@ -209,8 +209,8 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 
 ## Current Status  
 - **Current Phase**: Phase 5 - Database Structure Simplification (NEW)
-- **Current Step**: Step 5.1.3 - Update StockMovement model to remove location_id field  
-- **Next Step**: Continue database simplification by updating StockMovement model and related repositories for single-location system
+- **Current Step**: Step 5.1.4 - Create unified PurchaseReceipt model
+- **Next Step**: Create unified PurchaseReceipt model to replace PurchaseOrder and GRN models with single purchase/receipt workflow
 
 ## Commit History
 - **Step 1.1 (2025-08-28)**: Customer model and repository implementation
@@ -250,6 +250,7 @@ Converting the existing hardware store inventory system to a complete vehicle sp
 - **Step 4.9 (2025-08-30)**: GRN processing UI implementation - created comprehensive GRN (Goods Received Note) processing interface with GRNList component supporting grid/table views, advanced search and filtering (by GRN number, status, supplier, date range, purchase order), pagination, status-based action buttons (receipt/verify/complete), and comprehensive status workflow visualization; GRNModal with extensive form validation for creating/editing GRNs including purchase order selection, location management, delivery information (vehicle number, driver name, delivery note), invoice details, quality control operations with verification status and notes, financial tracking (tax rate, discount amounts, currency selection); comprehensive GRN item management with received/accepted/rejected/damaged quantities tracking, expiry dates, batch numbers, serial numbers, quality status per item, and real-time total calculations; GRNsPage integration with full CRUD operations, detailed confirmation dialogs for all processing operations (receipt, verify, complete), comprehensive error handling and loading states; GRN API service methods with complete endpoint coverage (list, CRUD, receipt, verify, complete, item management, search); status workflow management (draft → received → partial → completed/cancelled) with appropriate action restrictions; "GRN Processing" navigation menu item with Clipboard icon; React routing integration with /grn route; TypeScript compilation successful with complete type coverage; all components follow established architectural patterns and provide comprehensive goods receipt management capabilities for vehicle spare parts inventory operations
 - **Step 5.1.1 (2025-08-30)**: Location model and dependencies removal - completed database simplification by removing Location model from repository models, LocationRepository interface and implementation, location-related API handlers and DTOs, location routes from router, location references from Inventory/StockMovement/GRN models, location migration from database config, LocationRepo dependencies from app context, PurchaseService and AuditHandler constructors updated, location validation removed from CreateGRN method; established foundation for single-location inventory system simplification
 - **Step 5.1.2 (2025-08-30)**: Inventory model and service single-location conversion - successfully updated Inventory model (already clean of location_id), completely refactored InventoryRepository interface removing location-based methods (GetByProductAndLocation, GetByLocation, location parameters from UpdateQuantity, ReserveStock, ReleaseReservedStock), updated InventoryService interface and implementation removing location parameters from all methods (CreateInventory, GetInventory, UpdateStock, AdjustStock, ReserveStock, ReleaseReservedStock, UpdateReorderLevels), removed TransferStock method entirely, updated GRN integration methods removing location dependencies, fixed all DTOs removing LocationID fields (GRNResponse, CreateGRNRequest, UpdateGRNRequest, SearchGRNRequest), updated all API handlers (audit, grn, inventory, product) removing location references and fixing single-inventory responses, updated database seeding scripts removing location dependencies, achieved complete single-location inventory system operation with successful compilation
+- **Step 5.1.3 (2025-08-30)**: StockMovement model and repository single-location conversion - removed location_id field dependencies from StockMovement repository and business logic; updated StockMovementRepository interface removing GetByLocation method, cleaned all repository methods removing Location preloading (GetByID, List, GetByProduct, GetByUser, GetByMovementType, GetByDateRange, GetByReference, GetMovementsByProductAndDateRange), updated business logic tests removing location-based mock methods and fixing service constructor calls to match single-location interface signatures, achieved successful compilation and test execution for simplified single-location stock movement tracking system
 
 ## Notes
 - Each step should be committed separately for better tracking

@@ -14,17 +14,15 @@ type minimalInventoryRepo struct{}
 
 func (r *minimalInventoryRepo) Create(ctx context.Context, inventory *models.Inventory) error                                                                                            { return nil }
 func (r *minimalInventoryRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.Inventory, error)                                                                                   { return nil, ErrInventoryNotFound }
-func (r *minimalInventoryRepo) GetByProductAndLocation(ctx context.Context, productID, locationID uuid.UUID) (*models.Inventory, error)                                              { return nil, ErrInventoryNotFound }
 func (r *minimalInventoryRepo) Update(ctx context.Context, inventory *models.Inventory) error                                                                                          { return nil }
 func (r *minimalInventoryRepo) Delete(ctx context.Context, id uuid.UUID) error                                                                                                         { return nil }
 func (r *minimalInventoryRepo) List(ctx context.Context, limit, offset int) ([]*models.Inventory, error)                                                                              { return nil, nil }
-func (r *minimalInventoryRepo) GetByProduct(ctx context.Context, productID uuid.UUID) ([]*models.Inventory, error)                                                                    { return nil, nil }
-func (r *minimalInventoryRepo) GetByLocation(ctx context.Context, locationID uuid.UUID) ([]*models.Inventory, error)                                                                  { return nil, nil }
+func (r *minimalInventoryRepo) GetByProduct(ctx context.Context, productID uuid.UUID) (*models.Inventory, error)                                                                     { return nil, ErrInventoryNotFound }
 func (r *minimalInventoryRepo) GetLowStock(ctx context.Context) ([]*models.Inventory, error)                                                                                          { return nil, nil }
 func (r *minimalInventoryRepo) GetZeroStock(ctx context.Context) ([]*models.Inventory, error)                                                                                         { return nil, nil }
-func (r *minimalInventoryRepo) UpdateQuantity(ctx context.Context, productID, locationID uuid.UUID, quantity int) error                                                              { return nil }
-func (r *minimalInventoryRepo) ReserveStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error                                                                { return ErrInventoryNotFound }
-func (r *minimalInventoryRepo) ReleaseReservedStock(ctx context.Context, productID, locationID uuid.UUID, quantity int) error                                                       { return ErrInventoryNotFound }
+func (r *minimalInventoryRepo) UpdateQuantity(ctx context.Context, productID uuid.UUID, quantity int) error                                                                                { return nil }
+func (r *minimalInventoryRepo) ReserveStock(ctx context.Context, productID uuid.UUID, quantity int) error                                                                                  { return ErrInventoryNotFound }
+func (r *minimalInventoryRepo) ReleaseReservedStock(ctx context.Context, productID uuid.UUID, quantity int) error                                                                         { return ErrInventoryNotFound }
 func (r *minimalInventoryRepo) GetTotalQuantityByProduct(ctx context.Context, productID uuid.UUID) (int, error)                                                                      { return 0, nil }
 func (r *minimalInventoryRepo) Count(ctx context.Context) (int64, error)                                                                                                              { return 0, nil }
 
@@ -36,7 +34,6 @@ func (r *minimalStockMovementRepo) Update(ctx context.Context, movement *models.
 func (r *minimalStockMovementRepo) Delete(ctx context.Context, id uuid.UUID) error                                                                                                                                             { return nil }
 func (r *minimalStockMovementRepo) List(ctx context.Context, limit, offset int) ([]*models.StockMovement, error)                                                                                                              { return nil, nil }
 func (r *minimalStockMovementRepo) GetByProduct(ctx context.Context, productID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)                                                                               { return nil, nil }
-func (r *minimalStockMovementRepo) GetByLocation(ctx context.Context, locationID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)                                                                             { return nil, nil }
 func (r *minimalStockMovementRepo) GetByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)                                                                                     { return nil, nil }
 func (r *minimalStockMovementRepo) GetByMovementType(ctx context.Context, movementType models.MovementType, limit, offset int) ([]*models.StockMovement, error)                                                           { return nil, nil }
 func (r *minimalStockMovementRepo) GetByDateRange(ctx context.Context, start, end time.Time, limit, offset int) ([]*models.StockMovement, error)                                                                         { return nil, nil }
@@ -59,26 +56,14 @@ func (r *minimalProductRepo) GetBySupplier(ctx context.Context, supplierID uuid.
 func (r *minimalProductRepo) GetActive(ctx context.Context) ([]*models.Product, error)                                                                                        { return nil, nil }
 func (r *minimalProductRepo) Search(ctx context.Context, query string, limit, offset int) ([]*models.Product, error)                                                        { return nil, nil }
 func (r *minimalProductRepo) Count(ctx context.Context) (int64, error)                                                                                                        { return 0, nil }
+func (r *minimalProductRepo) GetByBrand(ctx context.Context, brandID uuid.UUID) ([]*models.Product, error)                                                                             { return nil, nil }
 
-type minimalLocationRepo struct{}
-
-func (r *minimalLocationRepo) Create(ctx context.Context, location *models.Location) error                                                                                        { return nil }
-func (r *minimalLocationRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.Location, error)                                                                              { return nil, ErrLocationNotFound }
-func (r *minimalLocationRepo) GetByCode(ctx context.Context, code string) (*models.Location, error)                                                                            { return nil, nil }
-func (r *minimalLocationRepo) GetByName(ctx context.Context, name string) (*models.Location, error)                                                                            { return nil, nil }
-func (r *minimalLocationRepo) Update(ctx context.Context, location *models.Location) error                                                                                     { return nil }
-func (r *minimalLocationRepo) Delete(ctx context.Context, id uuid.UUID) error                                                                                                  { return nil }
-func (r *minimalLocationRepo) List(ctx context.Context, limit, offset int) ([]*models.Location, error)                                                                        { return nil, nil }
-func (r *minimalLocationRepo) GetByType(ctx context.Context, locationType models.LocationType) ([]*models.Location, error)                                                    { return nil, nil }
-func (r *minimalLocationRepo) GetActive(ctx context.Context) ([]*models.Location, error)                                                                                       { return nil, nil }
-func (r *minimalLocationRepo) Count(ctx context.Context) (int64, error)                                                                                                        { return 0, nil }
 
 func setupInventoryService() Service {
 	return NewService(
 		&minimalInventoryRepo{},
 		&minimalStockMovementRepo{},
 		&minimalProductRepo{},
-		&minimalLocationRepo{},
 	)
 }
 
@@ -88,62 +73,48 @@ func TestInventoryValidation(t *testing.T) {
 	ctx := context.Background()
 	
 	productID := uuid.New()
-	locationID := uuid.New()
 	userID := uuid.New()
 
 	// Test invalid quantity validation
-	_, err := service.CreateInventory(ctx, productID, locationID, -10, 10, 500)
+	_, err := service.CreateInventory(ctx, productID, -10, 10, 500)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for negative quantity, got %v", err)
 	}
 
 	// Test invalid reorder level validation
-	_, err = service.CreateInventory(ctx, productID, locationID, 100, -5, 500)
+	_, err = service.CreateInventory(ctx, productID, 100, -5, 500)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for negative reorder level, got %v", err)
 	}
 
 	// Test invalid max level validation
-	_, err = service.CreateInventory(ctx, productID, locationID, 100, 10, -100)
+	_, err = service.CreateInventory(ctx, productID, 100, 10, -100)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for negative max level, got %v", err)
 	}
 
 	// Test invalid stock adjustment
-	err = service.UpdateStock(ctx, productID, locationID, -50, userID, "Test")
+	err = service.UpdateStock(ctx, productID, -50, userID, "Test")
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for negative stock update, got %v", err)
 	}
 
 	// Test invalid reservation quantity
-	err = service.ReserveStock(ctx, productID, locationID, 0)
+	err = service.ReserveStock(ctx, productID, 0)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for zero reservation, got %v", err)
 	}
 
 	// Test invalid reservation quantity (negative)
-	err = service.ReserveStock(ctx, productID, locationID, -10)
+	err = service.ReserveStock(ctx, productID, -10)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for negative reservation, got %v", err)
 	}
 
 	// Test invalid release quantity
-	err = service.ReleaseReservedStock(ctx, productID, locationID, 0)
+	err = service.ReleaseReservedStock(ctx, productID, 0)
 	if err != ErrInvalidQuantity {
 		t.Errorf("Expected ErrInvalidQuantity for zero release, got %v", err)
-	}
-
-	// Test invalid transfer quantity
-	toLocationID := uuid.New()
-	err = service.TransferStock(ctx, productID, locationID, toLocationID, 0, userID, "Test")
-	if err != ErrInvalidQuantity {
-		t.Errorf("Expected ErrInvalidQuantity for zero transfer, got %v", err)
-	}
-
-	// Test invalid transfer quantity (negative)
-	err = service.TransferStock(ctx, productID, locationID, toLocationID, -10, userID, "Test")
-	if err != ErrInvalidQuantity {
-		t.Errorf("Expected ErrInvalidQuantity for negative transfer, got %v", err)
 	}
 }
 
@@ -153,47 +124,46 @@ func TestInventoryNotFoundHandling(t *testing.T) {
 	ctx := context.Background()
 	
 	productID := uuid.New()
-	locationID := uuid.New()
 	userID := uuid.New()
 
 	// Test creating inventory with non-existent product should fail
-	_, err := service.CreateInventory(ctx, productID, locationID, 100, 10, 500)
+	_, err := service.CreateInventory(ctx, productID, 100, 10, 500)
 	if err != ErrProductNotFound {
 		t.Errorf("Expected ErrProductNotFound, got %v", err)
 	}
 
 	// Test getting non-existent inventory
-	_, err = service.GetInventory(ctx, productID, locationID)
+	_, err = service.GetInventory(ctx, productID)
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}
 
 	// Test adjusting non-existent stock
-	err = service.AdjustStock(ctx, productID, locationID, 50, userID, "Test")
+	err = service.AdjustStock(ctx, productID, 50, userID, "Test")
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}
 
 	// Test updating non-existent stock
-	err = service.UpdateStock(ctx, productID, locationID, 150, userID, "Test")
+	err = service.UpdateStock(ctx, productID, 150, userID, "Test")
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}
 
 	// Test reserving non-existent stock
-	err = service.ReserveStock(ctx, productID, locationID, 30)
+	err = service.ReserveStock(ctx, productID, 30)
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}
 
 	// Test releasing from non-existent stock
-	err = service.ReleaseReservedStock(ctx, productID, locationID, 10)
+	err = service.ReleaseReservedStock(ctx, productID, 10)
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}
 
 	// Test updating reorder levels for non-existent inventory
-	err = service.UpdateReorderLevels(ctx, productID, locationID, 5, 200)
+	err = service.UpdateReorderLevels(ctx, productID, 5, 200)
 	if err != ErrInventoryNotFound {
 		t.Errorf("Expected ErrInventoryNotFound, got %v", err)
 	}

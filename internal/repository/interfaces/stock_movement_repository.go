@@ -15,7 +15,6 @@ type StockMovementRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	List(ctx context.Context, limit, offset int) ([]*models.StockMovement, error)
 	GetByProduct(ctx context.Context, productID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)
-	GetByLocation(ctx context.Context, locationID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)
 	GetByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*models.StockMovement, error)
 	GetByMovementType(ctx context.Context, movementType models.MovementType, limit, offset int) ([]*models.StockMovement, error)
 	GetByDateRange(ctx context.Context, start, end time.Time, limit, offset int) ([]*models.StockMovement, error)
