@@ -13,9 +13,9 @@ import {
   LogOut,
   User,
   Car,
-  FileCheck,
-  LucideIcon
+  FileCheck
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
