@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Package, DollarSign, Loader } from 'lucide-react';
-import type { Product, Category, Supplier, Brand, ApiResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
+import { X, Package, DollarSign, Loader, Car, Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import type { Product, Category, Supplier, Brand, ApiResponse, CategoryListResponse, SupplierListResponse, VehicleCompatibilityWithDetails, VehicleModelWithBrand, VehicleBrand, CreateVehicleCompatibilityRequest } from '../types/api';
 import { api } from '../services/api';
 
 interface ProductFormData {
@@ -57,6 +57,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Vehicle compatibility states
+  const [compatibilities, setCompatibilities] = useState<VehicleCompatibilityWithDetails[]>([]);
+  const [vehicleBrands, setVehicleBrands] = useState<VehicleBrand[]>([]);
+  const [vehicleModels, setVehicleModels] = useState<VehicleModelWithBrand[]>([]);
+  const [showCompatibilityForm, setShowCompatibilityForm] = useState(false);
+  const [newCompatibility, setNewCompatibility] = useState<CreateVehicleCompatibilityRequest>({
+    product_id: '',
+    vehicle_model_id: '',
+    year_from: new Date().getFullYear(),
+    year_to: undefined,
+    notes: ''
+  });
+
   // Auto-generate SKU based on name
   const generateSKU = useCallback((name: string) => {
     if (!name.trim()) return '';
@@ -107,10 +120,52 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     }
   }, []);
 
+  const fetchVehicleBrands = useCallback(async () => {
+    try {
+      const response = await api.vehicleBrands.getActive();
+      if (response.data.success) {
+        setVehicleBrands(response.data.data.data.filter((b: VehicleBrand) => b.is_active));
+      }
+    } catch (err) {
+      console.error('Error fetching vehicle brands:', err);
+    }
+  }, []);
+
+  const fetchVehicleModels = useCallback(async () => {
+    try {
+      const response = await api.vehicleModels.getActive();
+      if (response.data.success) {
+        setVehicleModels(response.data.data.data.filter((m: VehicleModelWithBrand) => m.is_active));
+      }
+    } catch (err) {
+      console.error('Error fetching vehicle models:', err);
+    }
+  }, []);
+
+  const fetchCompatibilities = useCallback(async (productId: string) => {
+    try {
+      const response = await api.vehicleCompatibilities.list({ 
+        product_id: productId,
+        limit: 100 
+      });
+      if (response.data.success) {
+        setCompatibilities(response.data.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching compatibilities:', err);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      Promise.all([fetchCategories(), fetchSuppliers(), fetchBrands()]).finally(() => {
+      Promise.all([
+        fetchCategories(), 
+        fetchSuppliers(), 
+        fetchBrands(),
+        fetchVehicleBrands(),
+        fetchVehicleModels()
+      ]).finally(() => {
         setLoading(false);
       });
 
@@ -131,6 +186,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           dimensions: product.dimensions || '',
           is_active: product.is_active
         });
+        // Load existing compatibilities
+        fetchCompatibilities(product.id);
       } else {
         // Add mode
         setFormData({
@@ -148,10 +205,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           dimensions: '',
           is_active: true
         });
+        setCompatibilities([]);
       }
       setErrors({});
+      setShowCompatibilityForm(false);
+      setNewCompatibility({
+        product_id: product?.id || '',
+        vehicle_model_id: '',
+        year_from: new Date().getFullYear(),
+        year_to: undefined,
+        notes: ''
+      });
     }
-  }, [isOpen, product, fetchCategories, fetchSuppliers, fetchBrands]);
+  }, [isOpen, product, fetchCategories, fetchSuppliers, fetchBrands, fetchVehicleBrands, fetchVehicleModels, fetchCompatibilities]);
 
   // Auto-generate SKU when name changes (only for new products)
   useEffect(() => {
@@ -280,6 +346,68 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         return newErrors;
       });
     }
+  };
+
+  // Vehicle compatibility management functions
+  const handleAddCompatibility = async () => {
+    if (!product?.id) return;
+
+    try {
+      const compatibilityData = {
+        ...newCompatibility,
+        product_id: product.id
+      };
+
+      const response = await api.vehicleCompatibilities.create(compatibilityData);
+      if (response.data.success) {
+        // Refresh compatibilities list
+        await fetchCompatibilities(product.id);
+        
+        // Reset form
+        setNewCompatibility({
+          product_id: product.id,
+          vehicle_model_id: '',
+          year_from: new Date().getFullYear(),
+          year_to: undefined,
+          notes: ''
+        });
+        setShowCompatibilityForm(false);
+      }
+    } catch (err) {
+      console.error('Error adding compatibility:', err);
+    }
+  };
+
+  const handleDeleteCompatibility = async (compatibilityId: string) => {
+    if (!product?.id) return;
+
+    try {
+      await api.vehicleCompatibilities.delete(compatibilityId);
+      // Refresh compatibilities list
+      await fetchCompatibilities(product.id);
+    } catch (err) {
+      console.error('Error deleting compatibility:', err);
+    }
+  };
+
+  const handleCompatibilityChange = (
+    field: keyof CreateVehicleCompatibilityRequest,
+    value: string | number | undefined
+  ) => {
+    setNewCompatibility(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Get filtered vehicle models by brand
+  const getVehicleModelsByBrand = (brandId: string) => {
+    return vehicleModels.filter(model => model.vehicle_brand_id === brandId);
+  };
+
+  // Format vehicle model display
+  const formatVehicleModel = (model: VehicleModelWithBrand) => {
+    const yearRange = model.year_to && model.year_to !== model.year_from 
+      ? `${model.year_from}-${model.year_to}` 
+      : `${model.year_from}+`;
+    return `${model.vehicle_brand.name} ${model.name} (${yearRange})`;
   };
 
   if (!isOpen) return null;
@@ -600,6 +728,171 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </label>
                 </div>
               </div>
+
+              {/* Vehicle Compatibility - Only show for existing products */}
+              {product && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                      <Car className="h-5 w-5 mr-2 text-blue-600" />
+                      Vehicle Compatibility
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowCompatibilityForm(true)}
+                      className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Compatibility
+                    </button>
+                  </div>
+
+                  {/* Existing Compatibilities */}
+                  <div className="space-y-3">
+                    {compatibilities.length === 0 ? (
+                      <div className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-md">
+                        No vehicle compatibilities defined yet. Click "Add Compatibility" to specify which vehicles this part fits.
+                      </div>
+                    ) : (
+                      compatibilities.map((compatibility) => (
+                        <div
+                          key={compatibility.id}
+                          className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center">
+                              <span className="font-medium text-gray-900">
+                                {compatibility.vehicle_model && formatVehicleModel(compatibility.vehicle_model as VehicleModelWithBrand)}
+                              </span>
+                              <div className="ml-2" title={compatibility.is_verified ? "Verified compatibility" : "Unverified compatibility"}>
+                                {compatibility.is_verified ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                                )}
+                              </div>
+                            </div>
+                            {compatibility.year_from && (
+                              <div className="text-sm text-gray-500">
+                                Years: {compatibility.year_from}{compatibility.year_to && compatibility.year_to !== compatibility.year_from ? `-${compatibility.year_to}` : '+'}
+                              </div>
+                            )}
+                            {compatibility.notes && (
+                              <div className="text-sm text-gray-600 mt-1">
+                                {compatibility.notes}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCompatibility(compatibility.id)}
+                            className="ml-4 text-red-600 hover:text-red-800 focus:outline-none"
+                            title="Remove compatibility"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Add New Compatibility Form */}
+                  {showCompatibilityForm && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                      <h4 className="text-sm font-medium text-blue-900 mb-3">Add New Vehicle Compatibility</h4>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Vehicle Model *
+                          </label>
+                          <select
+                            value={newCompatibility.vehicle_model_id}
+                            onChange={(e) => handleCompatibilityChange('vehicle_model_id', e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            required
+                          >
+                            <option value="">Select a vehicle model</option>
+                            {vehicleBrands.map((brand) => {
+                              const models = getVehicleModelsByBrand(brand.id);
+                              return models.length > 0 ? (
+                                <optgroup key={brand.id} label={brand.name}>
+                                  {models.map((model) => (
+                                    <option key={model.id} value={model.id}>
+                                      {formatVehicleModel(model)}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ) : null;
+                            })}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Year From
+                            </label>
+                            <input
+                              type="number"
+                              value={newCompatibility.year_from || ''}
+                              onChange={(e) => handleCompatibilityChange('year_from', parseInt(e.target.value) || undefined)}
+                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="2020"
+                              min="1900"
+                              max={new Date().getFullYear() + 5}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Year To
+                            </label>
+                            <input
+                              type="number"
+                              value={newCompatibility.year_to || ''}
+                              onChange={(e) => handleCompatibilityChange('year_to', parseInt(e.target.value) || undefined)}
+                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="2025 (optional)"
+                              min="1900"
+                              max={new Date().getFullYear() + 5}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="lg:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Notes
+                          </label>
+                          <input
+                            type="text"
+                            value={newCompatibility.notes || ''}
+                            onChange={(e) => handleCompatibilityChange('notes', e.target.value)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Optional notes about this compatibility"
+                          />
+                        </div>
+
+                        <div className="lg:col-span-2 flex justify-end space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setShowCompatibilityForm(false)}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleAddCompatibility}
+                            disabled={!newCompatibility.vehicle_model_id}
+                            className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Add Compatibility
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </form>
           )}
         </div>
