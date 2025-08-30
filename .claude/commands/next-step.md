@@ -13,6 +13,7 @@ Execute the next step in the vehicle spare parts shop frontend optimization proc
 3. Implements the step following existing code patterns
 4. Updates the progress file with completion status
 5. Commits the changes with descriptive commit message
+6. Stop on a stable stage
 
 ## Current Phase 6: Frontend Navigation & UI Optimization
 

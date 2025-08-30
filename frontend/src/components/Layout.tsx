@@ -86,7 +86,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Menu className="h-6 w-6" />
               </button>
               <h1 className="ml-3 text-2xl font-semibold text-gray-900 md:ml-0">
-                Hardware Store Inventory
+                Vehicle Spare Parts Inventory
               </h1>
             </div>
 
@@ -94,7 +94,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-sm text-gray-700">
                 <User className="h-5 w-5 mr-2" />
-                <span>Hardware Store Owner</span>
+                <span>Shop Owner</span>
               </div>
               <button
                 onClick={handleLogout}
@@ -170,8 +170,8 @@ const SidebarContent: React.FC<{
       {/* Footer */}
       <div className="flex-shrink-0 bg-gray-50 p-4 border-t border-gray-200">
         <div className="text-xs text-gray-500 text-center">
-          Hardware Store Inventory v2.0<br />
-          <span className="text-blue-600">POS Ready</span> • Single Location
+          Vehicle Spare Parts Inventory v2.0<br />
+          <span className="text-blue-600">Comprehensive Management</span> • Single Location
         </div>
       </div>
     </div>
