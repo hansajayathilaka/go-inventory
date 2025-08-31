@@ -45,7 +45,7 @@ func NewVehicleCompatibilityHandler(compatibilityService compatibility.Service) 
 func (h *VehicleCompatibilityHandler) GetCompatibilities(c *gin.Context) {
 	var req dto.VehicleCompatibilityListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -79,7 +79,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibilities(c *gin.Context) {
 	}
 
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatibilities", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -108,12 +108,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibilities(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -135,7 +130,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -143,17 +138,17 @@ func (h *VehicleCompatibilityHandler) GetCompatibility(c *gin.Context) {
 	compatibilityModel, err := h.compatibilityService.GetCompatibilityWithRelations(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatibility", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityModel)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -172,7 +167,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibility(c *gin.Context) {
 func (h *VehicleCompatibilityHandler) CreateCompatibility(c *gin.Context) {
 	var req dto.CreateVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -184,7 +179,7 @@ func (h *VehicleCompatibilityHandler) CreateCompatibility(c *gin.Context) {
 	createdCompatibility, err := h.compatibilityService.CreateCompatibility(c.Request.Context(), compatibilityModel)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityExists) || errors.Is(err, compatibility.ErrDuplicateCompatibility) {
-			response := dto.CreateErrorResponse("CONFLICT", "Vehicle compatibility already exists", err.Error())
+			response := dto.CreateBaseResponse("CONFLICT", "Vehicle compatibility already exists", err.Error())
 			c.JSON(http.StatusConflict, response)
 		} else if errors.Is(err, compatibility.ErrInvalidInput) || 
 				  errors.Is(err, compatibility.ErrProductNotFound) || 
@@ -192,10 +187,10 @@ func (h *VehicleCompatibilityHandler) CreateCompatibility(c *gin.Context) {
 				  errors.Is(err, compatibility.ErrInvalidYearRange) ||
 				  errors.Is(err, compatibility.ErrProductInactive) ||
 				  errors.Is(err, compatibility.ErrVehicleModelInactive) {
-			response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
+			response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
 			c.JSON(http.StatusBadRequest, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to create compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to create compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -206,13 +201,13 @@ func (h *VehicleCompatibilityHandler) CreateCompatibility(c *gin.Context) {
 	if err != nil {
 		// Return basic response if we can't get relations
 		compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(createdCompatibility)
-		response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
+		response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
 		c.JSON(http.StatusCreated, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityWithRelations)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -234,14 +229,14 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	var req dto.UpdateVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -250,10 +245,10 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 	existingCompatibility, err := h.compatibilityService.GetCompatibilityByID(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatibility", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -266,7 +261,7 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 	err = h.compatibilityService.UpdateCompatibility(c.Request.Context(), existingCompatibility)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityExists) || errors.Is(err, compatibility.ErrDuplicateCompatibility) {
-			response := dto.CreateErrorResponse("CONFLICT", "Vehicle compatibility already exists", err.Error())
+			response := dto.CreateBaseResponse("CONFLICT", "Vehicle compatibility already exists", err.Error())
 			c.JSON(http.StatusConflict, response)
 		} else if errors.Is(err, compatibility.ErrInvalidInput) || 
 				  errors.Is(err, compatibility.ErrProductNotFound) || 
@@ -274,10 +269,10 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 				  errors.Is(err, compatibility.ErrInvalidYearRange) ||
 				  errors.Is(err, compatibility.ErrProductInactive) ||
 				  errors.Is(err, compatibility.ErrVehicleModelInactive) {
-			response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
+			response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
 			c.JSON(http.StatusBadRequest, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to update compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to update compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -288,13 +283,13 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 	if err != nil {
 		// Return basic response if we can't get relations
 		compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(existingCompatibility)
-		response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
+		response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
 		c.JSON(http.StatusOK, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityWithRelations)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -314,7 +309,7 @@ func (h *VehicleCompatibilityHandler) DeleteCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -322,16 +317,16 @@ func (h *VehicleCompatibilityHandler) DeleteCompatibility(c *gin.Context) {
 	err = h.compatibilityService.DeleteCompatibility(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to delete compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to delete compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
-	response := dto.CreateSuccessResponse(nil, "Vehicle compatibility deleted successfully")
+	response := dto.CreateStandardSuccessResponse(nil, "Vehicle compatibility deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -351,7 +346,7 @@ func (h *VehicleCompatibilityHandler) VerifyCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -359,10 +354,10 @@ func (h *VehicleCompatibilityHandler) VerifyCompatibility(c *gin.Context) {
 	err = h.compatibilityService.VerifyCompatibility(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to verify compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to verify compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -371,13 +366,13 @@ func (h *VehicleCompatibilityHandler) VerifyCompatibility(c *gin.Context) {
 	// Get updated compatibility with relations for response
 	updatedCompatibility, err := h.compatibilityService.GetCompatibilityWithRelations(c.Request.Context(), compatibilityID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility verified successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility verified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -397,7 +392,7 @@ func (h *VehicleCompatibilityHandler) UnverifyCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -405,10 +400,10 @@ func (h *VehicleCompatibilityHandler) UnverifyCompatibility(c *gin.Context) {
 	err = h.compatibilityService.UnverifyCompatibility(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to unverify compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to unverify compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -417,13 +412,13 @@ func (h *VehicleCompatibilityHandler) UnverifyCompatibility(c *gin.Context) {
 	// Get updated compatibility with relations for response
 	updatedCompatibility, err := h.compatibilityService.GetCompatibilityWithRelations(c.Request.Context(), compatibilityID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility unverified successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility unverified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -443,7 +438,7 @@ func (h *VehicleCompatibilityHandler) ActivateCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -451,10 +446,10 @@ func (h *VehicleCompatibilityHandler) ActivateCompatibility(c *gin.Context) {
 	err = h.compatibilityService.ActivateCompatibility(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to activate compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to activate compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -463,13 +458,13 @@ func (h *VehicleCompatibilityHandler) ActivateCompatibility(c *gin.Context) {
 	// Get updated compatibility with relations for response
 	updatedCompatibility, err := h.compatibilityService.GetCompatibilityWithRelations(c.Request.Context(), compatibilityID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility activated successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -489,7 +484,7 @@ func (h *VehicleCompatibilityHandler) DeactivateCompatibility(c *gin.Context) {
 	idStr := c.Param("id")
 	compatibilityID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid compatibility ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -497,10 +492,10 @@ func (h *VehicleCompatibilityHandler) DeactivateCompatibility(c *gin.Context) {
 	err = h.compatibilityService.DeactivateCompatibility(c.Request.Context(), compatibilityID)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrCompatibilityNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle compatibility not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to deactivate compatibility", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to deactivate compatibility", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -509,13 +504,13 @@ func (h *VehicleCompatibilityHandler) DeactivateCompatibility(c *gin.Context) {
 	// Get updated compatibility with relations for response
 	updatedCompatibility, err := h.compatibilityService.GetCompatibilityWithRelations(c.Request.Context(), compatibilityID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated compatibility", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateSuccessResponse(compatibilityResponse, "Vehicle compatibility deactivated successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -531,13 +526,13 @@ func (h *VehicleCompatibilityHandler) DeactivateCompatibility(c *gin.Context) {
 func (h *VehicleCompatibilityHandler) GetActiveCompatibilities(c *gin.Context) {
 	compatibilities, err := h.compatibilityService.GetActiveCompatibilities(c.Request.Context())
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve active compatibilities", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve active compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	compatibilityResponses := dto.ToVehicleCompatibilityResponseList(compatibilities)
-	response := dto.CreateSuccessResponse(compatibilityResponses, "Active vehicle compatibilities retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(compatibilityResponses, "Active vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -556,7 +551,7 @@ func (h *VehicleCompatibilityHandler) GetActiveCompatibilities(c *gin.Context) {
 func (h *VehicleCompatibilityHandler) GetVerifiedCompatibilities(c *gin.Context) {
 	var req dto.VehicleCompatibilityListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -574,7 +569,7 @@ func (h *VehicleCompatibilityHandler) GetVerifiedCompatibilities(c *gin.Context)
 
 	compatibilities, err := h.compatibilityService.GetVerifiedCompatibilities(c.Request.Context(), req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve verified compatibilities", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve verified compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -588,12 +583,7 @@ func (h *VehicleCompatibilityHandler) GetVerifiedCompatibilities(c *gin.Context)
 	}
 
 	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Verified vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -614,7 +604,7 @@ func (h *VehicleCompatibilityHandler) GetVerifiedCompatibilities(c *gin.Context)
 func (h *VehicleCompatibilityHandler) GetUnverifiedCompatibilities(c *gin.Context) {
 	var req dto.VehicleCompatibilityListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -632,7 +622,7 @@ func (h *VehicleCompatibilityHandler) GetUnverifiedCompatibilities(c *gin.Contex
 
 	compatibilities, err := h.compatibilityService.GetUnverifiedCompatibilities(c.Request.Context(), req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve unverified compatibilities", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve unverified compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -646,12 +636,7 @@ func (h *VehicleCompatibilityHandler) GetUnverifiedCompatibilities(c *gin.Contex
 	}
 
 	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Unverified vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -674,13 +659,13 @@ func (h *VehicleCompatibilityHandler) GetUnverifiedCompatibilities(c *gin.Contex
 func (h *VehicleCompatibilityHandler) GetCompatibleProducts(c *gin.Context) {
 	var req dto.VehicleCompatibilitySearchRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	if req.VehicleModelID == uuid.Nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Vehicle model ID is required", "")
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Vehicle model ID is required", "")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -698,7 +683,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibleProducts(c *gin.Context) {
 
 	compatibilities, err := h.compatibilityService.GetCompatibleProducts(c.Request.Context(), req.VehicleModelID, req.Year, req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatible products", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatible products", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -712,12 +697,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibleProducts(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Compatible products retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -740,13 +720,13 @@ func (h *VehicleCompatibilityHandler) GetCompatibleProducts(c *gin.Context) {
 func (h *VehicleCompatibilityHandler) GetCompatibleVehicles(c *gin.Context) {
 	var req dto.VehicleCompatibilitySearchRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	if req.ProductID == uuid.Nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Product ID is required", "")
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Product ID is required", "")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -764,7 +744,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibleVehicles(c *gin.Context) {
 
 	compatibilities, err := h.compatibilityService.GetCompatibleVehicles(c.Request.Context(), req.ProductID, req.Year, req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatible vehicles", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatible vehicles", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -778,12 +758,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibleVehicles(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Compatible vehicles retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -803,7 +778,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibleVehicles(c *gin.Context) {
 func (h *VehicleCompatibilityHandler) BulkCreateCompatibilities(c *gin.Context) {
 	var req dto.BulkCreateVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -818,17 +793,17 @@ func (h *VehicleCompatibilityHandler) BulkCreateCompatibilities(c *gin.Context) 
 	err := h.compatibilityService.BulkCreateCompatibilities(c.Request.Context(), compatibilities)
 	if err != nil {
 		if errors.Is(err, compatibility.ErrInvalidInput) {
-			response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
+			response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
 			c.JSON(http.StatusBadRequest, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to create compatibilities", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to create compatibilities", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	message := fmt.Sprintf("Successfully created %d vehicle compatibilities", len(compatibilities))
-	response := dto.CreateSuccessResponse(message, "Vehicle compatibilities created successfully")
+	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -846,20 +821,20 @@ func (h *VehicleCompatibilityHandler) BulkCreateCompatibilities(c *gin.Context) 
 func (h *VehicleCompatibilityHandler) BulkVerifyCompatibilities(c *gin.Context) {
 	var req dto.BulkVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	err := h.compatibilityService.BulkVerifyCompatibilities(c.Request.Context(), req.IDs)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to verify compatibilities", err.Error())
+		response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to verify compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	message := fmt.Sprintf("Successfully verified %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateSuccessResponse(message, "Vehicle compatibilities verified successfully")
+	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities verified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -877,20 +852,20 @@ func (h *VehicleCompatibilityHandler) BulkVerifyCompatibilities(c *gin.Context) 
 func (h *VehicleCompatibilityHandler) BulkUnverifyCompatibilities(c *gin.Context) {
 	var req dto.BulkVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	err := h.compatibilityService.BulkUnverifyCompatibilities(c.Request.Context(), req.IDs)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to unverify compatibilities", err.Error())
+		response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to unverify compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	message := fmt.Sprintf("Successfully unverified %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateSuccessResponse(message, "Vehicle compatibilities unverified successfully")
+	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities unverified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -908,20 +883,20 @@ func (h *VehicleCompatibilityHandler) BulkUnverifyCompatibilities(c *gin.Context
 func (h *VehicleCompatibilityHandler) BulkActivateCompatibilities(c *gin.Context) {
 	var req dto.BulkVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	err := h.compatibilityService.BulkActivateCompatibilities(c.Request.Context(), req.IDs)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to activate compatibilities", err.Error())
+		response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to activate compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	message := fmt.Sprintf("Successfully activated %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateSuccessResponse(message, "Vehicle compatibilities activated successfully")
+	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -939,20 +914,20 @@ func (h *VehicleCompatibilityHandler) BulkActivateCompatibilities(c *gin.Context
 func (h *VehicleCompatibilityHandler) BulkDeactivateCompatibilities(c *gin.Context) {
 	var req dto.BulkVehicleCompatibilityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	err := h.compatibilityService.BulkDeactivateCompatibilities(c.Request.Context(), req.IDs)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to deactivate compatibilities", err.Error())
+		response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to deactivate compatibilities", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	message := fmt.Sprintf("Successfully deactivated %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateSuccessResponse(message, "Vehicle compatibilities deactivated successfully")
+	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -968,7 +943,7 @@ func (h *VehicleCompatibilityHandler) BulkDeactivateCompatibilities(c *gin.Conte
 func (h *VehicleCompatibilityHandler) GetCompatibilityStats(c *gin.Context) {
 	total, err := h.compatibilityService.CountCompatibilities(c.Request.Context())
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve compatibility statistics", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve compatibility statistics", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -995,6 +970,6 @@ func (h *VehicleCompatibilityHandler) GetCompatibilityStats(c *gin.Context) {
 		Unverified: unverified,
 	}
 
-	response := dto.CreateSuccessResponse(stats, "Compatibility statistics retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(stats, "Compatibility statistics retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }

@@ -203,16 +203,6 @@ definitions:
         example: "2023-01-02T12:00:00Z"
         type: string
     type: object
-  SupplierListResponse:
-    description: Paginated list of suppliers with metadata
-    properties:
-      pagination:
-        $ref: '#/definitions/PaginationResponse'
-      suppliers:
-        items:
-          $ref: '#/definitions/SupplierDetailResponse'
-        type: array
-    type: object
   SupplierUpdateRequest:
     description: Request body for updating an existing supplier
     properties:
@@ -1008,25 +998,6 @@ definitions:
         type: integer
       reserved_quantity:
         example: 5
-        type: integer
-    type: object
-  dto.ProductListResponse:
-    properties:
-      page:
-        example: 1
-        type: integer
-      per_page:
-        example: 20
-        type: integer
-      products:
-        items:
-          $ref: '#/definitions/dto.ProductResponse'
-        type: array
-      total:
-        example: 150
-        type: integer
-      total_pages:
-        example: 8
         type: integer
     type: object
   dto.ProductResponse:
@@ -1925,7 +1896,7 @@ definitions:
         example: "2023-01-01T12:00:00Z"
         type: string
       vehicle_model:
-        $ref: '#/definitions/dto.VehicleModelResponse'
+        $ref: '#/definitions/dto.VehicleModelDetailResponse'
       vehicle_model_id:
         example: 550e8400-e29b-41d4-a716-446655440003
         type: string
@@ -2815,19 +2786,21 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/SuccessResponse'
+            - $ref: '#/definitions/dto.PaginatedResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/CategoryListResponse'
+                  items:
+                    $ref: '#/definitions/CategoryResponse'
+                  type: array
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: List categories
       tags:
       - categories
@@ -2849,7 +2822,7 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/SuccessResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/CategoryResponse'
@@ -2857,15 +2830,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Create category
       tags:
       - categories
@@ -2923,7 +2896,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/SuccessResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/CategoryResponse'
@@ -2931,15 +2904,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get category
       tags:
       - categories
@@ -2966,7 +2939,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/SuccessResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/CategoryResponse'
@@ -2974,19 +2947,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Update category
       tags:
       - categories
@@ -3092,7 +3065,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/SuccessResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/CategoryResponse'
@@ -3100,19 +3073,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Move category
       tags:
       - categories
@@ -3919,19 +3892,21 @@ paths:
           description: Products retrieved successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.PaginatedResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/dto.ProductListResponse'
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
               type: object
         "400":
           description: Invalid parameters
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: List products
       tags:
       - products
@@ -3953,7 +3928,7 @@ paths:
           description: Product created successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/dto.ProductResponse'
@@ -3961,15 +3936,15 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Product already exists
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Create a new product
       tags:
       - products
@@ -3990,19 +3965,19 @@ paths:
         "200":
           description: Product deleted successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "400":
           description: Invalid product ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Delete product
       tags:
       - products
@@ -4023,7 +3998,7 @@ paths:
           description: Product retrieved successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/dto.ProductResponse'
@@ -4031,15 +4006,15 @@ paths:
         "400":
           description: Invalid product ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get product by ID
       tags:
       - products
@@ -4066,7 +4041,7 @@ paths:
           description: Product updated successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/dto.ProductResponse'
@@ -4074,19 +4049,19 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Conflict with existing data
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Update product
       tags:
       - products
@@ -4108,7 +4083,7 @@ paths:
           description: Product inventory retrieved successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   items:
@@ -4118,15 +4093,15 @@ paths:
         "400":
           description: Invalid product ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get product inventory
       tags:
       - products
@@ -4147,19 +4122,19 @@ paths:
         "200":
           description: Brand removed successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "400":
           description: Invalid product ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Remove product brand
       tags:
       - products
@@ -4185,19 +4160,19 @@ paths:
         "200":
           description: Brand assigned successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "400":
           description: Invalid product or brand ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Product or brand not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Set product brand
       tags:
       - products
@@ -4219,7 +4194,7 @@ paths:
           description: Products retrieved successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   items:
@@ -4229,15 +4204,15 @@ paths:
         "400":
           description: Invalid brand ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Brand not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get products by brand
       tags:
       - products
@@ -4253,7 +4228,7 @@ paths:
           description: Products retrieved successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   items:
@@ -4263,7 +4238,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get products without brand
       tags:
       - products
@@ -4290,7 +4265,7 @@ paths:
           description: POS products
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   items:
@@ -4300,7 +4275,7 @@ paths:
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get POS-ready products
       tags:
       - pos
@@ -4332,19 +4307,21 @@ paths:
           description: Products found
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.PaginatedResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/dto.ProductListResponse'
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
               type: object
         "400":
           description: Invalid parameters
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Search products
       tags:
       - products
@@ -5162,19 +5139,21 @@ paths:
           description: Suppliers list
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.PaginatedResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/SupplierListResponse'
+                  items:
+                    $ref: '#/definitions/SupplierDetailResponse'
+                  type: array
               type: object
         "400":
           description: Invalid parameters
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: List suppliers
       tags:
       - suppliers
@@ -5196,7 +5175,7 @@ paths:
           description: Supplier created successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/SupplierDetailResponse'
@@ -5204,15 +5183,15 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Supplier already exists
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Create a new supplier
       tags:
       - suppliers
@@ -5232,19 +5211,19 @@ paths:
         "200":
           description: Supplier deleted successfully
           schema:
-            $ref: '#/definitions/ApiResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "400":
           description: Invalid supplier ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Supplier not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Delete a supplier
       tags:
       - suppliers
@@ -5264,7 +5243,7 @@ paths:
           description: Supplier details
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/SupplierDetailResponse'
@@ -5272,15 +5251,15 @@ paths:
         "400":
           description: Invalid supplier ID
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Supplier not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Get supplier by ID
       tags:
       - suppliers
@@ -5308,7 +5287,7 @@ paths:
           description: Supplier updated successfully
           schema:
             allOf:
-            - $ref: '#/definitions/ApiResponse'
+            - $ref: '#/definitions/dto.BaseResponse'
             - properties:
                 data:
                   $ref: '#/definitions/SupplierDetailResponse'
@@ -5316,19 +5295,19 @@ paths:
         "400":
           description: Invalid request
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Supplier not found
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "409":
           description: Supplier code already exists
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/ErrorResponse'
+            $ref: '#/definitions/dto.BaseResponse'
       summary: Update a supplier
       tags:
       - suppliers

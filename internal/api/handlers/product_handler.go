@@ -32,10 +32,10 @@ func NewProductHandler(productService productBusiness.Service, inventoryService 
 // @Accept json
 // @Produce json
 // @Param product body dto.ProductCreateRequest true "Product creation data"
-// @Success 201 {object} dto.StandardResponse[dto.ProductResponse] "Product created successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
-// @Failure 409 {object} dto.StandardErrorResponse "Product already exists"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 201 {object} dto.BaseResponse{data=dto.ProductResponse} "Product created successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid request"
+// @Failure 409 {object} dto.BaseResponse "Product already exists"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products [post]
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	var req dto.ProductCreateRequest
@@ -118,9 +118,9 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 // @Param supplier_id query string false "Filter by supplier ID"
 // @Param brand_id query string false "Filter by brand ID"
 // @Param is_active query boolean false "Filter by active status"
-// @Success 200 {object} dto.StandardListResponse[dto.ProductResponse] "Products retrieved successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.PaginatedResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid parameters"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products [get]
 func (h *ProductHandler) GetProducts(c *gin.Context) {
 	page := 1
@@ -238,10 +238,10 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.StandardResponse[dto.ProductResponse] "Product retrieved successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=dto.ProductResponse} "Product retrieved successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid product ID"
+// @Failure 404 {object} dto.BaseResponse "Product not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{id} [get]
 func (h *ProductHandler) GetProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -296,11 +296,11 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Product ID"
 // @Param product body dto.ProductUpdateRequest true "Product update data"
-// @Success 200 {object} dto.StandardResponse[dto.ProductResponse] "Product updated successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
-// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
-// @Failure 409 {object} dto.StandardErrorResponse "Conflict with existing data"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=dto.ProductResponse} "Product updated successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid request"
+// @Failure 404 {object} dto.BaseResponse "Product not found"
+// @Failure 409 {object} dto.BaseResponse "Conflict with existing data"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{id} [put]
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -423,10 +423,10 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.StandardResponse[interface{}] "Product deleted successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse "Product deleted successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid product ID"
+// @Failure 404 {object} dto.BaseResponse "Product not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{id} [delete]
 func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -455,7 +455,7 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
 		nil,
 		"Product deleted successfully",
 	))
@@ -470,9 +470,9 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 // @Param q query string true "Search query"
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(20)
-// @Success 200 {object} dto.StandardListResponse[dto.ProductResponse] "Products found"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.PaginatedResponse{data=[]dto.ProductResponse} "Products found"
+// @Failure 400 {object} dto.BaseResponse "Invalid parameters"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/search [get]
 func (h *ProductHandler) SearchProducts(c *gin.Context) {
 	query := c.Query("q")
@@ -533,10 +533,10 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.StandardResponse[[]dto.ProductInventoryResponse] "Product inventory retrieved successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=[]dto.ProductInventoryResponse} "Product inventory retrieved successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid product ID"
+// @Failure 404 {object} dto.BaseResponse "Product not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{id}/inventory [get]
 func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 	idStr := c.Param("id")
@@ -751,8 +751,8 @@ func (h *ProductHandler) POSLookup(c *gin.Context) {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(20)
-// @Success 200 {object} dto.StandardResponse[[]dto.POSProduct] "POS products"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=[]dto.POSProduct} "POS products"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/pos-ready [get]
 func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -822,10 +822,10 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param brand_id path string true "Brand ID"
-// @Success 200 {object} dto.StandardResponse[[]dto.ProductResponse] "Products retrieved successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid brand ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Brand not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid brand ID"
+// @Failure 404 {object} dto.BaseResponse "Brand not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/brand/{brand_id} [get]
 func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 	idStr := c.Param("brand_id")
@@ -868,8 +868,8 @@ func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Success 200 {object} dto.StandardResponse[[]dto.ProductResponse] "Products retrieved successfully"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/no-brand [get]
 func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 	products, err := h.productService.GetProductsWithoutBrand(c.Request.Context())
@@ -896,10 +896,10 @@ func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 // @Produce json
 // @Param product_id path string true "Product ID"
 // @Param brand_id path string true "Brand ID"
-// @Success 200 {object} dto.StandardResponse[interface{}] "Brand assigned successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid product or brand ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Product or brand not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse "Brand assigned successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid product or brand ID"
+// @Failure 404 {object} dto.BaseResponse "Product or brand not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{product_id}/brand/{brand_id} [put]
 func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 	productIDStr := c.Param("product_id")
@@ -945,7 +945,7 @@ func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
 		nil,
 		"Brand assigned successfully",
 	))
@@ -958,10 +958,10 @@ func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param product_id path string true "Product ID"
-// @Success 200 {object} dto.StandardResponse[interface{}] "Brand removed successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse "Brand removed successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid product ID"
+// @Failure 404 {object} dto.BaseResponse "Product not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /products/{product_id}/brand [delete]
 func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
 	productIDStr := c.Param("product_id")
@@ -990,7 +990,7 @@ func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
 		nil,
 		"Brand removed successfully",
 	))

@@ -41,7 +41,7 @@ func NewUserHandler(userService user.Service) *UserHandler {
 func (h *UserHandler) GetUsers(c *gin.Context) {
 	var req dto.UserListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -58,7 +58,7 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 	offset := (req.Page - 1) * req.Limit
 	users, err := h.userService.ListUsers(c.Request.Context(), req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve users", err.Error())
+		response := dto.CreateStandardErrorResponse("DATABASE_ERROR", "Failed to retrieve users", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -66,15 +66,10 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 	// Convert to response DTOs
 	userResponses := dto.ToUserResponseList(users)
 
-	// Create pagination info (simplified for now)
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      int64(len(userResponses)),
-		TotalPages: (len(userResponses) + req.Limit - 1) / req.Limit,
-	}
+	// Create standardized pagination info
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, int64(len(userResponses)))
 
-	response := dto.CreatePaginatedResponse(userResponses, pagination, "Users retrieved successfully")
+	response := dto.CreateStandardListResponse(userResponses, pagination, "Users retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -94,20 +89,20 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	idStr := c.Param("id")
 	userID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	user, err := h.userService.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
+		response := dto.CreateStandardErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
 	userResponse := dto.ToUserResponse(user)
-	response := dto.CreateSuccessResponse(userResponse, "User retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(userResponse, "User retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -126,7 +121,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -135,13 +130,13 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	createdUser, err := h.userService.CreateUser(c.Request.Context(), req.Username, req.Email, req.Password, models.UserRole(req.Role))
 	if err != nil {
 		// Check if it's a conflict error (user already exists)
-		response := dto.CreateErrorResponse("CONFLICT", "User already exists", err.Error())
+		response := dto.CreateStandardErrorResponse("CONFLICT", "User already exists", err.Error())
 		c.JSON(http.StatusConflict, response)
 		return
 	}
 
 	userResponse := dto.ToUserResponse(createdUser)
-	response := dto.CreateSuccessResponse(userResponse, "User created successfully")
+	response := dto.CreateStandardSuccessResponse(userResponse, "User created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -162,14 +157,14 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
 	userID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	var req dto.UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -177,7 +172,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	// Get existing user
 	existingUser, err := h.userService.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
+		response := dto.CreateStandardErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)
 		return
 	}
@@ -196,13 +191,13 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	// Update user via service
 	err = h.userService.UpdateUser(c.Request.Context(), existingUser)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to update user", err.Error())
+		response := dto.CreateStandardErrorResponse("INTERNAL_ERROR", "Failed to update user", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	userResponse := dto.ToUserResponse(existingUser)
-	response := dto.CreateSuccessResponse(userResponse, "User updated successfully")
+	response := dto.CreateStandardSuccessResponse(userResponse, "User updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -222,19 +217,19 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
 	userID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid user ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	err = h.userService.DeleteUser(c.Request.Context(), userID)
 	if err != nil {
-		response := dto.CreateErrorResponse("NOT_FOUND", "User not found", err.Error())
+		response := dto.CreateStandardErrorResponse("NOT_FOUND", "User not found", err.Error())
 		c.JSON(http.StatusNotFound, response)
 		return
 	}
 
-	response := dto.CreateSuccessResponse(nil, "User deleted successfully")
+	response := dto.CreateStandardSuccessResponse(nil, "User deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -253,7 +248,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 func (h *UserHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid login data", err.Error())
+		response := dto.CreateStandardErrorResponse("VALIDATION_ERROR", "Invalid login data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -261,7 +256,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// Get user by username
 	user, err := h.userService.GetUserByUsername(c.Request.Context(), req.Username)
 	if err != nil {
-		response := dto.CreateErrorResponse("UNAUTHORIZED", "Invalid credentials", "Username or password is incorrect")
+		response := dto.CreateStandardErrorResponse("UNAUTHORIZED", "Invalid credentials", "Username or password is incorrect")
 		c.JSON(http.StatusUnauthorized, response)
 		return
 	}
@@ -269,7 +264,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// Check password
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 	if err != nil {
-		response := dto.CreateErrorResponse("UNAUTHORIZED", "Invalid credentials", "Username or password is incorrect")
+		response := dto.CreateStandardErrorResponse("UNAUTHORIZED", "Invalid credentials", "Username or password is incorrect")
 		c.JSON(http.StatusUnauthorized, response)
 		return
 	}
@@ -282,7 +277,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		Token: "jwt_token_here", // TODO: Implement JWT token generation
 	}
 
-	response := dto.CreateSuccessResponse(loginResponse, "Login successful")
+	response := dto.CreateStandardSuccessResponse(loginResponse, "Login successful")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -296,6 +291,6 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(c *gin.Context) {
 	// In a real implementation, you'd invalidate the JWT token
-	response := dto.CreateSuccessResponse(nil, "Logout successful")
+	response := dto.CreateStandardSuccessResponse(nil, "Logout successful")
 	c.JSON(http.StatusOK, response)
 }

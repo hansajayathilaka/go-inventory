@@ -1002,13 +1002,16 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/SuccessResponse"
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/CategoryListResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/CategoryResponse"
+                                            }
                                         }
                                     }
                                 }
@@ -1018,13 +1021,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -1058,7 +1061,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/SuccessResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1074,19 +1077,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -1273,7 +1276,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/SuccessResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1289,19 +1292,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -1342,7 +1345,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/SuccessResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1358,25 +1361,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -1599,7 +1602,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/SuccessResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1615,25 +1618,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -2774,13 +2777,16 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dto.ProductListResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ProductResponse"
+                                            }
                                         }
                                     }
                                 }
@@ -2790,13 +2796,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -2830,7 +2836,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2846,19 +2852,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Product already exists",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -2892,7 +2898,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2911,19 +2917,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid brand ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Brand not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -2948,7 +2954,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2967,7 +2973,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3008,7 +3014,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -3027,7 +3033,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3075,13 +3081,16 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/dto.ProductListResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.ProductResponse"
+                                            }
                                         }
                                     }
                                 }
@@ -3091,13 +3100,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3131,7 +3140,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -3147,19 +3156,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid product ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3200,7 +3209,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -3216,25 +3225,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict with existing data",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3264,25 +3273,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Product deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/ApiResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid product ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3316,7 +3325,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -3335,19 +3344,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid product ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3379,25 +3388,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Brand removed successfully",
                         "schema": {
-                            "$ref": "#/definitions/ApiResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid product ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -3436,25 +3445,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Brand assigned successfully",
                         "schema": {
-                            "$ref": "#/definitions/ApiResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid product or brand ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Product or brand not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -4721,13 +4730,16 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/SupplierListResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/SupplierDetailResponse"
+                                            }
                                         }
                                     }
                                 }
@@ -4737,13 +4749,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid parameters",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -4777,7 +4789,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -4793,19 +4805,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Supplier already exists",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -4837,7 +4849,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -4853,19 +4865,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid supplier ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Supplier not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -4907,7 +4919,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/ApiResponse"
+                                    "$ref": "#/definitions/dto.BaseResponse"
                                 },
                                 {
                                     "type": "object",
@@ -4923,25 +4935,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Supplier not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "409": {
                         "description": "Supplier code already exists",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -4969,25 +4981,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Supplier deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/ApiResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid supplier ID",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "404": {
                         "description": "Supplier not found",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/ErrorResponse"
+                            "$ref": "#/definitions/dto.BaseResponse"
                         }
                     }
                 }
@@ -8351,21 +8363,6 @@ const docTemplate = `{
                 }
             }
         },
-        "SupplierListResponse": {
-            "description": "Paginated list of suppliers with metadata",
-            "type": "object",
-            "properties": {
-                "pagination": {
-                    "$ref": "#/definitions/PaginationResponse"
-                },
-                "suppliers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/SupplierDetailResponse"
-                    }
-                }
-            }
-        },
         "SupplierUpdateRequest": {
             "description": "Request body for updating an existing supplier",
             "type": "object",
@@ -9461,33 +9458,6 @@ const docTemplate = `{
                 "reserved_quantity": {
                     "type": "integer",
                     "example": 5
-                }
-            }
-        },
-        "dto.ProductListResponse": {
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "per_page": {
-                    "type": "integer",
-                    "example": 20
-                },
-                "products": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.ProductResponse"
-                    }
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 150
-                },
-                "total_pages": {
-                    "type": "integer",
-                    "example": 8
                 }
             }
         },
@@ -10686,7 +10656,7 @@ const docTemplate = `{
                     "example": "2023-01-01T12:00:00Z"
                 },
                 "vehicle_model": {
-                    "$ref": "#/definitions/dto.VehicleModelResponse"
+                    "$ref": "#/definitions/dto.VehicleModelDetailResponse"
                 },
                 "vehicle_model_id": {
                     "type": "string",

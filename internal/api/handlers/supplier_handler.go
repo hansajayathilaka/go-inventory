@@ -29,10 +29,10 @@ func NewSupplierHandler(supplierService supplierBusiness.Service) *SupplierHandl
 // @Accept json
 // @Produce json
 // @Param supplier body dto.SupplierCreateRequest true "Supplier creation data"
-// @Success 201 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier created successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
-// @Failure 409 {object} dto.StandardErrorResponse "Supplier already exists"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 201 {object} dto.BaseResponse{data=dto.SupplierDetailResponse} "Supplier created successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid request"
+// @Failure 409 {object} dto.BaseResponse "Supplier already exists"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /suppliers [post]
 func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 	var req dto.SupplierCreateRequest
@@ -108,10 +108,10 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 // @Tags suppliers
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
-// @Success 200 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier details"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid supplier ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=dto.SupplierDetailResponse} "Supplier details"
+// @Failure 400 {object} dto.BaseResponse "Invalid supplier ID"
+// @Failure 404 {object} dto.BaseResponse "Supplier not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /suppliers/{id} [get]
 func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 	idStr := c.Param("id")
@@ -163,11 +163,11 @@ func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
 // @Param supplier body dto.SupplierUpdateRequest true "Updated supplier data"
-// @Success 200 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier updated successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
-// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
-// @Failure 409 {object} dto.StandardErrorResponse "Supplier code already exists"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse{data=dto.SupplierDetailResponse} "Supplier updated successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid request"
+// @Failure 404 {object} dto.BaseResponse "Supplier not found"
+// @Failure 409 {object} dto.BaseResponse "Supplier code already exists"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /suppliers/{id} [put]
 func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 	idStr := c.Param("id")
@@ -262,10 +262,10 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 // @Tags suppliers
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
-// @Success 200 {object} dto.StandardResponse[interface{}] "Supplier deleted successfully"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid supplier ID"
-// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.BaseResponse "Supplier deleted successfully"
+// @Failure 400 {object} dto.BaseResponse "Invalid supplier ID"
+// @Failure 404 {object} dto.BaseResponse "Supplier not found"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /suppliers/{id} [delete]
 func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 	idStr := c.Param("id")
@@ -296,7 +296,7 @@ func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
 		nil,
 		"Supplier deleted successfully",
 	))
@@ -310,9 +310,9 @@ func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 // @Param page query int false "Page number" default(1) minimum(1)
 // @Param page_size query int false "Page size" default(20) minimum(1) maximum(100)
 // @Param active query bool false "Filter by active status"
-// @Success 200 {object} dto.StandardListResponse[dto.SupplierDetailResponse] "Suppliers list"
-// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
+// @Success 200 {object} dto.PaginatedResponse{data=[]dto.SupplierDetailResponse} "Suppliers list"
+// @Failure 400 {object} dto.BaseResponse "Invalid parameters"
+// @Failure 500 {object} dto.BaseResponse "Internal server error"
 // @Router /suppliers [get]
 func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	page := 1

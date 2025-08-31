@@ -42,7 +42,7 @@ func NewVehicleBrandHandler(vehicleService vehicle.Service) *VehicleBrandHandler
 func (h *VehicleBrandHandler) GetVehicleBrands(c *gin.Context) {
 	var req dto.VehicleBrandListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -69,7 +69,7 @@ func (h *VehicleBrandHandler) GetVehicleBrands(c *gin.Context) {
 	}
 
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brands", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brands", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -97,13 +97,8 @@ func (h *VehicleBrandHandler) GetVehicleBrands(c *gin.Context) {
 		totalCount = int64(len(vehicleBrandResponses))
 	}
 
-	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	// Create standardized pagination info
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(vehicleBrandResponses, pagination, "Vehicle brands retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -125,7 +120,7 @@ func (h *VehicleBrandHandler) GetVehicleBrand(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -133,17 +128,17 @@ func (h *VehicleBrandHandler) GetVehicleBrand(c *gin.Context) {
 	vehicleBrandModel, err := h.vehicleService.GetVehicleBrandByID(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(vehicleBrandModel)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -162,7 +157,7 @@ func (h *VehicleBrandHandler) GetVehicleBrand(c *gin.Context) {
 func (h *VehicleBrandHandler) GetVehicleBrandByCode(c *gin.Context) {
 	code := c.Param("code")
 	if code == "" {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Vehicle brand code is required", "")
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Vehicle brand code is required", "")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -170,17 +165,17 @@ func (h *VehicleBrandHandler) GetVehicleBrandByCode(c *gin.Context) {
 	vehicleBrandModel, err := h.vehicleService.GetVehicleBrandByCode(c.Request.Context(), code)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(vehicleBrandModel)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -200,7 +195,7 @@ func (h *VehicleBrandHandler) GetVehicleBrandWithModels(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -208,17 +203,17 @@ func (h *VehicleBrandHandler) GetVehicleBrandWithModels(c *gin.Context) {
 	vehicleBrandModel, err := h.vehicleService.GetVehicleBrandWithModels(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandWithModelsResponse(vehicleBrandModel)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand with models retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand with models retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -237,7 +232,7 @@ func (h *VehicleBrandHandler) GetVehicleBrandWithModels(c *gin.Context) {
 func (h *VehicleBrandHandler) CreateVehicleBrand(c *gin.Context) {
 	var req dto.CreateVehicleBrandRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -249,20 +244,20 @@ func (h *VehicleBrandHandler) CreateVehicleBrand(c *gin.Context) {
 	createdVehicleBrand, err := h.vehicleService.CreateVehicleBrand(c.Request.Context(), vehicleBrandModel)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandExists) || errors.Is(err, vehicle.ErrVehicleBrandCodeExists) {
-			response := dto.CreateErrorResponse("CONFLICT", "Vehicle brand already exists", err.Error())
+			response := dto.CreateBaseResponse("CONFLICT", "Vehicle brand already exists", err.Error())
 			c.JSON(http.StatusConflict, response)
 		} else if errors.Is(err, vehicle.ErrInvalidInput) {
-			response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
+			response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
 			c.JSON(http.StatusBadRequest, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to create vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to create vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(createdVehicleBrand)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand created successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -284,14 +279,14 @@ func (h *VehicleBrandHandler) UpdateVehicleBrand(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	var req dto.UpdateVehicleBrandRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid request data", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -300,10 +295,10 @@ func (h *VehicleBrandHandler) UpdateVehicleBrand(c *gin.Context) {
 	existingVehicleBrand, err := h.vehicleService.GetVehicleBrandByID(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -316,20 +311,20 @@ func (h *VehicleBrandHandler) UpdateVehicleBrand(c *gin.Context) {
 	err = h.vehicleService.UpdateVehicleBrand(c.Request.Context(), existingVehicleBrand)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandExists) || errors.Is(err, vehicle.ErrVehicleBrandCodeExists) {
-			response := dto.CreateErrorResponse("CONFLICT", "Vehicle brand already exists", err.Error())
+			response := dto.CreateBaseResponse("CONFLICT", "Vehicle brand already exists", err.Error())
 			c.JSON(http.StatusConflict, response)
 		} else if errors.Is(err, vehicle.ErrInvalidInput) {
-			response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
+			response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid input data", err.Error())
 			c.JSON(http.StatusBadRequest, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to update vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to update vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(existingVehicleBrand)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand updated successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -349,7 +344,7 @@ func (h *VehicleBrandHandler) DeleteVehicleBrand(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -357,16 +352,16 @@ func (h *VehicleBrandHandler) DeleteVehicleBrand(c *gin.Context) {
 	err = h.vehicleService.DeleteVehicleBrand(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to delete vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to delete vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
-	response := dto.CreateSuccessResponse(nil, "Vehicle brand deleted successfully")
+	response := dto.CreateStandardSuccessResponse(nil, "Vehicle brand deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -386,7 +381,7 @@ func (h *VehicleBrandHandler) ActivateVehicleBrand(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -394,10 +389,10 @@ func (h *VehicleBrandHandler) ActivateVehicleBrand(c *gin.Context) {
 	err = h.vehicleService.ActivateVehicleBrand(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to activate vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to activate vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -406,13 +401,13 @@ func (h *VehicleBrandHandler) ActivateVehicleBrand(c *gin.Context) {
 	// Get updated vehicle brand to return in response
 	updatedVehicleBrand, err := h.vehicleService.GetVehicleBrandByID(c.Request.Context(), vehicleBrandID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated vehicle brand", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated vehicle brand", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(updatedVehicleBrand)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand activated successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -432,7 +427,7 @@ func (h *VehicleBrandHandler) DeactivateVehicleBrand(c *gin.Context) {
 	idStr := c.Param("id")
 	vehicleBrandID, err := uuid.Parse(idStr)
 	if err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid vehicle brand ID format", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -440,10 +435,10 @@ func (h *VehicleBrandHandler) DeactivateVehicleBrand(c *gin.Context) {
 	err = h.vehicleService.DeactivateVehicleBrand(c.Request.Context(), vehicleBrandID)
 	if err != nil {
 		if errors.Is(err, vehicle.ErrVehicleBrandNotFound) {
-			response := dto.CreateErrorResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
+			response := dto.CreateBaseResponse("NOT_FOUND", "Vehicle brand not found", err.Error())
 			c.JSON(http.StatusNotFound, response)
 		} else {
-			response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to deactivate vehicle brand", err.Error())
+			response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to deactivate vehicle brand", err.Error())
 			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
@@ -452,13 +447,13 @@ func (h *VehicleBrandHandler) DeactivateVehicleBrand(c *gin.Context) {
 	// Get updated vehicle brand to return in response
 	updatedVehicleBrand, err := h.vehicleService.GetVehicleBrandByID(c.Request.Context(), vehicleBrandID)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve updated vehicle brand", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve updated vehicle brand", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(updatedVehicleBrand)
-	response := dto.CreateSuccessResponse(vehicleBrandResponse, "Vehicle brand deactivated successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -474,13 +469,13 @@ func (h *VehicleBrandHandler) DeactivateVehicleBrand(c *gin.Context) {
 func (h *VehicleBrandHandler) GetActiveVehicleBrands(c *gin.Context) {
 	vehicleBrands, err := h.vehicleService.GetActiveVehicleBrands(c.Request.Context())
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve active vehicle brands", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve active vehicle brands", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
 	vehicleBrandResponses := dto.ToVehicleBrandResponseList(vehicleBrands)
-	response := dto.CreateSuccessResponse(vehicleBrandResponses, "Active vehicle brands retrieved successfully")
+	response := dto.CreateStandardSuccessResponse(vehicleBrandResponses, "Active vehicle brands retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -499,7 +494,7 @@ func (h *VehicleBrandHandler) GetActiveVehicleBrands(c *gin.Context) {
 func (h *VehicleBrandHandler) ListVehicleBrandsWithModels(c *gin.Context) {
 	var req dto.VehicleBrandListRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Invalid query parameters", err.Error())
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -518,7 +513,7 @@ func (h *VehicleBrandHandler) ListVehicleBrandsWithModels(c *gin.Context) {
 	// Get vehicle brands with models
 	vehicleBrands, err := h.vehicleService.ListVehicleBrandsWithModels(c.Request.Context(), req.Limit, offset)
 	if err != nil {
-		response := dto.CreateErrorResponse("DATABASE_ERROR", "Failed to retrieve vehicle brands with models", err.Error())
+		response := dto.CreateBaseResponse("DATABASE_ERROR", "Failed to retrieve vehicle brands with models", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
@@ -532,13 +527,8 @@ func (h *VehicleBrandHandler) ListVehicleBrandsWithModels(c *gin.Context) {
 		totalCount = int64(len(vehicleBrandResponses))
 	}
 
-	// Create pagination info
-	pagination := &dto.PaginationInfo{
-		Page:       req.Page,
-		Limit:      req.Limit,
-		Total:      totalCount,
-		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
-	}
+	// Create standardized pagination info
+	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
 
 	response := dto.CreatePaginatedResponse(vehicleBrandResponses, pagination, "Vehicle brands with models retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -558,18 +548,18 @@ func (h *VehicleBrandHandler) ListVehicleBrandsWithModels(c *gin.Context) {
 func (h *VehicleBrandHandler) GenerateVehicleBrandCode(c *gin.Context) {
 	name := c.Query("name")
 	if name == "" {
-		response := dto.CreateErrorResponse("VALIDATION_ERROR", "Vehicle brand name is required", "")
+		response := dto.CreateBaseResponse("VALIDATION_ERROR", "Vehicle brand name is required", "")
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	code, err := h.vehicleService.GenerateVehicleBrandCode(c.Request.Context(), name)
 	if err != nil {
-		response := dto.CreateErrorResponse("INTERNAL_ERROR", "Failed to generate vehicle brand code", err.Error())
+		response := dto.CreateBaseResponse("INTERNAL_ERROR", "Failed to generate vehicle brand code", err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	response := dto.CreateSuccessResponse(code, "Vehicle brand code generated successfully")
+	response := dto.CreateStandardSuccessResponse(code, "Vehicle brand code generated successfully")
 	c.JSON(http.StatusOK, response)
 }

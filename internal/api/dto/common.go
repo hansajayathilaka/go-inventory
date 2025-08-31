@@ -119,6 +119,7 @@ func CreatePaginatedResponse(data interface{}, pagination *PaginationInfo, messa
 
 // StandardResponse represents the unified API response structure
 // All responses use this same structure with consistent fields
+// @Description Standard API response structure
 type StandardResponse[T any] struct {
 	Success    bool                 `json:"success" example:"true"`
 	Message    string               `json:"message" example:"Operation completed successfully"`
@@ -126,9 +127,10 @@ type StandardResponse[T any] struct {
 	Pagination *StandardPagination  `json:"pagination,omitempty"`
 	Error      *ErrorInfo           `json:"error,omitempty"`
 	Timestamp  time.Time            `json:"timestamp" example:"2023-01-01T12:00:00Z"`
-}
+} // @name StandardResponse
 
 // StandardListResponse represents the unified paginated list response structure
+// @Description Standard paginated list response structure
 type StandardListResponse[T any] struct {
 	Success    bool                `json:"success" example:"true"`
 	Message    string              `json:"message" example:"Data retrieved successfully"`
@@ -136,7 +138,7 @@ type StandardListResponse[T any] struct {
 	Pagination *StandardPagination `json:"pagination"`
 	Error      *ErrorInfo          `json:"error,omitempty"`
 	Timestamp  time.Time           `json:"timestamp" example:"2023-01-01T12:00:00Z"`
-}
+} // @name StandardListResponse
 
 // StandardErrorResponse represents error response using unified structure
 type StandardErrorResponse = StandardResponse[interface{}]
