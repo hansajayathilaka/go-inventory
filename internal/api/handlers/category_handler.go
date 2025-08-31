@@ -32,9 +32,9 @@ func NewCategoryHandler(categoryService hierarchy.Service) *CategoryHandler {
 // @Param page_size query int false "Items per page" default(20)
 // @Param level query int false "Filter by category level (0-5)"
 // @Param parent_id query string false "Filter by parent category ID"
-// @Success 200 {object} dto.SuccessResponse{data=dto.CategoryListResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
+// @Success 200 {object} dto.StandardListResponse[dto.CategoryResponse]
+// @Failure 400 {object} dto.StandardErrorResponse
+// @Failure 500 {object} dto.StandardErrorResponse
 // @Router /categories [get]
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	// Manually parse query parameters to handle "null" parent_id
@@ -97,10 +97,11 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 			categories, err = h.categoryService.GetCategoryChildren(c.Request.Context(), *parentID)
 		} else {
 			// Invalid UUID format
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Error:   "Invalid parent_id format",
-				Message: "parent_id must be a valid UUID or 'null'",
-			})
+			c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+				"INVALID_PARENT_ID",
+				"Invalid parent_id format",
+				"parent_id must be a valid UUID or 'null'",
+			))
 			return
 		}
 	} else {
@@ -108,10 +109,11 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to fetch categories",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"FETCH_FAILED",
+			"Failed to fetch categories",
+			err.Error(),
+		))
 		return
 	}
 
@@ -134,20 +136,17 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 		}
 	}
 
-	response := dto.CategoryListResponse{
-		Categories: categoryResponses,
-		Pagination: dto.PaginationResponse{
-			Page:     params.Page,
-			PageSize: params.PageSize,
-			Total:    len(categoryResponses),
-		},
-	}
+	// Create standardized pagination
+	pagination := dto.CreateStandardPagination(params.Page, params.PageSize, int64(len(categoryResponses)))
+	
+	// Create standardized list response
+	response := dto.CreateStandardListResponse(
+		categoryResponses,
+		pagination,
+		"Categories retrieved successfully",
+	)
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Categories retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, response)
 }
 
 // CreateCategory godoc
@@ -157,18 +156,19 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param category body dto.CreateCategoryRequest true "Category information"
-// @Success 201 {object} dto.SuccessResponse{data=dto.CategoryResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 409 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
+// @Success 201 {object} dto.StandardResponse[dto.CategoryResponse]
+// @Failure 400 {object} dto.StandardErrorResponse
+// @Failure 409 {object} dto.StandardErrorResponse
+// @Failure 500 {object} dto.StandardErrorResponse
 // @Router /categories [post]
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var req dto.CreateCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request body",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_REQUEST",
+			"Invalid request body",
+			err.Error(),
+		))
 		return
 	}
 
@@ -181,10 +181,20 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 			statusCode = http.StatusBadRequest
 		}
 
-		c.JSON(statusCode, dto.ErrorResponse{
-			Error:   "Failed to create category",
-			Message: err.Error(),
-		})
+		errorCode := "CREATE_FAILED"
+		if err == hierarchy.ErrCategoryExists {
+			errorCode = "CATEGORY_EXISTS"
+		} else if err == hierarchy.ErrInvalidParent {
+			errorCode = "INVALID_PARENT"
+		} else if err == hierarchy.ErrMaxDepthExceeded {
+			errorCode = "MAX_DEPTH_EXCEEDED"
+		}
+
+		c.JSON(statusCode, dto.CreateStandardErrorResponse(
+			errorCode,
+			"Failed to create category",
+			err.Error(),
+		))
 		return
 	}
 
@@ -204,10 +214,10 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusCreated, dto.SuccessResponse{
-		Message: "Category created successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+		response,
+		"Category created successfully",
+	))
 }
 
 // GetCategory godoc
@@ -217,19 +227,20 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Category ID"
-// @Success 200 {object} dto.SuccessResponse{data=dto.CategoryResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
+// @Success 200 {object} dto.StandardResponse[dto.CategoryResponse]
+// @Failure 400 {object} dto.StandardErrorResponse
+// @Failure 404 {object} dto.StandardErrorResponse
+// @Failure 500 {object} dto.StandardErrorResponse
 // @Router /categories/{id} [get]
 func (h *CategoryHandler) GetCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -263,10 +274,10 @@ func (h *CategoryHandler) GetCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Category retrieved successfully",
+	))
 }
 
 // UpdateCategory godoc
@@ -277,20 +288,21 @@ func (h *CategoryHandler) GetCategory(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Category ID"
 // @Param category body dto.UpdateCategoryRequest true "Category information"
-// @Success 200 {object} dto.SuccessResponse{data=dto.CategoryResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 409 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
+// @Success 200 {object} dto.StandardResponse[dto.CategoryResponse]
+// @Failure 400 {object} dto.StandardErrorResponse
+// @Failure 404 {object} dto.StandardErrorResponse
+// @Failure 409 {object} dto.StandardErrorResponse
+// @Failure 500 {object} dto.StandardErrorResponse
 // @Router /categories/{id} [put]
 func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -354,10 +366,10 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category updated successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Category updated successfully",
+	))
 }
 
 // DeleteCategory godoc
@@ -377,10 +389,11 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -400,9 +413,10 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category deleted successfully",
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+		nil,
+		"Category deleted successfully",
+	))
 }
 
 // GetCategoryChildren godoc
@@ -421,10 +435,11 @@ func (h *CategoryHandler) GetCategoryChildren(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -471,10 +486,10 @@ func (h *CategoryHandler) GetCategoryChildren(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category children retrieved successfully",
-		Data:    childResponses,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		childResponses,
+		"Category children retrieved successfully",
+	))
 }
 
 // GetCategoryHierarchy godoc
@@ -522,10 +537,10 @@ func (h *CategoryHandler) GetCategoryHierarchy(c *gin.Context) {
 
 	response := dto.ToCategoryHierarchyResponse(hierarchyTree)
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category hierarchy retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Category hierarchy retrieved successfully",
+	))
 }
 
 // GetCategoryPath godoc
@@ -544,10 +559,11 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -588,10 +604,10 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 		Path: pathResponses,
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category path retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Category path retrieved successfully",
+	))
 }
 
 // MoveCategory godoc
@@ -602,20 +618,21 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Category ID"
 // @Param move body dto.MoveCategoryRequest true "Move information"
-// @Success 200 {object} dto.SuccessResponse{data=dto.CategoryResponse}
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 409 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
+// @Success 200 {object} dto.StandardResponse[dto.CategoryResponse]
+// @Failure 400 {object} dto.StandardErrorResponse
+// @Failure 404 {object} dto.StandardErrorResponse
+// @Failure 409 {object} dto.StandardErrorResponse
+// @Failure 500 {object} dto.StandardErrorResponse
 // @Router /categories/{id}/move [put]
 func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid category ID",
-			Message: "Category ID must be a valid UUID",
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_CATEGORY_ID",
+			"Invalid category ID",
+			"Category ID must be a valid UUID",
+		))
 		return
 	}
 
@@ -670,10 +687,10 @@ func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Category moved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Category moved successfully",
+	))
 }
 
 // SearchCategories godoc
@@ -734,19 +751,15 @@ func (h *CategoryHandler) SearchCategories(c *gin.Context) {
 		}
 	}
 
-	response := dto.CategoryListResponse{
-		Categories: categoryResponses,
-		Pagination: dto.PaginationResponse{
-			Page:     1,
-			PageSize: len(categoryResponses),
-			Total:    len(categoryResponses),
-		},
-	}
+	// Create standardized list response for search results
+	pagination := dto.CreateStandardPagination(1, len(categoryResponses), int64(len(categoryResponses)))
+	standardResponse := dto.CreateStandardListResponse(
+		categoryResponses,
+		pagination,
+		"Categories searched successfully",
+	)
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Categories searched successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, standardResponse)
 }
 
 // GetRootCategories godoc
@@ -787,8 +800,8 @@ func (h *CategoryHandler) GetRootCategories(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResponse{
-		Message: "Root categories retrieved successfully",
-		Data:    categoryResponses,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		categoryResponses,
+		"Root categories retrieved successfully",
+	))
 }
