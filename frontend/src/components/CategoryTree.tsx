@@ -48,9 +48,9 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     try {
       setLoading(true);
       const response = await api.get('/categories?parent_id=null');
-      // API returns data in nested structure: { data: { categories: [...] } }
+      // API returns data in standardized structure: { data: [...] }
       const apiResponse = response.data as any;
-      const categories = apiResponse?.data?.categories || [];
+      const categories = apiResponse?.data || [];
       const treeNodes = categories.map((category: Category) => ({
         ...category,
         children: [],
@@ -73,9 +73,9 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     try {
       setLoading(true);
       const response = await api.get(`/categories/search?q=${encodeURIComponent(query)}`);
-      // API returns data in nested structure: { data: { categories: [...] } }
+      // API returns data in standardized structure: { data: [...] }
       const apiResponse = response.data as any;
-      const categories = apiResponse?.data?.categories || [];
+      const categories = apiResponse?.data || [];
       const treeNodes = categories.map((category: Category) => ({
         ...category,
         children: [],
@@ -97,9 +97,9 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
   const loadChildren = async (parentId: string): Promise<TreeNode[]> => {
     try {
       const response = await api.get(`/categories?parent_id=${parentId}`);
-      // API returns data in nested structure: { data: { categories: [...] } }
+      // API returns data in standardized structure: { data: [...] }
       const apiResponse = response.data as any;
-      const categories = apiResponse?.data?.categories || [];
+      const categories = apiResponse?.data || [];
       return categories.map((category: Category) => ({
         ...category,
         children: [],
