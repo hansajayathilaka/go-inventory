@@ -242,7 +242,7 @@ export function filterTreeBySearch(
 
   const filterNodes = (nodes: CategoryWithMeta[]): CategoryWithMeta[] => {
     return nodes
-      .map(node => {
+      .map((node): CategoryWithMeta | null => {
         const isInResults = resultIds.has(node.id);
         const isInPath = pathIds.has(node.id);
         
@@ -271,7 +271,7 @@ export function filterTreeBySearch(
         
         return null;
       })
-      .filter((node): node is CategoryWithMeta => node !== null);
+      .filter((node: CategoryWithMeta | null): node is CategoryWithMeta => node !== null);
   };
 
   return filterNodes(tree);
