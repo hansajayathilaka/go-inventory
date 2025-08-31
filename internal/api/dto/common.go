@@ -118,9 +118,10 @@ func CreatePaginatedResponse(data interface{}, pagination *PaginationInfo, messa
 // ===== STANDARDIZED RESPONSE STRUCTURES =====
 
 // StandardResponse represents the unified API response structure
+// All responses use this same structure with consistent fields
 type StandardResponse[T any] struct {
 	Success    bool                 `json:"success" example:"true"`
-	Message    string               `json:"message,omitempty" example:"Operation completed successfully"`
+	Message    string               `json:"message" example:"Operation completed successfully"`
 	Data       T                    `json:"data,omitempty"`
 	Pagination *StandardPagination  `json:"pagination,omitempty"`
 	Error      *ErrorInfo           `json:"error,omitempty"`
@@ -130,19 +131,15 @@ type StandardResponse[T any] struct {
 // StandardListResponse represents the unified paginated list response structure
 type StandardListResponse[T any] struct {
 	Success    bool                `json:"success" example:"true"`
-	Message    string              `json:"message,omitempty" example:"Data retrieved successfully"`
+	Message    string              `json:"message" example:"Data retrieved successfully"`
 	Data       []T                 `json:"data"`
 	Pagination *StandardPagination `json:"pagination"`
+	Error      *ErrorInfo          `json:"error,omitempty"`
 	Timestamp  time.Time           `json:"timestamp" example:"2023-01-01T12:00:00Z"`
 }
 
-// StandardErrorResponse represents the unified error response structure
-type StandardErrorResponse struct {
-	Success   bool       `json:"success" example:"false"`
-	Message   string     `json:"message,omitempty" example:"Operation failed"`
-	Error     *ErrorInfo `json:"error"`
-	Timestamp time.Time  `json:"timestamp" example:"2023-01-01T12:00:00Z"`
-}
+// StandardErrorResponse represents error response using unified structure
+type StandardErrorResponse = StandardResponse[interface{}]
 
 // ===== HELPER FUNCTIONS FOR STANDARDIZED RESPONSES =====
 
@@ -167,10 +164,27 @@ func CreateStandardListResponse[T any](data []T, pagination *StandardPagination,
 	}
 }
 
-// CreateStandardErrorResponse creates a standardized error response
-func CreateStandardErrorResponse(code, message, details string) StandardErrorResponse {
-	return StandardErrorResponse{
+// CreateStandardErrorResponse creates a standardized error response using the same structure
+func CreateStandardErrorResponse(code, message, details string) StandardResponse[interface{}] {
+	return StandardResponse[interface{}]{
 		Success: false,
+		Message: message,
+		Data:    nil,
+		Error: &ErrorInfo{
+			Code:    code,
+			Message: message,
+			Details: details,
+		},
+		Timestamp: time.Now(),
+	}
+}
+
+// CreateStandardErrorResponseWithData creates a standardized error response with additional data
+func CreateStandardErrorResponseWithData[T any](data T, code, message, details string) StandardResponse[T] {
+	return StandardResponse[T]{
+		Success: false,
+		Message: message,
+		Data:    data,
 		Error: &ErrorInfo{
 			Code:    code,
 			Message: message,
