@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Package, DollarSign, Loader, Car, Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import type { Product, Category, Supplier, Brand, VehicleCompatibilityWithDetails, VehicleModelWithBrand, VehicleBrand, CreateVehicleCompatibilityRequest, ApiResponse } from '../types/api';
 import { api, extractListData } from '../services/api';
+import { SearchableTreeSelect } from './SearchableTreeSelect';
 
 interface ProductFormData {
   sku: string;
@@ -245,6 +246,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
     if (!formData.category_id) {
       newErrors.category_id = 'Category is required';
+    } else {
+      // Validate that the selected category exists in the categories list
+      const categoryExists = categories.some(cat => cat.id === formData.category_id);
+      if (!categoryExists) {
+        newErrors.category_id = 'Selected category is not valid';
+      }
     }
 
     if (!formData.supplier_id) {
@@ -504,21 +511,22 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Category *
                     </label>
-                    <select
-                      value={formData.category_id}
-                      onChange={(e) => handleInputChange('category_id', e.target.value)}
-                      className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.category_id ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                      required
-                    >
-                      <option value="">Select a category</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                    <SearchableTreeSelect
+                      categories={categories}
+                      selectedValue={formData.category_id || null}
+                      onChange={(categoryId: string | null) => handleInputChange('category_id', categoryId || '')}
+                      placeholder="Select a category"
+                      searchable={true}
+                      searchPlaceholder="Search categories..."
+                      showProductCounts={true}
+                      showConnectionLines={true}
+                      maxHeight={300}
+                      allowClear={true}
+                      error={errors.category_id}
+                      disabled={loading}
+                      className="w-full"
+                      ariaLabel="Select product category"
+                    />
                     {errors.category_id && (
                       <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>
                     )}
