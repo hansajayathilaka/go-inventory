@@ -117,11 +117,23 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 		return
 	}
 
+	// Get product counts for all categories efficiently
+	categoryIDs := make([]uuid.UUID, len(categories))
+	for i, category := range categories {
+		categoryIDs[i] = category.ID
+	}
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), categoryIDs)
+
 	// Convert to response format
 	categoryResponses := make([]dto.CategoryResponse, len(categories))
 	for i, category := range categories {
 		children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 		childrenCount := len(children)
+
+		productCount := int64(0)
+		if count, exists := productCounts[category.ID]; exists {
+			productCount = count
+		}
 
 		categoryResponses[i] = dto.CategoryResponse{
 			ID:            category.ID,
@@ -131,6 +143,7 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 			Level:         category.Level,
 			Path:          category.Path,
 			ChildrenCount: childrenCount,
+			ProductCount:  productCount,
 			CreatedAt:     category.CreatedAt,
 			UpdatedAt:     category.UpdatedAt,
 		}
@@ -208,6 +221,9 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 	childrenCount := len(children)
 
+	// Get product count (should be 0 for new categories)
+	productCount, _ := h.categoryService.GetCategoryProductCount(c.Request.Context(), category.ID)
+
 	response := dto.CategoryResponse{
 		ID:            category.ID,
 		Name:          category.Name,
@@ -216,6 +232,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		Level:         category.Level,
 		Path:          category.Path,
 		ChildrenCount: childrenCount,
+		ProductCount:  productCount,
 		CreatedAt:     category.CreatedAt,
 		UpdatedAt:     category.UpdatedAt,
 	}
@@ -268,6 +285,9 @@ func (h *CategoryHandler) GetCategory(c *gin.Context) {
 	children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 	childrenCount := len(children)
 
+	// Get product count
+	productCount, _ := h.categoryService.GetCategoryProductCount(c.Request.Context(), category.ID)
+
 	response := dto.CategoryResponse{
 		ID:            category.ID,
 		Name:          category.Name,
@@ -276,6 +296,7 @@ func (h *CategoryHandler) GetCategory(c *gin.Context) {
 		Level:         category.Level,
 		Path:          category.Path,
 		ChildrenCount: childrenCount,
+		ProductCount:  productCount,
 		CreatedAt:     category.CreatedAt,
 		UpdatedAt:     category.UpdatedAt,
 	}
@@ -360,6 +381,9 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 	childrenCount := len(children)
 
+	// Get product count
+	productCount, _ := h.categoryService.GetCategoryProductCount(c.Request.Context(), category.ID)
+
 	response := dto.CategoryResponse{
 		ID:            category.ID,
 		Name:          category.Name,
@@ -368,6 +392,7 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 		Level:         category.Level,
 		Path:          category.Path,
 		ChildrenCount: childrenCount,
+		ProductCount:  productCount,
 		CreatedAt:     category.CreatedAt,
 		UpdatedAt:     category.UpdatedAt,
 	}
@@ -473,11 +498,23 @@ func (h *CategoryHandler) GetCategoryChildren(c *gin.Context) {
 		return
 	}
 
+	// Get product counts for all children efficiently
+	childIDs := make([]uuid.UUID, len(children))
+	for i, child := range children {
+		childIDs[i] = child.ID
+	}
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), childIDs)
+
 	// Convert to response format
 	childResponses := make([]dto.CategoryResponse, len(children))
 	for i, child := range children {
 		grandchildren, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), child.ID)
 		childrenCount := len(grandchildren)
+
+		productCount := int64(0)
+		if count, exists := productCounts[child.ID]; exists {
+			productCount = count
+		}
 
 		childResponses[i] = dto.CategoryResponse{
 			ID:            child.ID,
@@ -487,6 +524,7 @@ func (h *CategoryHandler) GetCategoryChildren(c *gin.Context) {
 			Level:         child.Level,
 			Path:          child.Path,
 			ChildrenCount: childrenCount,
+			ProductCount:  productCount,
 			CreatedAt:     child.CreatedAt,
 			UpdatedAt:     child.UpdatedAt,
 		}
@@ -587,11 +625,23 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 		return
 	}
 
+	// Get product counts for all path categories efficiently
+	pathIDs := make([]uuid.UUID, len(path))
+	for i, category := range path {
+		pathIDs[i] = category.ID
+	}
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), pathIDs)
+
 	// Convert to response format
 	pathResponses := make([]dto.CategoryResponse, len(path))
 	for i, category := range path {
 		children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 		childrenCount := len(children)
+
+		productCount := int64(0)
+		if count, exists := productCounts[category.ID]; exists {
+			productCount = count
+		}
 
 		pathResponses[i] = dto.CategoryResponse{
 			ID:            category.ID,
@@ -601,6 +651,7 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 			Level:         category.Level,
 			Path:          category.Path,
 			ChildrenCount: childrenCount,
+			ProductCount:  productCount,
 			CreatedAt:     category.CreatedAt,
 			UpdatedAt:     category.UpdatedAt,
 		}
@@ -681,6 +732,9 @@ func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 	children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 	childrenCount := len(children)
 
+	// Get product count
+	productCount, _ := h.categoryService.GetCategoryProductCount(c.Request.Context(), category.ID)
+
 	response := dto.CategoryResponse{
 		ID:            category.ID,
 		Name:          category.Name,
@@ -689,6 +743,7 @@ func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 		Level:         category.Level,
 		Path:          category.Path,
 		ChildrenCount: childrenCount,
+		ProductCount:  productCount,
 		CreatedAt:     category.CreatedAt,
 		UpdatedAt:     category.UpdatedAt,
 	}
@@ -738,11 +793,23 @@ func (h *CategoryHandler) SearchCategories(c *gin.Context) {
 		return
 	}
 
+	// Get product counts for all search results efficiently
+	searchIDs := make([]uuid.UUID, len(categories))
+	for i, category := range categories {
+		searchIDs[i] = category.ID
+	}
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), searchIDs)
+
 	// Convert to response format
 	categoryResponses := make([]dto.CategoryResponse, len(categories))
 	for i, category := range categories {
 		children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 		childrenCount := len(children)
+
+		productCount := int64(0)
+		if count, exists := productCounts[category.ID]; exists {
+			productCount = count
+		}
 
 		categoryResponses[i] = dto.CategoryResponse{
 			ID:            category.ID,
@@ -752,6 +819,7 @@ func (h *CategoryHandler) SearchCategories(c *gin.Context) {
 			Level:         category.Level,
 			Path:          category.Path,
 			ChildrenCount: childrenCount,
+			ProductCount:  productCount,
 			CreatedAt:     category.CreatedAt,
 			UpdatedAt:     category.UpdatedAt,
 		}
@@ -792,11 +860,23 @@ func (h *CategoryHandler) GetRootCategories(c *gin.Context) {
 		return
 	}
 
+	// Get product counts for all root categories efficiently
+	rootIDs := make([]uuid.UUID, len(categories))
+	for i, category := range categories {
+		rootIDs[i] = category.ID
+	}
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), rootIDs)
+
 	// Convert to response format
 	categoryResponses := make([]dto.CategoryResponse, len(categories))
 	for i, category := range categories {
 		children, _ := h.categoryService.GetCategoryChildren(c.Request.Context(), category.ID)
 		childrenCount := len(children)
+
+		productCount := int64(0)
+		if count, exists := productCounts[category.ID]; exists {
+			productCount = count
+		}
 
 		categoryResponses[i] = dto.CategoryResponse{
 			ID:            category.ID,
@@ -806,6 +886,7 @@ func (h *CategoryHandler) GetRootCategories(c *gin.Context) {
 			Level:         category.Level,
 			Path:          category.Path,
 			ChildrenCount: childrenCount,
+			ProductCount:  productCount,
 			CreatedAt:     category.CreatedAt,
 			UpdatedAt:     category.UpdatedAt,
 		}

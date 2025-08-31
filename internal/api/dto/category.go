@@ -27,15 +27,16 @@ type UpdateCategoryRequest struct {
 // CategoryResponse represents a category in API responses
 // @Description Category information in API responses
 type CategoryResponse struct {
-	ID          uuid.UUID                `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Name        string                   `json:"name" example:"Electronics"`
-	Description string                   `json:"description" example:"Electronic devices and accessories"`
-	ParentID    *uuid.UUID               `json:"parent_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Level       int                      `json:"level" example:"1"`
-	Path        string                   `json:"path" example:"Electronics/Computers"`
-	ChildrenCount int                    `json:"children_count" example:"5"`
-	CreatedAt   time.Time                `json:"created_at" example:"2024-01-15T09:30:00Z"`
-	UpdatedAt   time.Time                `json:"updated_at" example:"2024-01-15T09:30:00Z"`
+	ID            uuid.UUID                `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name          string                   `json:"name" example:"Electronics"`
+	Description   string                   `json:"description" example:"Electronic devices and accessories"`
+	ParentID      *uuid.UUID               `json:"parent_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Level         int                      `json:"level" example:"1"`
+	Path          string                   `json:"path" example:"Electronics/Computers"`
+	ChildrenCount int                      `json:"children_count" example:"5"`
+	ProductCount  int64                    `json:"product_count" example:"25"`
+	CreatedAt     time.Time                `json:"created_at" example:"2024-01-15T09:30:00Z"`
+	UpdatedAt     time.Time                `json:"updated_at" example:"2024-01-15T09:30:00Z"`
 } // @name CategoryResponse
 
 // CategoryListResponse represents a paginated list of categories

@@ -22,4 +22,6 @@ type ProductRepository interface {
 	GetActive(ctx context.Context) ([]*models.Product, error)
 	Search(ctx context.Context, query string, limit, offset int) ([]*models.Product, error)
 	Count(ctx context.Context) (int64, error)
+	CountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error)
+	CountByCategoriesBulk(ctx context.Context, categoryIDs []uuid.UUID) (map[uuid.UUID]int64, error)
 }

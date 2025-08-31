@@ -112,3 +112,43 @@ func (r *productRepository) Count(ctx context.Context) (int64, error) {
 	err := r.db.WithContext(ctx).Model(&models.Product{}).Count(&count).Error
 	return count, err
 }
+
+func (r *productRepository) CountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Product{}).Where("category_id = ?", categoryID).Count(&count).Error
+	return count, err
+}
+
+func (r *productRepository) CountByCategoriesBulk(ctx context.Context, categoryIDs []uuid.UUID) (map[uuid.UUID]int64, error) {
+	type CategoryCount struct {
+		CategoryID uuid.UUID `json:"category_id"`
+		Count      int64     `json:"count"`
+	}
+
+	var results []CategoryCount
+	err := r.db.WithContext(ctx).
+		Model(&models.Product{}).
+		Select("category_id, COUNT(*) as count").
+		Where("category_id IN ?", categoryIDs).
+		Group("category_id").
+		Find(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to map
+	countMap := make(map[uuid.UUID]int64)
+	for _, result := range results {
+		countMap[result.CategoryID] = result.Count
+	}
+
+	// Fill in zero counts for categories not in results
+	for _, categoryID := range categoryIDs {
+		if _, exists := countMap[categoryID]; !exists {
+			countMap[categoryID] = 0
+		}
+	}
+
+	return countMap, nil
+}
