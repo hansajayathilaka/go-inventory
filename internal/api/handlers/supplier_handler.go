@@ -29,18 +29,19 @@ func NewSupplierHandler(supplierService supplierBusiness.Service) *SupplierHandl
 // @Accept json
 // @Produce json
 // @Param supplier body dto.SupplierCreateRequest true "Supplier creation data"
-// @Success 201 {object} dto.ApiResponse{data=dto.SupplierDetailResponse} "Supplier created successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid request"
-// @Failure 409 {object} dto.ErrorResponse "Supplier already exists"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 201 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier created successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
+// @Failure 409 {object} dto.StandardErrorResponse "Supplier already exists"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /suppliers [post]
 func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 	var req dto.SupplierCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_REQUEST",
+			"Invalid request",
+			err.Error(),
+		))
 		return
 	}
 
@@ -58,23 +59,26 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 
 	if err := h.supplierService.CreateSupplier(c.Request.Context(), supplier); err != nil {
 		if errors.Is(err, supplierBusiness.ErrCodeExists) {
-			c.JSON(http.StatusConflict, dto.ErrorResponse{
-				Error:   "Supplier code already exists",
-				Message: err.Error(),
-			})
+			c.JSON(http.StatusConflict, dto.CreateStandardErrorResponse(
+				"CODE_EXISTS",
+				"Supplier code already exists",
+				err.Error(),
+			))
 			return
 		}
 		if errors.Is(err, supplierBusiness.ErrInvalidSupplier) {
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Error:   "Invalid supplier data",
-				Message: err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+				"INVALID_SUPPLIER",
+				"Invalid supplier data",
+				err.Error(),
+			))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Internal server error",
-			Message: "Failed to create supplier",
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"CREATE_FAILED",
+			"Failed to create supplier",
+			err.Error(),
+		))
 		return
 	}
 
@@ -92,11 +96,10 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 		UpdatedAt:   supplier.UpdatedAt,
 	}
 
-	c.JSON(http.StatusCreated, dto.ApiResponse{
-		Success: true,
-		Message: "Supplier created successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+		response,
+		"Supplier created successfully",
+	))
 }
 
 // GetSupplier godoc
@@ -105,28 +108,30 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 // @Tags suppliers
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
-// @Success 200 {object} dto.ApiResponse{data=dto.SupplierDetailResponse} "Supplier details"
-// @Failure 400 {object} dto.ErrorResponse "Invalid supplier ID"
-// @Failure 404 {object} dto.ErrorResponse "Supplier not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier details"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid supplier ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /suppliers/{id} [get]
 func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid supplier ID",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_SUPPLIER_ID",
+			"Invalid supplier ID",
+			err.Error(),
+		))
 		return
 	}
 
 	supplier, err := h.supplierService.GetSupplier(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{
-			Error:   "Supplier not found",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusNotFound, dto.CreateStandardErrorResponse(
+			"SUPPLIER_NOT_FOUND",
+			"Supplier not found",
+			err.Error(),
+		))
 		return
 	}
 
@@ -144,11 +149,10 @@ func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 		UpdatedAt:   supplier.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Supplier retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Supplier retrieved successfully",
+	))
 }
 
 // UpdateSupplier godoc
@@ -159,11 +163,11 @@ func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
 // @Param supplier body dto.SupplierUpdateRequest true "Updated supplier data"
-// @Success 200 {object} dto.ApiResponse{data=dto.SupplierDetailResponse} "Supplier updated successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid request"
-// @Failure 404 {object} dto.ErrorResponse "Supplier not found"
-// @Failure 409 {object} dto.ErrorResponse "Supplier code already exists"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[dto.SupplierDetailResponse] "Supplier updated successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
+// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
+// @Failure 409 {object} dto.StandardErrorResponse "Supplier code already exists"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /suppliers/{id} [put]
 func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 	idStr := c.Param("id")
@@ -178,20 +182,22 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 
 	var req dto.SupplierUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_REQUEST",
+			"Invalid request",
+			err.Error(),
+		))
 		return
 	}
 
 	// Get existing supplier first
 	existing, err := h.supplierService.GetSupplier(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, dto.ErrorResponse{
-			Error:   "Supplier not found",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusNotFound, dto.CreateStandardErrorResponse(
+			"SUPPLIER_NOT_FOUND",
+			"Supplier not found",
+			err.Error(),
+		))
 		return
 	}
 
@@ -207,23 +213,26 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 
 	if err := h.supplierService.UpdateSupplier(c.Request.Context(), existing); err != nil {
 		if errors.Is(err, supplierBusiness.ErrCodeExists) {
-			c.JSON(http.StatusConflict, dto.ErrorResponse{
-				Error:   "Supplier code already exists",
-				Message: err.Error(),
-			})
+			c.JSON(http.StatusConflict, dto.CreateStandardErrorResponse(
+				"CODE_EXISTS",
+				"Supplier code already exists",
+				err.Error(),
+			))
 			return
 		}
 		if errors.Is(err, supplierBusiness.ErrInvalidSupplier) {
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Error:   "Invalid supplier data",
-				Message: err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+				"INVALID_SUPPLIER",
+				"Invalid supplier data",
+				err.Error(),
+			))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Internal server error",
-			Message: "Failed to update supplier",
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"UPDATE_FAILED",
+			"Failed to update supplier",
+			err.Error(),
+		))
 		return
 	}
 
@@ -241,11 +250,10 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 		UpdatedAt:   existing.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Supplier updated successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Supplier updated successfully",
+	))
 }
 
 // DeleteSupplier godoc
@@ -254,42 +262,44 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 // @Tags suppliers
 // @Produce json
 // @Param id path string true "Supplier ID" Format(uuid)
-// @Success 200 {object} dto.ApiResponse "Supplier deleted successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid supplier ID"
-// @Failure 404 {object} dto.ErrorResponse "Supplier not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[interface{}] "Supplier deleted successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid supplier ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Supplier not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /suppliers/{id} [delete]
 func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid supplier ID",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_SUPPLIER_ID",
+			"Invalid supplier ID",
+			err.Error(),
+		))
 		return
 	}
 
 	if err := h.supplierService.DeleteSupplier(c.Request.Context(), id); err != nil {
 		if errors.Is(err, supplierBusiness.ErrSupplierNotFound) {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{
-				Error:   "Supplier not found",
-				Message: err.Error(),
-			})
+			c.JSON(http.StatusNotFound, dto.CreateStandardErrorResponse(
+				"SUPPLIER_NOT_FOUND",
+				"Supplier not found",
+				err.Error(),
+			))
 			return
 		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Internal server error",
-			Message: "Failed to delete supplier",
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"DELETE_FAILED",
+			"Failed to delete supplier",
+			err.Error(),
+		))
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Supplier deleted successfully",
-		Data:    nil,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+		nil,
+		"Supplier deleted successfully",
+	))
 }
 
 // GetSuppliers godoc
@@ -300,9 +310,9 @@ func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 // @Param page query int false "Page number" default(1) minimum(1)
 // @Param page_size query int false "Page size" default(20) minimum(1) maximum(100)
 // @Param active query bool false "Filter by active status"
-// @Success 200 {object} dto.ApiResponse{data=dto.SupplierListResponse} "Suppliers list"
-// @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardListResponse[dto.SupplierDetailResponse] "Suppliers list"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /suppliers [get]
 func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	page := 1
@@ -333,10 +343,11 @@ func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Internal server error",
-			Message: "Failed to retrieve suppliers",
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"RETRIEVAL_FAILED",
+			"Failed to retrieve suppliers",
+			err.Error(),
+		))
 		return
 	}
 
@@ -361,25 +372,23 @@ func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	// Get total count for pagination
 	totalCount, err := h.supplierService.CountSuppliers(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Internal server error",
-			Message: "Failed to count suppliers",
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"COUNT_FAILED",
+			"Failed to count suppliers",
+			err.Error(),
+		))
 		return
 	}
 
-	response := dto.SupplierListResponse{
-		Suppliers: supplierResponses,
-		Pagination: dto.PaginationResponse{
-			Page:     page,
-			PageSize: pageSize,
-			Total:    int(totalCount),
-		},
-	}
+	// Create standardized pagination
+	pagination := dto.CreateStandardPagination(page, pageSize, totalCount)
+	
+	// Create standardized list response
+	response := dto.CreateStandardListResponse(
+		supplierResponses,
+		pagination,
+		"Suppliers retrieved successfully",
+	)
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Suppliers retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, response)
 }
