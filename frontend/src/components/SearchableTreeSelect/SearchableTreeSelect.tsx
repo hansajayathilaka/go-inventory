@@ -16,7 +16,6 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
   // Configuration
   placeholder = 'Select a category',
   showProductCounts = false,
-  showIcons = true,
   allowClear = true,
   multiple = false,
   maxHeight = 300,
@@ -27,7 +26,6 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
   searchConfig = {},
   
   // Visual
-  iconMapping = {},
   levelIndentSize = 20,
   expandedByDefault = false,
   showConnectionLines = false,
@@ -58,7 +56,7 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
   
   // Merge configurations with defaults
   const finalSearchConfig = { ...DEFAULT_SEARCH_CONFIG, ...searchConfig };
-  const finalIconConfig = { ...DEFAULT_ICON_CONFIG, ...iconMapping };
+  const finalIconConfig = DEFAULT_ICON_CONFIG;
   
   // Build tree data from flat categories
   const treeData = React.useMemo(() => {
@@ -224,7 +222,6 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
           isSelected={category.id === treeState.selectedValue}
           isExpanded={category.isExpanded || false}
           showProductCounts={showProductCounts}
-          showIcons={showIcons}
           showConnectionLines={showConnectionLines}
           iconConfig={finalIconConfig}
           levelIndentSize={levelIndentSize}
@@ -272,8 +269,7 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
       
       {loading && (
         <div className="px-3 py-2 border-t border-gray-200 text-center">
-          <i className={finalIconConfig.loadingIcon}></i>
-          <span className="ml-2 text-sm text-gray-600">Loading...</span>
+          <span className="text-sm text-gray-600">Loading...</span>
         </div>
       )}
     </div>
@@ -314,15 +310,14 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
                 className="p-1 hover:bg-gray-100 rounded"
                 aria-label="Clear selection"
               >
-                <i className={`${finalIconConfig.clearIcon} text-gray-400 text-xs`}></i>
+                <span className="text-gray-400 text-xs">{finalIconConfig.clearIcon}</span>
               </button>
             )}
             
-            <i className={`
-              ${isOpen ? finalIconConfig.collapseIcon : finalIconConfig.expandIcon}
+            <span className={`
               text-gray-400 text-sm transition-transform duration-200
               ${isOpen ? 'transform rotate-180' : ''}
-            `}></i>
+            `}>▼</span>
           </div>
         </div>
       </button>

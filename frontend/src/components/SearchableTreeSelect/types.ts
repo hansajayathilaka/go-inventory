@@ -38,16 +38,10 @@ export interface SearchConfig {
   debounceMs: number; // 300ms default
 }
 
-// Icon configuration
+// Icon configuration (simplified)
 export interface IconConfig {
-  defaultIcon: string;
-  levelIcons: Record<number, string>; // Icons by hierarchy level
-  categoryIcons: Record<string, string>; // Icons by category name/id
-  expandIcon: string;
-  collapseIcon: string;
-  searchIcon: string;
-  clearIcon: string;
-  loadingIcon: string;
+  searchIcon?: string;
+  clearIcon?: string;
 }
 
 // Virtual scrolling configuration
@@ -71,7 +65,6 @@ export interface SearchableTreeSelectProps {
   // Configuration
   placeholder?: string;
   showProductCounts?: boolean;
-  showIcons?: boolean;
   allowClear?: boolean;
   multiple?: boolean;
   maxHeight?: number;
@@ -82,7 +75,6 @@ export interface SearchableTreeSelectProps {
   searchConfig?: Partial<SearchConfig>;
   
   // Visual
-  iconMapping?: Partial<IconConfig>;
   levelIndentSize?: number;
   expandedByDefault?: boolean;
   showConnectionLines?: boolean;
@@ -111,9 +103,8 @@ export interface TreeNodeProps {
   isSelected: boolean;
   isExpanded: boolean;
   showProductCounts: boolean;
-  showIcons: boolean;
   showConnectionLines: boolean;
-  iconConfig: IconConfig;
+  iconConfig?: IconConfig;
   levelIndentSize: number;
   
   onSelect: (categoryId: string) => void;
@@ -134,8 +125,8 @@ export interface SearchInputProps {
   loading: boolean;
   disabled: boolean;
   onClear: () => void;
-  searchIcon: string;
-  clearIcon: string;
+  searchIcon?: string;
+  clearIcon?: string;
   
   // Accessibility
   ariaLabel?: string;
@@ -204,86 +195,10 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   debounceMs: 300
 };
 
-// Enhanced icon mappings for better category recognition
-export const ENHANCED_CATEGORY_PATTERNS: Record<string, string> = {
-  // Electronics patterns
-  'electr': 'fas fa-plug',
-  'comput': 'fas fa-desktop',
-  'periph': 'fas fa-mouse',
-  'network': 'fas fa-network-wired',
-  'gaming': 'fas fa-gamepad',
-  
-  // Office patterns
-  'office': 'fas fa-briefcase',
-  'station': 'fas fa-pencil-alt',
-  'furnitur': 'fas fa-chair',
-  
-  // Book patterns
-  'book': 'fas fa-book',
-  'manual': 'fas fa-book-open',
-  'guide': 'fas fa-book-reader',
-  
-  // Test/Development patterns
-  'test': 'fas fa-vial',
-  'dev': 'fas fa-code',
-  'sample': 'fas fa-flask'
-};
 
 export const DEFAULT_ICON_CONFIG: IconConfig = {
-  defaultIcon: 'fas fa-folder',
-  levelIcons: {
-    0: 'fas fa-folder-open',     // Root categories - open folder
-    1: 'fas fa-folder',          // Subcategories - closed folder
-    2: 'fas fa-file-alt'         // Leaf categories - file
-  },
-  categoryIcons: {
-    // Automotive-specific icons (from iconUtils.ts)
-    'engine': 'fas fa-cog',
-    'engines': 'fas fa-cog',
-    'transmission': 'fas fa-tools',
-    'brakes': 'fas fa-stop-circle',
-    'suspension': 'fas fa-car-side',
-    'electrical': 'fas fa-bolt',
-    'body': 'fas fa-car',
-    'interior': 'fas fa-couch',
-    'tools': 'fas fa-wrench',
-    'filters': 'fas fa-filter',
-    'fluids': 'fas fa-tint',
-    'belts': 'fas fa-grip-lines',
-    'hoses': 'fas fa-grip-lines',
-    'wheels': 'fas fa-circle-notch',
-    'tires': 'fas fa-circle-notch',
-    
-    // Electronics categories
-    'electronics': 'fas fa-microchip',
-    'computers': 'fas fa-desktop',
-    'peripherals': 'fas fa-mouse',
-    'networking': 'fas fa-network-wired',
-    'gaming hardware': 'fas fa-gamepad',
-    'gaming': 'fas fa-gamepad',
-    
-    // Office categories
-    'office supplies': 'fas fa-briefcase',
-    'office': 'fas fa-briefcase',
-    'stationery': 'fas fa-pencil-alt',
-    'furniture': 'fas fa-chair',
-    
-    // General categories
-    'books': 'fas fa-book',
-    'test category': 'fas fa-vial',
-    'test': 'fas fa-vial',
-    
-    // Default category patterns
-    'supplies': 'fas fa-boxes',
-    'hardware': 'fas fa-wrench',
-    'software': 'fas fa-code',
-    'accessories': 'fas fa-puzzle-piece'
-  },
-  expandIcon: 'fas fa-chevron-right',
-  collapseIcon: 'fas fa-chevron-down', 
-  searchIcon: 'fas fa-search',
-  clearIcon: 'fas fa-times',
-  loadingIcon: 'fas fa-spinner fa-spin'
+  searchIcon: '🔍',
+  clearIcon: '✕'
 };
 
 export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {

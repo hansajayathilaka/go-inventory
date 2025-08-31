@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import type { TreeNodeProps } from './types';
-import { getCategoryIcon, getIconColor, getIconSize } from './utils/iconUtils';
 
 const TreeNode: React.FC<TreeNodeProps> = ({
   category,
@@ -8,9 +7,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   isSelected,
   isExpanded,
   showProductCounts,
-  showIcons,
   showConnectionLines,
-  iconConfig,
   levelIndentSize,
   onSelect,
   onToggleExpand,
@@ -62,18 +59,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     }
   }, [category.id, isExpandable, isExpanded, onSelect, onToggleExpand]);
   
-  // Get appropriate icon, color, and size
-  const nodeIcon = React.useMemo(() => {
-    return getCategoryIcon(category, iconConfig);
-  }, [category, iconConfig]);
-  
-  const iconColor = React.useMemo(() => {
-    return getIconColor(category, 'light');
-  }, [category]);
-  
-  const iconSize = React.useMemo(() => {
-    return getIconSize(category);
-  }, [category]);
   
   // Calculate indentation
   const indentStyle = {
@@ -151,41 +136,25 @@ const TreeNode: React.FC<TreeNodeProps> = ({
       
       {/* Content Container */}
       <div className="flex items-center w-full" style={indentStyle}>
-        {/* Enhanced Expand/Collapse Button with Level Styling */}
+        {/* Simple Expand/Collapse Button */}
         {isExpandable ? (
           <button
             type="button"
             onClick={handleToggleExpand}
             className={`
-              flex items-center justify-center w-5 h-5 mr-2 rounded-sm
+              flex items-center justify-center w-4 h-4 mr-3 rounded-sm
               transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500
-              ${
-                level === 0 
-                  ? 'text-blue-500 hover:text-blue-700 hover:bg-blue-100' 
-                  : level === 1 
-                    ? 'text-green-500 hover:text-green-700 hover:bg-green-100'
-                    : 'text-amber-500 hover:text-amber-700 hover:bg-amber-100'
-              }
-              ${isExpanded ? 'transform rotate-90 scale-110' : 'scale-100'}
+              text-gray-500 hover:text-gray-700 hover:bg-gray-100
+              ${isExpanded ? 'transform rotate-90' : ''}
             `}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
-            <i className={`${iconConfig.expandIcon} ${
-              level === 0 ? 'text-sm' : 'text-xs'
-            }`}></i>
+            ▶
           </button>
         ) : (
-          <div className="w-5 h-5 mr-2" /> // Spacer for alignment
+          <div className="w-4 h-4 mr-3" /> // Spacer for alignment
         )}
         
-        {/* Icon */}
-        {showIcons && (
-          <div className="flex items-center justify-center w-5 h-5 mr-2">
-            <i className={`${nodeIcon} ${iconSize} ${
-              isSelected ? 'text-blue-600' : iconColor
-            } transition-colors duration-150`}></i>
-          </div>
-        )}
         
         {/* Category Name with Search Highlighting and Level Styling */}
         <span className={`
@@ -227,16 +196,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         {/* Loading Indicator */}
         {!category.isLoaded && onLoadChildren && (
           <div className="ml-2">
-            <i className={`${iconConfig.loadingIcon} text-gray-400 text-xs`}></i>
+            <span className="text-gray-400 text-xs">Loading...</span>
           </div>
         )}
         
-        {/* Child Indicator */}
-        {hasChildren && !isExpandable && (
-          <div className="ml-2 text-gray-400">
-            <i className="fas fa-folder text-xs"></i>
-          </div>
-        )}
       </div>
     </div>
   );

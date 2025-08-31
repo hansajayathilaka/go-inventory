@@ -58,7 +58,7 @@ const CategoryIconDemo: React.FC = () => {
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
           <div className="flex">
-            <i className="fas fa-exclamation-circle text-red-400 mt-0.5 mr-3"></i>
+            <div className="text-red-400 mt-0.5 mr-3">⚠️</div>
             <div>
               <h3 className="text-sm font-medium text-red-800">Error Loading Categories</h3>
               <p className="mt-1 text-sm text-red-700">{error}</p>
@@ -75,11 +75,10 @@ const CategoryIconDemo: React.FC = () => {
     <div className="p-6 max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          <i className="fas fa-sitemap text-blue-600 mr-3"></i>
-          Enhanced Category Selection Demo
+          🌳 Clean Category Selection Demo
         </h1>
         <p className="text-gray-600">
-          Showcasing the new visual hierarchy with level-based colors, icons, and enhanced UX
+          Clean, icon-free category selection with visual hierarchy and enhanced UX
         </p>
       </div>
 
@@ -87,8 +86,7 @@ const CategoryIconDemo: React.FC = () => {
         {/* Demo SearchableTreeSelect */}
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            <i className="fas fa-tree text-green-600 mr-2"></i>
-            Category Tree Selector
+            🌳 Category Tree Selector
           </h2>
           
           <SearchableTreeSelect
@@ -97,7 +95,6 @@ const CategoryIconDemo: React.FC = () => {
             onChange={handleCategoryChange}
             placeholder="Select a category..."
             showProductCounts={true}
-            showIcons={true}
             showConnectionLines={true}
             searchable={true}
             searchPlaceholder="Search categories..."
@@ -111,8 +108,7 @@ const CategoryIconDemo: React.FC = () => {
         {selectedCategoryData && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-blue-800 mb-3">
-              <i className="fas fa-info-circle text-blue-600 mr-2"></i>
-              Selected Category
+              ℹ️ Selected Category
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -151,26 +147,25 @@ const CategoryIconDemo: React.FC = () => {
         {/* Visual Hierarchy Legend */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <i className="fas fa-palette text-purple-600 mr-2"></i>
-            Visual Hierarchy Legend
+            🎨 Visual Hierarchy Legend
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center p-3 bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500 rounded">
-              <i className="fas fa-folder-open text-lg text-blue-600 mr-3"></i>
+              <div className="text-lg text-blue-600 mr-3">📁</div>
               <div>
                 <div className="font-semibold text-blue-900">Level 0 (Root)</div>
                 <div className="text-sm text-blue-700">Main categories with blue accent</div>
               </div>
             </div>
             <div className="flex items-center p-3 bg-green-50 border-l-2 border-green-500 rounded">
-              <i className="fas fa-folder text-base text-green-600 mr-3"></i>
+              <div className="text-base text-green-600 mr-3">📂</div>
               <div>
                 <div className="font-semibold text-green-900">Level 1 (Sub)</div>
                 <div className="text-sm text-green-700">Subcategories with green accent</div>
               </div>
             </div>
             <div className="flex items-center p-3 bg-amber-50 border-l-2 border-amber-500 rounded">
-              <i className="fas fa-file-alt text-sm text-amber-600 mr-3"></i>
+              <div className="text-sm text-amber-600 mr-3">📄</div>
               <div>
                 <div className="font-semibold text-amber-900">Level 2+ (Leaf)</div>
                 <div className="text-sm text-amber-700">Deep categories with amber accent</div>
@@ -182,8 +177,7 @@ const CategoryIconDemo: React.FC = () => {
         {/* Category Statistics */}
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            <i className="fas fa-chart-pie text-indigo-600 mr-2"></i>
-            Category Statistics
+            📊 Category Statistics
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">

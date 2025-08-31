@@ -55,15 +55,4 @@ export {
   debounce
 } from './utils/searchUtils';
 
-export {
-  getCategoryIcon,
-  getExpandIcon,
-  createIconElement,
-  buildIconConfig,
-  AUTOMOTIVE_CATEGORY_ICONS,
-  getIconColor,
-  getIconSize,
-  isValidFontAwesome,
-  getValidIcon,
-  createDomainIconConfig
-} from './utils/iconUtils';
+// Icon utilities removed for cleaner interface

@@ -83,7 +83,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
     <div className="relative">
       {/* Search Icon */}
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <i className={`${searchIcon} text-gray-400 text-sm`}></i>
+        <span className="text-gray-400 text-sm">{searchIcon || '🔍'}</span>
       </div>
       
       {/* Search Input */}
@@ -110,7 +110,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         {/* Loading Spinner */}
         {loading && (
           <div className="mr-2">
-            <i className="fas fa-spinner fa-spin text-gray-400 text-sm"></i>
+            <span className="text-gray-400 text-sm animate-spin inline-block">⧗</span>
           </div>
         )}
         
@@ -126,7 +126,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
             `}
             aria-label="Clear search"
           >
-            <i className={`${clearIcon} text-gray-400 text-xs`}></i>
+            <span className="text-gray-400 text-xs">{clearIcon || '✕'}</span>
           </button>
         )}
       </div>
