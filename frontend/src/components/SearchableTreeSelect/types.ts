@@ -204,18 +204,44 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
   debounceMs: 300
 };
 
+// Enhanced icon mappings for better category recognition
+export const ENHANCED_CATEGORY_PATTERNS: Record<string, string> = {
+  // Electronics patterns
+  'electr': 'fas fa-plug',
+  'comput': 'fas fa-desktop',
+  'periph': 'fas fa-mouse',
+  'network': 'fas fa-network-wired',
+  'gaming': 'fas fa-gamepad',
+  
+  // Office patterns
+  'office': 'fas fa-briefcase',
+  'station': 'fas fa-pencil-alt',
+  'furnitur': 'fas fa-chair',
+  
+  // Book patterns
+  'book': 'fas fa-book',
+  'manual': 'fas fa-book-open',
+  'guide': 'fas fa-book-reader',
+  
+  // Test/Development patterns
+  'test': 'fas fa-vial',
+  'dev': 'fas fa-code',
+  'sample': 'fas fa-flask'
+};
+
 export const DEFAULT_ICON_CONFIG: IconConfig = {
   defaultIcon: 'fas fa-folder',
   levelIcons: {
-    0: 'fas fa-folder',
-    1: 'fas fa-folder-open', 
-    2: 'fas fa-file'
+    0: 'fas fa-folder-open',     // Root categories - open folder
+    1: 'fas fa-folder',          // Subcategories - closed folder
+    2: 'fas fa-file-alt'         // Leaf categories - file
   },
   categoryIcons: {
-    // Automotive-specific icons
+    // Automotive-specific icons (from iconUtils.ts)
     'engine': 'fas fa-cog',
+    'engines': 'fas fa-cog',
     'transmission': 'fas fa-tools',
-    'brakes': 'fas fa-circle',
+    'brakes': 'fas fa-stop-circle',
     'suspension': 'fas fa-car-side',
     'electrical': 'fas fa-bolt',
     'body': 'fas fa-car',
@@ -223,19 +249,46 @@ export const DEFAULT_ICON_CONFIG: IconConfig = {
     'tools': 'fas fa-wrench',
     'filters': 'fas fa-filter',
     'fluids': 'fas fa-tint',
-    'belts': 'fas fa-circle',
-    'hoses': 'fas fa-grip-lines'
+    'belts': 'fas fa-grip-lines',
+    'hoses': 'fas fa-grip-lines',
+    'wheels': 'fas fa-circle-notch',
+    'tires': 'fas fa-circle-notch',
+    
+    // Electronics categories
+    'electronics': 'fas fa-microchip',
+    'computers': 'fas fa-desktop',
+    'peripherals': 'fas fa-mouse',
+    'networking': 'fas fa-network-wired',
+    'gaming hardware': 'fas fa-gamepad',
+    'gaming': 'fas fa-gamepad',
+    
+    // Office categories
+    'office supplies': 'fas fa-briefcase',
+    'office': 'fas fa-briefcase',
+    'stationery': 'fas fa-pencil-alt',
+    'furniture': 'fas fa-chair',
+    
+    // General categories
+    'books': 'fas fa-book',
+    'test category': 'fas fa-vial',
+    'test': 'fas fa-vial',
+    
+    // Default category patterns
+    'supplies': 'fas fa-boxes',
+    'hardware': 'fas fa-wrench',
+    'software': 'fas fa-code',
+    'accessories': 'fas fa-puzzle-piece'
   },
   expandIcon: 'fas fa-chevron-right',
-  collapseIcon: 'fas fa-chevron-down',
+  collapseIcon: 'fas fa-chevron-down', 
   searchIcon: 'fas fa-search',
   clearIcon: 'fas fa-times',
   loadingIcon: 'fas fa-spinner fa-spin'
 };
 
 export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {
-  itemHeight: 40,
-  containerHeight: 300,
+  itemHeight: 44,  // Increased for better visual hierarchy
+  containerHeight: 320,
   overscan: 5,
   enabled: false // Will be auto-enabled for large datasets
 };

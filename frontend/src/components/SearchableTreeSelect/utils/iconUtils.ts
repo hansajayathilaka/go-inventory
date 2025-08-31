@@ -1,5 +1,5 @@
 import type { CategoryWithMeta, IconConfig } from '../types';
-import { DEFAULT_ICON_CONFIG } from '../types';
+import { DEFAULT_ICON_CONFIG, ENHANCED_CATEGORY_PATTERNS } from '../types';
 
 /**
  * Get icon for a category based on various criteria
@@ -13,13 +13,13 @@ export function getCategoryIcon(
     return iconConfig.categoryIcons[category.id];
   }
 
-  // 2. Check for category name mapping (case-insensitive)
-  const nameKey = category.name.toLowerCase();
+  // 2. Check for exact category name mapping (case-insensitive)
+  const nameKey = category.name.toLowerCase().trim();
   if (iconConfig.categoryIcons[nameKey]) {
     return iconConfig.categoryIcons[nameKey];
   }
 
-  // 3. Check for partial name matches
+  // 3. Check for partial name matches in icon config
   const partialMatch = Object.keys(iconConfig.categoryIcons).find(key => 
     nameKey.includes(key.toLowerCase()) || key.toLowerCase().includes(nameKey)
   );
@@ -27,12 +27,20 @@ export function getCategoryIcon(
     return iconConfig.categoryIcons[partialMatch];
   }
 
-  // 4. Check for level-based icons
+  // 4. Check enhanced pattern matching
+  const patternMatch = Object.keys(ENHANCED_CATEGORY_PATTERNS).find(pattern => 
+    nameKey.includes(pattern.toLowerCase())
+  );
+  if (patternMatch) {
+    return ENHANCED_CATEGORY_PATTERNS[patternMatch];
+  }
+
+  // 5. Check for level-based icons
   if (iconConfig.levelIcons[category.level]) {
     return iconConfig.levelIcons[category.level];
   }
 
-  // 5. Return default icon
+  // 6. Return default icon
   return iconConfig.defaultIcon;
 }
 
@@ -214,15 +222,17 @@ export function getIconColor(
 ): string {
   const colorMap = {
     light: {
-      0: 'text-blue-600',      // Root categories
-      1: 'text-green-600',     // Main subcategories
-      2: 'text-yellow-600',    // Sub-subcategories
+      0: 'text-blue-600',      // Root categories - blue for main sections
+      1: 'text-green-600',     // Main subcategories - green for sub-sections  
+      2: 'text-amber-600',     // Sub-subcategories - amber for leaf nodes
+      3: 'text-purple-600',    // Deep subcategories - purple for deep nodes
       default: 'text-gray-600'
     },
     dark: {
       0: 'text-blue-400',
-      1: 'text-green-400',
-      2: 'text-yellow-400',
+      1: 'text-green-400', 
+      2: 'text-amber-400',
+      3: 'text-purple-400',
       default: 'text-gray-400'
     }
   };
@@ -236,9 +246,10 @@ export function getIconColor(
  */
 export function getIconSize(category: CategoryWithMeta): string {
   const sizeMap = {
-    0: 'text-lg',      // Root categories - larger
-    1: 'text-base',    // Main subcategories - normal
-    2: 'text-sm',      // Sub-subcategories - smaller
+    0: 'text-lg',      // Root categories - larger (18px)
+    1: 'text-base',    // Main subcategories - normal (16px)
+    2: 'text-sm',      // Sub-subcategories - smaller (14px)
+    3: 'text-xs',      // Deep subcategories - smallest (12px)
   };
 
   return sizeMap[category.level as keyof typeof sizeMap] || 'text-sm';

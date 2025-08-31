@@ -19,6 +19,9 @@ import VehicleManagementPage from './pages/VehicleManagementPage';
 import PurchaseReceiptsPage from './pages/PurchaseReceiptsPage';
 import AuditPage from './pages/AuditPage';
 
+// Demo Components
+import CategoryIconDemo from './components/SearchableTreeSelect/CategoryIconDemo';
+
 // Layout
 import Layout from './components/Layout';
 
@@ -213,6 +216,17 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <AuditPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/category-demo"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CategoryIconDemo />
                   </Layout>
                 </ProtectedRoute>
               }
