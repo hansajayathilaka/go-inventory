@@ -97,8 +97,14 @@ func (h *VehicleBrandHandler) GetVehicleBrands(c *gin.Context) {
 		totalCount = int64(len(vehicleBrandResponses))
 	}
 
-	// Create standardized pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	// Create legacy pagination format for backward compatibility
+	totalPages := int((totalCount + int64(req.Limit) - 1) / int64(req.Limit))
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: totalPages,
+	}
 
 	response := dto.CreatePaginatedResponse(vehicleBrandResponses, pagination, "Vehicle brands retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -138,7 +144,7 @@ func (h *VehicleBrandHandler) GetVehicleBrand(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(vehicleBrandModel)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -175,7 +181,7 @@ func (h *VehicleBrandHandler) GetVehicleBrandByCode(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(vehicleBrandModel)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -213,7 +219,7 @@ func (h *VehicleBrandHandler) GetVehicleBrandWithModels(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandWithModelsResponse(vehicleBrandModel)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand with models retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand with models retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -257,7 +263,7 @@ func (h *VehicleBrandHandler) CreateVehicleBrand(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(createdVehicleBrand)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand created successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -324,7 +330,7 @@ func (h *VehicleBrandHandler) UpdateVehicleBrand(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(existingVehicleBrand)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand updated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -361,7 +367,7 @@ func (h *VehicleBrandHandler) DeleteVehicleBrand(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(nil, "Vehicle brand deleted successfully")
+	response := dto.CreateSimpleSuccessResponse(nil, "Vehicle brand deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -407,7 +413,7 @@ func (h *VehicleBrandHandler) ActivateVehicleBrand(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(updatedVehicleBrand)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand activated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -453,7 +459,7 @@ func (h *VehicleBrandHandler) DeactivateVehicleBrand(c *gin.Context) {
 	}
 
 	vehicleBrandResponse := dto.ToVehicleBrandResponse(updatedVehicleBrand)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponse, "Vehicle brand deactivated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponse, "Vehicle brand deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -475,7 +481,7 @@ func (h *VehicleBrandHandler) GetActiveVehicleBrands(c *gin.Context) {
 	}
 
 	vehicleBrandResponses := dto.ToVehicleBrandResponseList(vehicleBrands)
-	response := dto.CreateStandardSuccessResponse(vehicleBrandResponses, "Active vehicle brands retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleBrandResponses, "Active vehicle brands retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -527,8 +533,14 @@ func (h *VehicleBrandHandler) ListVehicleBrandsWithModels(c *gin.Context) {
 		totalCount = int64(len(vehicleBrandResponses))
 	}
 
-	// Create standardized pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	// Create legacy pagination format for backward compatibility
+	totalPages := int((totalCount + int64(req.Limit) - 1) / int64(req.Limit))
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: totalPages,
+	}
 
 	response := dto.CreatePaginatedResponse(vehicleBrandResponses, pagination, "Vehicle brands with models retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -560,6 +572,6 @@ func (h *VehicleBrandHandler) GenerateVehicleBrandCode(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(code, "Vehicle brand code generated successfully")
+	response := dto.CreateSimpleSuccessResponse(code, "Vehicle brand code generated successfully")
 	c.JSON(http.StatusOK, response)
 }

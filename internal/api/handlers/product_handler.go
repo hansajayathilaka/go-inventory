@@ -100,7 +100,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	response := h.convertToResponse(product)
-	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusCreated, dto.CreateSimpleSuccessResponse(
 		response,
 		"Product created successfully",
 	))
@@ -208,7 +208,7 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 		return
 	}
 
-	total, err := h.productService.CountProducts(c.Request.Context())
+	totalCount, err := h.productService.CountProducts(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
 			"COUNT_FAILED",
@@ -219,10 +219,15 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 	}
 
 	// Create standardized pagination
-	pagination := dto.CreateStandardPagination(page, perPage, total)
+	pagination := &dto.PaginationInfo{
+		Page:       page,
+		Limit:      perPage,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(perPage) - 1) / int64(perPage)),
+	}
 	
 	// Create standardized list response
-	response := dto.CreateStandardListResponse(
+	response := dto.CreatePaginatedResponse(
 		h.convertToResponseList(products),
 		pagination,
 		"Products retrieved successfully",
@@ -282,7 +287,7 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 		response.TotalStock = &totalStock
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Product retrieved successfully",
 	))
@@ -410,7 +415,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	response := h.convertToResponse(product)
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Product updated successfully",
 	))
@@ -455,7 +460,7 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		nil,
 		"Product deleted successfully",
 	))
@@ -514,10 +519,15 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 	total := int64(len(products))
 
 	// Create standardized pagination
-	pagination := dto.CreateStandardPagination(page, perPage, total)
+	pagination := &dto.PaginationInfo{
+		Page:       page,
+		Limit:      perPage,
+		Total:      total,
+		TotalPages: int((total + int64(perPage) - 1) / int64(perPage)),
+	}
 	
 	// Create standardized list response
-	response := dto.CreateStandardListResponse(
+	response := dto.CreatePaginatedResponse(
 		h.convertToResponseList(products),
 		pagination,
 		"Products found",
@@ -577,7 +587,7 @@ func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 	}
 
 	response := h.convertInventoryToResponse(inventory)
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Product inventory retrieved successfully",
 	))
@@ -809,7 +819,7 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 		posProducts = append(posProducts, posProduct)
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		posProducts,
 		"POS products retrieved successfully",
 	))
@@ -856,7 +866,7 @@ func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 	}
 
 	response := h.convertToResponseList(products)
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Products retrieved successfully",
 	))
@@ -882,7 +892,7 @@ func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 	}
 
 	response := h.convertToResponseList(products)
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Products without brand retrieved successfully",
 	))
@@ -945,7 +955,7 @@ func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		nil,
 		"Brand assigned successfully",
 	))
@@ -990,7 +1000,7 @@ func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		nil,
 		"Brand removed successfully",
 	))

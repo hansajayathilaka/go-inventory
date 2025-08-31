@@ -189,8 +189,8 @@ const PurchaseReceiptModal: React.FC<PurchaseReceiptModalProps> = ({
         api.products.getActive(),
       ]);
       
-      setSuppliers(suppliersRes.data?.data || []);
-      setProducts(productsRes.data?.data || []);
+      setSuppliers(suppliersRes.data || []);
+      setProducts(productsRes.data || []);
     } catch (err) {
       console.error('Error loading initial data:', err);
     } finally {

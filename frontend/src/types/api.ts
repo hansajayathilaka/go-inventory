@@ -147,7 +147,39 @@ export interface SortParams {
   sort_order?: 'asc' | 'desc';
 }
 
-// API Response types
+// API Response types (Standardized)
+export interface StandardResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data: T;
+  error?: string;
+  timestamp: string;
+}
+
+export interface StandardListResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data: T[];
+  pagination: StandardPagination;
+  error?: string;
+  timestamp: string;
+}
+
+export interface StandardPagination {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface StandardErrorResponse {
+  success: false;
+  message: string;
+  error: string;
+  timestamp: string;
+}
+
+// Legacy API Response types (maintained for backward compatibility)
 export interface ApiResponse<T> {
   success: boolean;
   message: string;

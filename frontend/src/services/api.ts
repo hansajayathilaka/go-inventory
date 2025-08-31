@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { AxiosResponse, AxiosError } from 'axios';
+import type { StandardResponse, StandardListResponse, StandardPagination } from '../types/api';
 
 // API Base Configuration
 const API_BASE_URL = '/api/v1';
@@ -41,7 +42,7 @@ apiClient.interceptors.response.use(
   }
 );
 
-// API Response types
+// API Response types (Legacy - maintaining backward compatibility)
 export interface ApiResponse<T = unknown> {
   data: T;
   message?: string;
@@ -57,6 +58,124 @@ export interface PaginatedResponse<T = unknown> {
     total_pages: number;
   };
 }
+
+// Response transformation utilities
+export const transformStandardResponse = <T>(response: AxiosResponse<StandardResponse<T>>): T => {
+  return response.data.data;
+};
+
+export const transformStandardListResponse = <T>(response: AxiosResponse<StandardListResponse<T>>): {
+  data: T[];
+  pagination: StandardPagination;
+} => {
+  return {
+    data: response.data.data,
+    pagination: response.data.pagination
+  };
+};
+
+// Handle different API response structures for backward compatibility
+export const extractData = <T>(response: AxiosResponse): T => {
+  const responseData = response.data;
+  
+  // Handle standardized response format
+  if (responseData.success !== undefined && responseData.data !== undefined) {
+    return responseData.data;
+  }
+  
+  // Handle legacy formats
+  if (responseData.data !== undefined) {
+    return responseData.data;
+  }
+  
+  // Return raw response if no standard structure
+  return responseData;
+};
+
+export const extractListData = <T>(response: AxiosResponse): {
+  data: T[];
+  pagination?: StandardPagination;
+} => {
+  const responseData = response.data;
+  
+  // Handle standardized list response format
+  if (responseData.success !== undefined && responseData.data !== undefined && responseData.pagination !== undefined) {
+    return {
+      data: responseData.data,
+      pagination: responseData.pagination
+    };
+  }
+  
+  // Handle legacy nested data format (products: [...], pagination: {...})
+  if (responseData.data && typeof responseData.data === 'object') {
+    // Check for various nested data patterns
+    const nestedData = responseData.data;
+    
+    // Pattern: {data: {products: [...], total, page, per_page, total_pages}}
+    if (nestedData.products) {
+      return {
+        data: nestedData.products,
+        pagination: {
+          page: nestedData.page || 1,
+          limit: nestedData.per_page || nestedData.limit || 20,
+          total: nestedData.total || 0,
+          total_pages: nestedData.total_pages || 1
+        }
+      };
+    }
+    
+    // Pattern: {data: {suppliers: [...], pagination: {...}}}
+    if (nestedData.suppliers && nestedData.pagination) {
+      return {
+        data: nestedData.suppliers,
+        pagination: {
+          page: nestedData.pagination.page || 1,
+          limit: nestedData.pagination.page_size || nestedData.pagination.limit || 20,
+          total: nestedData.pagination.total || 0,
+          total_pages: nestedData.pagination.total_pages || Math.ceil((nestedData.pagination.total || 0) / (nestedData.pagination.page_size || nestedData.pagination.limit || 20))
+        }
+      };
+    }
+    
+    // Pattern: {data: {categories: [...], pagination: {...}}}
+    if (nestedData.categories && nestedData.pagination) {
+      return {
+        data: nestedData.categories,
+        pagination: {
+          page: nestedData.pagination.page || 1,
+          limit: nestedData.pagination.page_size || nestedData.pagination.limit || 20,
+          total: nestedData.pagination.total || 0,
+          total_pages: nestedData.pagination.total_pages || Math.ceil((nestedData.pagination.total || 0) / (nestedData.pagination.page_size || nestedData.pagination.limit || 20))
+        }
+      };
+    }
+  }
+  
+  // Handle direct data array pattern: {data: [...], pagination: {...}}
+  if (Array.isArray(responseData.data) && responseData.pagination) {
+    return {
+      data: responseData.data,
+      pagination: {
+        page: responseData.pagination.page || 1,
+        limit: responseData.pagination.limit || responseData.pagination.page_size || 20,
+        total: responseData.pagination.total || 0,
+        total_pages: responseData.pagination.total_pages || Math.ceil((responseData.pagination.total || 0) / (responseData.pagination.limit || responseData.pagination.page_size || 20))
+      }
+    };
+  }
+  
+  // Fallback: try to return data array directly
+  if (Array.isArray(responseData.data)) {
+    return { data: responseData.data };
+  }
+  
+  if (Array.isArray(responseData)) {
+    return { data: responseData };
+  }
+  
+  // Last resort: empty array
+  return { data: [] };
+};
 
 // Common API functions
 export const api = {
@@ -176,8 +295,11 @@ export const api = {
       return apiClient.get(`/brands${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get active brands for dropdowns
-    getActive: () => apiClient.get('/brands?is_active=true&limit=1000'),
+    // Get active brands for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/brands?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single brand by ID
     getById: (id: string) => apiClient.get(`/brands/${id}`),
@@ -242,8 +364,11 @@ export const api = {
       return apiClient.get(`/vehicle-brands${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get active vehicle brands for dropdowns
-    getActive: () => apiClient.get('/vehicle-brands?is_active=true&limit=1000'),
+    // Get active vehicle brands for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/vehicle-brands?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single vehicle brand by ID
     getById: (id: string) => apiClient.get(`/vehicle-brands/${id}`),
@@ -311,8 +436,11 @@ export const api = {
       return apiClient.get(`/customers${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get active customers for dropdowns
-    getActive: () => apiClient.get('/customers?is_active=true&limit=1000'),
+    // Get active customers for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/customers?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single customer by ID
     getById: (id: string) => apiClient.get(`/customers/${id}`),
@@ -398,14 +526,20 @@ export const api = {
       return apiClient.get(`/vehicle-models${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get active vehicle models for dropdowns
-    getActive: () => apiClient.get('/vehicle-models?is_active=true&limit=1000'),
+    // Get active vehicle models for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/vehicle-models?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single vehicle model by ID
     getById: (id: string) => apiClient.get(`/vehicle-models/${id}`),
 
-    // Get vehicle models by brand
-    getByBrand: (brandId: string) => apiClient.get(`/vehicle-models?vehicle_brand_id=${brandId}&is_active=true`),
+    // Get vehicle models by brand - handles response transformation
+    getByBrand: (brandId: string) => apiClient.get(`/vehicle-models?vehicle_brand_id=${brandId}&is_active=true`).then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Create new vehicle model
     create: (data: {
@@ -787,11 +921,18 @@ export const api = {
       return apiClient.get(`/suppliers${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get all suppliers (simplified list for dropdowns)
-    getAll: () => apiClient.get('/suppliers'),
+    // Get all suppliers (simplified list for dropdowns) - handles response transformation
+    getAll: () => apiClient.get('/suppliers').then(response => {
+      const transformed = extractListData(response);
+      // For dropdown usage, return just the array for backward compatibility
+      return { ...response, data: transformed.data };
+    }),
 
-    // Get active suppliers for dropdowns
-    getActive: () => apiClient.get('/suppliers?is_active=true&limit=1000'),
+    // Get active suppliers for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/suppliers?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single supplier by ID
     getById: (id: string) => apiClient.get(`/suppliers/${id}`),
@@ -858,11 +999,17 @@ export const api = {
       return apiClient.get(`/products${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get all products (simplified list for dropdowns)
-    getAll: () => apiClient.get('/products'),
+    // Get all products (simplified list for dropdowns) - handles response transformation
+    getAll: () => apiClient.get('/products').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
-    // Get active products for dropdowns
-    getActive: () => apiClient.get('/products?is_active=true&limit=1000'),
+    // Get active products for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/products?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single product by ID
     getById: (id: string) => apiClient.get(`/products/${id}`),
@@ -948,11 +1095,17 @@ export const api = {
       return apiClient.get(`/users${queryString ? '?' + queryString : ''}`);
     },
 
-    // Get all users (simplified list for dropdowns)
-    getAll: () => apiClient.get('/users'),
+    // Get all users (simplified list for dropdowns) - handles response transformation
+    getAll: () => apiClient.get('/users').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
-    // Get active users for dropdowns
-    getActive: () => apiClient.get('/users?is_active=true&limit=1000'),
+    // Get active users for dropdowns - handles response transformation
+    getActive: () => apiClient.get('/users?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData(response);
+      return { ...response, data: transformed.data };
+    }),
 
     // Get single user by ID
     getById: (id: string) => apiClient.get(`/users/${id}`),

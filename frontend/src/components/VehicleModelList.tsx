@@ -54,8 +54,8 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
   // Load vehicle brands for filter dropdown
   const loadVehicleBrands = async () => {
     try {
-      const response = await api.vehicleBrands.list({ is_active: true, limit: 100 });
-      setVehicleBrands(response.data?.data || []);
+      const response = await api.vehicleBrands.getActive();
+      setVehicleBrands(response.data || []);
     } catch (err) {
       console.error('Error loading vehicle brands:', err);
     }

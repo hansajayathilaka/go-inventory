@@ -206,3 +206,18 @@ func CreateStandardPagination(page, limit int, total int64) *StandardPagination 
 		TotalPages: totalPages,
 	}
 }
+
+// CreateBaseResponse creates a base error response (alias for backward compatibility)
+func CreateBaseResponse(code, message, details string) BaseResponse {
+	return CreateErrorResponse(code, message, details)
+}
+
+// CreateSimpleSuccessResponse creates a success response with interface{} type for compatibility
+func CreateSimpleSuccessResponse(data interface{}, message string) StandardResponse[interface{}] {
+	return StandardResponse[interface{}]{
+		Success:   true,
+		Message:   message,
+		Data:      data,
+		Timestamp: time.Now(),
+	}
+}

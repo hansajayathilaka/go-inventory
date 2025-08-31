@@ -64,9 +64,8 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
   // Load products for filter dropdown
   const loadProducts = async () => {
     try {
-      const response = await api.get<{data: {products: Product[]}}>('/products?is_active=true&limit=500');
-      const products = response.data?.data?.products;
-      setProducts(Array.isArray(products) ? products : []);
+      const response = await api.products.getActive();
+      setProducts(response.data || []);
     } catch (err) {
       console.error('Error loading products:', err);
       setProducts([]);
@@ -76,8 +75,8 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
   // Load vehicle models for filter dropdown  
   const loadVehicleModels = async () => {
     try {
-      const response = await api.get<{data: VehicleModelWithBrand[]}>('/vehicle-models?is_active=true&limit=500');
-      setVehicleModels(response.data?.data || []);
+      const response = await api.vehicleModels.getActive();
+      setVehicleModels(response.data || []);
     } catch (err) {
       console.error('Error loading vehicle models:', err);
     }

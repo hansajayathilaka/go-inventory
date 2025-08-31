@@ -108,7 +108,12 @@ func (h *VehicleCompatibilityHandler) GetCompatibilities(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -148,7 +153,7 @@ func (h *VehicleCompatibilityHandler) GetCompatibility(c *gin.Context) {
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityModel)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -201,13 +206,13 @@ func (h *VehicleCompatibilityHandler) CreateCompatibility(c *gin.Context) {
 	if err != nil {
 		// Return basic response if we can't get relations
 		compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(createdCompatibility)
-		response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
+		response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
 		c.JSON(http.StatusCreated, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityWithRelations)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -283,13 +288,13 @@ func (h *VehicleCompatibilityHandler) UpdateCompatibility(c *gin.Context) {
 	if err != nil {
 		// Return basic response if we can't get relations
 		compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(existingCompatibility)
-		response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
+		response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
 		c.JSON(http.StatusOK, response)
 		return
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(compatibilityWithRelations)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -326,7 +331,7 @@ func (h *VehicleCompatibilityHandler) DeleteCompatibility(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(nil, "Vehicle compatibility deleted successfully")
+	response := dto.CreateSimpleSuccessResponse(nil, "Vehicle compatibility deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -372,7 +377,7 @@ func (h *VehicleCompatibilityHandler) VerifyCompatibility(c *gin.Context) {
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility verified successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility verified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -418,7 +423,7 @@ func (h *VehicleCompatibilityHandler) UnverifyCompatibility(c *gin.Context) {
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility unverified successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility unverified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -464,7 +469,7 @@ func (h *VehicleCompatibilityHandler) ActivateCompatibility(c *gin.Context) {
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility activated successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -510,7 +515,7 @@ func (h *VehicleCompatibilityHandler) DeactivateCompatibility(c *gin.Context) {
 	}
 
 	compatibilityResponse := dto.ToVehicleCompatibilityDetailResponse(updatedCompatibility)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponse, "Vehicle compatibility deactivated successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponse, "Vehicle compatibility deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -532,7 +537,7 @@ func (h *VehicleCompatibilityHandler) GetActiveCompatibilities(c *gin.Context) {
 	}
 
 	compatibilityResponses := dto.ToVehicleCompatibilityResponseList(compatibilities)
-	response := dto.CreateStandardSuccessResponse(compatibilityResponses, "Active vehicle compatibilities retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(compatibilityResponses, "Active vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -583,7 +588,12 @@ func (h *VehicleCompatibilityHandler) GetVerifiedCompatibilities(c *gin.Context)
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Verified vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -636,7 +646,12 @@ func (h *VehicleCompatibilityHandler) GetUnverifiedCompatibilities(c *gin.Contex
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Unverified vehicle compatibilities retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -697,7 +712,12 @@ func (h *VehicleCompatibilityHandler) GetCompatibleProducts(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Compatible products retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -758,7 +778,12 @@ func (h *VehicleCompatibilityHandler) GetCompatibleVehicles(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(compatibilityResponses, pagination, "Compatible vehicles retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -803,7 +828,7 @@ func (h *VehicleCompatibilityHandler) BulkCreateCompatibilities(c *gin.Context) 
 	}
 
 	message := fmt.Sprintf("Successfully created %d vehicle compatibilities", len(compatibilities))
-	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities created successfully")
+	response := dto.CreateSimpleSuccessResponse(message, "Vehicle compatibilities created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -834,7 +859,7 @@ func (h *VehicleCompatibilityHandler) BulkVerifyCompatibilities(c *gin.Context) 
 	}
 
 	message := fmt.Sprintf("Successfully verified %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities verified successfully")
+	response := dto.CreateSimpleSuccessResponse(message, "Vehicle compatibilities verified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -865,7 +890,7 @@ func (h *VehicleCompatibilityHandler) BulkUnverifyCompatibilities(c *gin.Context
 	}
 
 	message := fmt.Sprintf("Successfully unverified %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities unverified successfully")
+	response := dto.CreateSimpleSuccessResponse(message, "Vehicle compatibilities unverified successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -896,7 +921,7 @@ func (h *VehicleCompatibilityHandler) BulkActivateCompatibilities(c *gin.Context
 	}
 
 	message := fmt.Sprintf("Successfully activated %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities activated successfully")
+	response := dto.CreateSimpleSuccessResponse(message, "Vehicle compatibilities activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -927,7 +952,7 @@ func (h *VehicleCompatibilityHandler) BulkDeactivateCompatibilities(c *gin.Conte
 	}
 
 	message := fmt.Sprintf("Successfully deactivated %d vehicle compatibilities", len(req.IDs))
-	response := dto.CreateStandardSuccessResponse(message, "Vehicle compatibilities deactivated successfully")
+	response := dto.CreateSimpleSuccessResponse(message, "Vehicle compatibilities deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -970,6 +995,6 @@ func (h *VehicleCompatibilityHandler) GetCompatibilityStats(c *gin.Context) {
 		Unverified: unverified,
 	}
 
-	response := dto.CreateStandardSuccessResponse(stats, "Compatibility statistics retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(stats, "Compatibility statistics retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }

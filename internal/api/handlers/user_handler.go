@@ -66,10 +66,18 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 	// Convert to response DTOs
 	userResponses := dto.ToUserResponseList(users)
 
-	// Create standardized pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, int64(len(userResponses)))
+	// For simplicity, use the length of the users array as the total count
+	totalCount := int64(len(users))
 
-	response := dto.CreateStandardListResponse(userResponses, pagination, "Users retrieved successfully")
+	// Create standardized pagination info
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
+
+	response := dto.CreatePaginatedResponse(userResponses, pagination, "Users retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -102,7 +110,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	}
 
 	userResponse := dto.ToUserResponse(user)
-	response := dto.CreateStandardSuccessResponse(userResponse, "User retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(userResponse, "User retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -136,7 +144,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	userResponse := dto.ToUserResponse(createdUser)
-	response := dto.CreateStandardSuccessResponse(userResponse, "User created successfully")
+	response := dto.CreateSimpleSuccessResponse(userResponse, "User created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -197,7 +205,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	}
 
 	userResponse := dto.ToUserResponse(existingUser)
-	response := dto.CreateStandardSuccessResponse(userResponse, "User updated successfully")
+	response := dto.CreateSimpleSuccessResponse(userResponse, "User updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -229,7 +237,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(nil, "User deleted successfully")
+	response := dto.CreateSimpleSuccessResponse(nil, "User deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -277,7 +285,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		Token: "jwt_token_here", // TODO: Implement JWT token generation
 	}
 
-	response := dto.CreateStandardSuccessResponse(loginResponse, "Login successful")
+	response := dto.CreateSimpleSuccessResponse(loginResponse, "Login successful")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -291,6 +299,6 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(c *gin.Context) {
 	// In a real implementation, you'd invalidate the JWT token
-	response := dto.CreateStandardSuccessResponse(nil, "Logout successful")
+	response := dto.CreateSimpleSuccessResponse(nil, "Logout successful")
 	c.JSON(http.StatusOK, response)
 }

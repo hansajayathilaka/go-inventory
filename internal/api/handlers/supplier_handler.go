@@ -96,7 +96,7 @@ func (h *SupplierHandler) CreateSupplier(c *gin.Context) {
 		UpdatedAt:   supplier.UpdatedAt,
 	}
 
-	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusCreated, dto.CreateSimpleSuccessResponse(
 		response,
 		"Supplier created successfully",
 	))
@@ -149,7 +149,7 @@ func (h *SupplierHandler) GetSupplier(c *gin.Context) {
 		UpdatedAt:   supplier.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Supplier retrieved successfully",
 	))
@@ -250,7 +250,7 @@ func (h *SupplierHandler) UpdateSupplier(c *gin.Context) {
 		UpdatedAt:   existing.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Supplier updated successfully",
 	))
@@ -296,7 +296,7 @@ func (h *SupplierHandler) DeleteSupplier(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		nil,
 		"Supplier deleted successfully",
 	))
@@ -381,10 +381,15 @@ func (h *SupplierHandler) GetSuppliers(c *gin.Context) {
 	}
 
 	// Create standardized pagination
-	pagination := dto.CreateStandardPagination(page, pageSize, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       page,
+		Limit:      pageSize,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(pageSize) - 1) / int64(pageSize)),
+	}
 	
 	// Create standardized list response
-	response := dto.CreateStandardListResponse(
+	response := dto.CreatePaginatedResponse(
 		supplierResponses,
 		pagination,
 		"Suppliers retrieved successfully",

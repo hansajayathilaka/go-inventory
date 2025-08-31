@@ -47,9 +47,8 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
   const loadProducts = async () => {
     try {
       setProductsLoading(true);
-      const response = await api.get<{data: {products: Product[]}}>('/products?is_active=true&limit=500');
-      const products = response.data?.data?.products;
-      setProducts(Array.isArray(products) ? products : []);
+      const response = await api.products.getActive();
+      setProducts(response.data || []);
     } catch (err) {
       console.error('Error loading products:', err);
       setProducts([]);
@@ -62,8 +61,8 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
   const loadVehicleModels = async () => {
     try {
       setModelsLoading(true);
-      const response = await api.get<{data: VehicleModelWithBrand[]}>('/vehicle-models?is_active=true&limit=500');
-      setVehicleModels(response.data?.data || []);
+      const response = await api.vehicleModels.getActive();
+      setVehicleModels(response.data || []);
     } catch (err) {
       console.error('Error loading vehicle models:', err);
     } finally {

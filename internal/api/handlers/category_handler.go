@@ -137,7 +137,13 @@ func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	}
 
 	// Create standardized pagination
-	pagination := dto.CreateStandardPagination(params.Page, params.PageSize, int64(len(categoryResponses)))
+	// Create legacy pagination format for backward compatibility
+	pagination := &dto.PaginationInfo{
+		Page:       params.Page,
+		Limit:      params.PageSize,
+		Total:      int64(len(categoryResponses)),
+		TotalPages: (len(categoryResponses) + params.PageSize - 1) / params.PageSize,
+	}
 	
 	// Create standardized list response
 	response := dto.CreatePaginatedResponse(
@@ -214,7 +220,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusCreated, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category created successfully",
 	))
@@ -274,7 +280,7 @@ func (h *CategoryHandler) GetCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category retrieved successfully",
 	))
@@ -366,7 +372,7 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category updated successfully",
 	))
@@ -413,7 +419,7 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		nil,
 		"Category deleted successfully",
 	))
@@ -486,7 +492,7 @@ func (h *CategoryHandler) GetCategoryChildren(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		childResponses,
 		"Category children retrieved successfully",
 	))
@@ -537,7 +543,7 @@ func (h *CategoryHandler) GetCategoryHierarchy(c *gin.Context) {
 
 	response := dto.ToCategoryHierarchyResponse(hierarchyTree)
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category hierarchy retrieved successfully",
 	))
@@ -604,7 +610,7 @@ func (h *CategoryHandler) GetCategoryPath(c *gin.Context) {
 		Path: pathResponses,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category path retrieved successfully",
 	))
@@ -687,7 +693,7 @@ func (h *CategoryHandler) MoveCategory(c *gin.Context) {
 		UpdatedAt:     category.UpdatedAt,
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,
 		"Category moved successfully",
 	))
@@ -752,7 +758,12 @@ func (h *CategoryHandler) SearchCategories(c *gin.Context) {
 	}
 
 	// Create standardized list response for search results
-	pagination := dto.CreateStandardPagination(1, len(categoryResponses), int64(len(categoryResponses)))
+	pagination := &dto.PaginationInfo{
+		Page:       1,
+		Limit:      len(categoryResponses),
+		Total:      int64(len(categoryResponses)),
+		TotalPages: 1,
+	}
 	standardResponse := dto.CreatePaginatedResponse(
 		categoryResponses,
 		pagination,
@@ -800,7 +811,7 @@ func (h *CategoryHandler) GetRootCategories(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		categoryResponses,
 		"Root categories retrieved successfully",
 	))

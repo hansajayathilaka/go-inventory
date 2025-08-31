@@ -106,7 +106,12 @@ func (h *VehicleModelHandler) GetVehicleModels(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(vehicleModelResponses, pagination, "Vehicle models retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -146,7 +151,7 @@ func (h *VehicleModelHandler) GetVehicleModel(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(vehicleModelModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -183,7 +188,7 @@ func (h *VehicleModelHandler) GetVehicleModelByCode(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(vehicleModelModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -244,7 +249,12 @@ func (h *VehicleModelHandler) GetVehicleModelsByBrand(c *gin.Context) {
 	}
 
 	// Create pagination info
-	pagination := dto.CreateStandardPagination(req.Page, req.Limit, totalCount)
+	pagination := &dto.PaginationInfo{
+		Page:       req.Page,
+		Limit:      req.Limit,
+		Total:      totalCount,
+		TotalPages: int((totalCount + int64(req.Limit) - 1) / int64(req.Limit)),
+	}
 
 	response := dto.CreatePaginatedResponse(vehicleModelResponses, pagination, "Vehicle models retrieved successfully")
 	c.JSON(http.StatusOK, response)
@@ -290,7 +300,7 @@ func (h *VehicleModelHandler) CreateVehicleModel(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(createdVehicleModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model created successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model created successfully")
 	c.JSON(http.StatusCreated, response)
 }
 
@@ -357,7 +367,7 @@ func (h *VehicleModelHandler) UpdateVehicleModel(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(existingVehicleModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model updated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model updated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -394,7 +404,7 @@ func (h *VehicleModelHandler) DeleteVehicleModel(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(nil, "Vehicle model deleted successfully")
+	response := dto.CreateSimpleSuccessResponse(nil, "Vehicle model deleted successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -440,7 +450,7 @@ func (h *VehicleModelHandler) ActivateVehicleModel(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(updatedVehicleModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model activated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model activated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -486,7 +496,7 @@ func (h *VehicleModelHandler) DeactivateVehicleModel(c *gin.Context) {
 	}
 
 	vehicleModelResponse := dto.ToVehicleModelDetailResponse(updatedVehicleModel)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponse, "Vehicle model deactivated successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponse, "Vehicle model deactivated successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -508,7 +518,7 @@ func (h *VehicleModelHandler) GetActiveVehicleModels(c *gin.Context) {
 	}
 
 	vehicleModelResponses := dto.ToVehicleModelResponseList(vehicleModels)
-	response := dto.CreateStandardSuccessResponse(vehicleModelResponses, "Active vehicle models retrieved successfully")
+	response := dto.CreateSimpleSuccessResponse(vehicleModelResponses, "Active vehicle models retrieved successfully")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -561,6 +571,6 @@ func (h *VehicleModelHandler) GenerateVehicleModelCode(c *gin.Context) {
 		return
 	}
 
-	response := dto.CreateStandardSuccessResponse(code, "Vehicle model code generated successfully")
+	response := dto.CreateSimpleSuccessResponse(code, "Vehicle model code generated successfully")
 	c.JSON(http.StatusOK, response)
 }
