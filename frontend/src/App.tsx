@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/components/theme-provider';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -48,8 +49,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
+      <ThemeProvider defaultTheme="system" storageKey="inventory-theme">
+        <Router>
+          <div className="min-h-screen bg-background text-foreground">
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -236,7 +238,8 @@ function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
-      </Router>
+        </Router>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

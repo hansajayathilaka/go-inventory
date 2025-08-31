@@ -16,6 +16,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-background">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 flex z-40 md:hidden">
@@ -53,7 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className="fixed inset-0 bg-gray-600 bg-opacity-75"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-background">
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
                 className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -77,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
+        <header className="bg-card shadow-sm border-b border-border">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center">
               <button
@@ -86,20 +87,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               >
                 <Menu className="h-6 w-6" />
               </button>
-              <h1 className="ml-3 text-2xl font-semibold text-gray-900 md:ml-0">
+              <h1 className="ml-3 text-2xl font-semibold text-foreground md:ml-0">
                 Vehicle Spare Parts Inventory
               </h1>
             </div>
 
             {/* User menu */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center text-sm text-gray-700">
+              <div className="flex items-center text-sm text-foreground">
                 <User className="h-5 w-5 mr-2" />
                 <span>Shop Owner</span>
               </div>
+              <ThemeToggle />
               <button
                 onClick={handleLogout}
-                className="flex items-center text-sm text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+                className="flex items-center text-sm text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary rounded-md p-1"
               >
                 <LogOut className="h-5 w-5 mr-1" />
                 Logout
@@ -135,7 +137,7 @@ const SidebarContent: React.FC<{
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 bg-white overflow-y-auto">
+      <nav className="flex-1 px-2 py-4 bg-background overflow-y-auto">
         <div className="space-y-1">
           {navigation.map((item) => {
             const isActive = currentPath === item.href;
@@ -145,14 +147,14 @@ const SidebarContent: React.FC<{
                 to={item.href}
                 className={`group flex items-center justify-between px-2 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive
-                    ? 'bg-blue-100 text-blue-900'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 }`}
               >
                 <div className="flex items-center">
                   <item.icon
                     className={`mr-3 flex-shrink-0 h-6 w-6 ${
-                      isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'
+                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-accent-foreground'
                     }`}
                   />
                   {item.name}
@@ -169,10 +171,10 @@ const SidebarContent: React.FC<{
       </nav>
 
       {/* Footer */}
-      <div className="flex-shrink-0 bg-gray-50 p-4 border-t border-gray-200">
-        <div className="text-xs text-gray-500 text-center">
+      <div className="flex-shrink-0 bg-muted/50 p-4 border-t border-border">
+        <div className="text-xs text-muted-foreground text-center">
           Vehicle Spare Parts Inventory v2.0<br />
-          <span className="text-blue-600">Comprehensive Management</span> • Single Location
+          <span className="text-primary">Comprehensive Management</span> • Single Location
         </div>
       </div>
     </div>
