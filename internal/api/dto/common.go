@@ -22,7 +22,15 @@ type ErrorInfo struct {
 	Details string `json:"details,omitempty" example:"Name field is required"`
 }
 
-// PaginationInfo represents pagination metadata
+// StandardPagination represents the unified pagination structure
+type StandardPagination struct {
+	Page       int   `json:"page" example:"1"`
+	Limit      int   `json:"limit" example:"20"`
+	Total      int64 `json:"total" example:"100"`
+	TotalPages int   `json:"total_pages" example:"5"`
+}
+
+// PaginationInfo represents pagination metadata (legacy support)
 type PaginationInfo struct {
 	Page       int   `json:"page" example:"1"`
 	Limit      int   `json:"limit" example:"10"`
@@ -104,5 +112,81 @@ func CreatePaginatedResponse(data interface{}, pagination *PaginationInfo, messa
 			Timestamp: time.Now(),
 		},
 		Pagination: pagination,
+	}
+}
+
+// ===== STANDARDIZED RESPONSE STRUCTURES =====
+
+// StandardResponse represents the unified API response structure
+type StandardResponse[T any] struct {
+	Success    bool                 `json:"success" example:"true"`
+	Message    string               `json:"message,omitempty" example:"Operation completed successfully"`
+	Data       T                    `json:"data,omitempty"`
+	Pagination *StandardPagination  `json:"pagination,omitempty"`
+	Error      *ErrorInfo           `json:"error,omitempty"`
+	Timestamp  time.Time            `json:"timestamp" example:"2023-01-01T12:00:00Z"`
+}
+
+// StandardListResponse represents the unified paginated list response structure
+type StandardListResponse[T any] struct {
+	Success    bool                `json:"success" example:"true"`
+	Message    string              `json:"message,omitempty" example:"Data retrieved successfully"`
+	Data       []T                 `json:"data"`
+	Pagination *StandardPagination `json:"pagination"`
+	Timestamp  time.Time           `json:"timestamp" example:"2023-01-01T12:00:00Z"`
+}
+
+// StandardErrorResponse represents the unified error response structure
+type StandardErrorResponse struct {
+	Success   bool       `json:"success" example:"false"`
+	Message   string     `json:"message,omitempty" example:"Operation failed"`
+	Error     *ErrorInfo `json:"error"`
+	Timestamp time.Time  `json:"timestamp" example:"2023-01-01T12:00:00Z"`
+}
+
+// ===== HELPER FUNCTIONS FOR STANDARDIZED RESPONSES =====
+
+// CreateStandardSuccessResponse creates a standardized success response
+func CreateStandardSuccessResponse[T any](data T, message string) StandardResponse[T] {
+	return StandardResponse[T]{
+		Success:   true,
+		Message:   message,
+		Data:      data,
+		Timestamp: time.Now(),
+	}
+}
+
+// CreateStandardListResponse creates a standardized paginated list response
+func CreateStandardListResponse[T any](data []T, pagination *StandardPagination, message string) StandardListResponse[T] {
+	return StandardListResponse[T]{
+		Success:    true,
+		Message:    message,
+		Data:       data,
+		Pagination: pagination,
+		Timestamp:  time.Now(),
+	}
+}
+
+// CreateStandardErrorResponse creates a standardized error response
+func CreateStandardErrorResponse(code, message, details string) StandardErrorResponse {
+	return StandardErrorResponse{
+		Success: false,
+		Error: &ErrorInfo{
+			Code:    code,
+			Message: message,
+			Details: details,
+		},
+		Timestamp: time.Now(),
+	}
+}
+
+// CreateStandardPagination creates standardized pagination metadata
+func CreateStandardPagination(page, limit int, total int64) *StandardPagination {
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+	return &StandardPagination{
+		Page:       page,
+		Limit:      limit,
+		Total:      total,
+		TotalPages: totalPages,
 	}
 }
