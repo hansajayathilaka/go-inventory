@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosResponse, AxiosError } from 'axios';
-import type { StandardResponse, StandardListResponse, StandardPagination } from '../types/api';
+import type { StandardResponse, StandardListResponse, StandardPagination, Product, Supplier, VehicleBrand, VehicleModelWithBrand, Brand } from '../types/api';
 
 // API Base Configuration
 const API_BASE_URL = '/api/v1';
@@ -296,9 +296,9 @@ export const api = {
     },
 
     // Get active brands for dropdowns - handles response transformation
-    getActive: () => apiClient.get('/brands?is_active=true&limit=1000').then(response => {
-      const transformed = extractListData(response);
-      return { ...response, data: transformed.data };
+    getActive: (): Promise<Brand[]> => apiClient.get('/brands?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData<Brand>(response);
+      return transformed.data;
     }),
 
     // Get single brand by ID
@@ -365,9 +365,9 @@ export const api = {
     },
 
     // Get active vehicle brands for dropdowns - handles response transformation
-    getActive: () => apiClient.get('/vehicle-brands?is_active=true&limit=1000').then(response => {
-      const transformed = extractListData(response);
-      return { ...response, data: transformed.data };
+    getActive: (): Promise<VehicleBrand[]> => apiClient.get('/vehicle-brands?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData<VehicleBrand>(response);
+      return transformed.data;
     }),
 
     // Get single vehicle brand by ID
@@ -527,9 +527,9 @@ export const api = {
     },
 
     // Get active vehicle models for dropdowns - handles response transformation
-    getActive: () => apiClient.get('/vehicle-models?is_active=true&limit=1000').then(response => {
-      const transformed = extractListData(response);
-      return { ...response, data: transformed.data };
+    getActive: (): Promise<VehicleModelWithBrand[]> => apiClient.get('/vehicle-models?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData<VehicleModelWithBrand>(response);
+      return transformed.data;
     }),
 
     // Get single vehicle model by ID
@@ -929,9 +929,9 @@ export const api = {
     }),
 
     // Get active suppliers for dropdowns - handles response transformation
-    getActive: () => apiClient.get('/suppliers?is_active=true&limit=1000').then(response => {
-      const transformed = extractListData(response);
-      return { ...response, data: transformed.data };
+    getActive: (): Promise<Supplier[]> => apiClient.get('/suppliers?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData<Supplier>(response);
+      return transformed.data;
     }),
 
     // Get single supplier by ID
@@ -1006,9 +1006,9 @@ export const api = {
     }),
 
     // Get active products for dropdowns - handles response transformation
-    getActive: () => apiClient.get('/products?is_active=true&limit=1000').then(response => {
-      const transformed = extractListData(response);
-      return { ...response, data: transformed.data };
+    getActive: (): Promise<Product[]> => apiClient.get('/products?is_active=true&limit=1000').then(response => {
+      const transformed = extractListData<Product>(response);
+      return transformed.data;
     }),
 
     // Get single product by ID

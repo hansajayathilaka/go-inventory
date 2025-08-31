@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Grid, List, Package, Tag, Building2, Eye, Edit, Trash2 } from 'lucide-react';
-import type { Product, Category, Supplier, Brand, ProductFilters, ApiResponse, ProductListResponse, CategoryListResponse, SupplierListResponse } from '../types/api';
-import { api } from '../services/api';
+import type { Product, Category, Supplier, Brand, ProductFilters } from '../types/api';
+import { api, extractListData } from '../services/api';
 
 interface ProductListProps {
   onEditProduct?: (product: Product) => void;
@@ -51,17 +51,13 @@ export const ProductList: React.FC<ProductListProps> = ({
         ...(productFilters.max_price && { max_price: productFilters.max_price.toString() })
       });
 
-      const response = await api.get<ApiResponse<ProductListResponse>>(`/products?${params}`);
+      const response = await api.get(`/products?${params}`);
+      const data = extractListData<Product>(response);
       
-      if (response.data.success) {
-        const { products: fetchedProducts, total, total_pages } = response.data.data;
-        setProducts(fetchedProducts);
-        setTotalProducts(total);
-        setTotalPages(total_pages);
-        setCurrentPage(page);
-      } else {
-        setError('Failed to fetch products');
-      }
+      setProducts(data.data || []);
+      setTotalProducts(data.pagination?.total || 0);
+      setTotalPages(data.pagination?.total_pages || 1);
+      setCurrentPage(page);
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('Failed to load products. Please try again.');
@@ -72,10 +68,9 @@ export const ProductList: React.FC<ProductListProps> = ({
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get<ApiResponse<CategoryListResponse>>('/categories');
-      if (response.data.success) {
-        setCategories(response.data.data.categories);
-      }
+      const response = await api.get('/categories');
+      const data = extractListData<Category>(response);
+      setCategories(data.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
@@ -83,10 +78,9 @@ export const ProductList: React.FC<ProductListProps> = ({
 
   const fetchSuppliers = useCallback(async () => {
     try {
-      const response = await api.get<ApiResponse<SupplierListResponse>>('/suppliers');
-      if (response.data.success) {
-        setSuppliers(response.data.data.suppliers);
-      }
+      const response = await api.get('/suppliers');
+      const data = extractListData<Supplier>(response);
+      setSuppliers(data.data || []);
     } catch (err) {
       console.error('Error fetching suppliers:', err);
     }
@@ -94,10 +88,8 @@ export const ProductList: React.FC<ProductListProps> = ({
 
   const fetchBrands = useCallback(async () => {
     try {
-      const response = await api.brands.getActive();
-      if (response.data.success) {
-        setBrands(response.data.data.data.filter((b: Brand) => b.is_active));
-      }
+      const brands = await api.brands.getActive();
+      setBrands((brands as Brand[] || []).filter((b: Brand) => b.is_active));
     } catch (err) {
       console.error('Error fetching brands:', err);
     }

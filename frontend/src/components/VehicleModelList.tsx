@@ -54,8 +54,8 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
   // Load vehicle brands for filter dropdown
   const loadVehicleBrands = async () => {
     try {
-      const response = await api.vehicleBrands.getActive();
-      setVehicleBrands(response.data || []);
+      const vehicleBrands = await api.vehicleBrands.getActive();
+      setVehicleBrands(vehicleBrands as VehicleBrand[] || []);
     } catch (err) {
       console.error('Error loading vehicle brands:', err);
     }
@@ -100,7 +100,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
       const response = await api.vehicleModels.list(params);
       const data = response.data as VehicleModelListResponse;
       
-      setVehicleModels(data.data || []);
+      setVehicleModels(data.data as VehicleModelWithBrand[] || []);
       setTotalPages(data.pagination?.total_pages || 1);
       setTotalVehicleModels(data.pagination?.total || 0);
     } catch (err) {

@@ -184,13 +184,13 @@ const PurchaseReceiptModal: React.FC<PurchaseReceiptModalProps> = ({
   const loadInitialData = async () => {
     try {
       setLoadingData(true);
-      const [suppliersRes, productsRes] = await Promise.all([
+      const [suppliers, products] = await Promise.all([
         api.suppliers.getActive(),
         api.products.getActive(),
       ]);
       
-      setSuppliers(suppliersRes.data || []);
-      setProducts(productsRes.data || []);
+      setSuppliers(suppliers as Supplier[] || []);
+      setProducts(products as Product[] || []);
     } catch (err) {
       console.error('Error loading initial data:', err);
     } finally {

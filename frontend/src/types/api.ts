@@ -180,6 +180,7 @@ export interface StandardErrorResponse {
 }
 
 // Legacy API Response types (maintained for backward compatibility)
+// Note: These are deprecated - use StandardResponse instead
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -187,41 +188,8 @@ export interface ApiResponse<T> {
   timestamp?: string;
 }
 
-export interface ProductListResponse {
-  products: Product[];
-  total: number;
-  page: number;
-  per_page: number;
-  total_pages: number;
-}
-
-export interface CategoryListResponse {
-  categories: Category[];
-  pagination: {
-    page: number;
-    page_size: number;
-    total: number;
-  };
-}
-
-export interface UserListResponse {
-  users: User[];
-  pagination?: {
-    page: number;
-    page_size: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface SupplierListResponse {
-  suppliers: Supplier[];
-  pagination?: {
-    page: number;
-    page_size: number;
-    total: number;
-  };
-}
+// Legacy response structures (for backward compatibility in extractListData function)
+// These are used only for parsing legacy API responses - use the type aliases below for new code
 
 // Single-location inventory types for hardware store
 export interface LowStockItem {
@@ -275,17 +243,6 @@ export interface POSLookupRequest {
   name?: string;
 }
 
-export interface InventoryListResponse {
-  data: InventoryRecord[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-  message: string;
-  success: boolean;
-}
 
 // =============================================================================
 // VEHICLE SPARE PARTS SHOP - NEW TYPES
@@ -349,17 +306,6 @@ export interface UpdateCustomerRequest {
   is_active?: boolean;
 }
 
-export interface CustomerListResponse {
-  data: Customer[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-  message: string;
-  success: boolean;
-}
 
 export interface CustomerListRequest {
   page?: number;
@@ -805,77 +751,6 @@ export interface ProductFiltersExtended extends ProductFilters {
   brand_id?: string;
 }
 
-// List Response Types for New Entities
-export interface CustomerListResponse {
-  data: Customer[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface BrandListResponse {
-  data: Brand[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface VehicleBrandListResponse {
-  data: VehicleBrand[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface VehicleModelListResponse {
-  data: VehicleModelWithBrand[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface PurchaseOrderListResponse {
-  data: PurchaseOrder[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface GRNListResponse {
-  data: GRN[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
-export interface VehicleCompatibilityListResponse {
-  data: VehicleCompatibilityWithDetails[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
-}
-
 // =============================================================================
 // PURCHASE RECEIPT (UNIFIED PO + GRN) TYPES
 // =============================================================================
@@ -1038,12 +913,50 @@ export interface PurchaseReceiptListRequest {
   end_date?: string;
 }
 
-export interface PurchaseReceiptListResponse {
-  data: PurchaseReceipt[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    total_pages: number;
-  };
+
+// =============================================================================
+// TYPE UTILITIES FOR STANDARDIZED RESPONSES
+// =============================================================================
+
+// Type-safe response extraction utilities
+export type ExtractDataType<T> = T extends StandardResponse<infer U> ? U : 
+                                  T extends StandardListResponse<infer U> ? U[] : 
+                                  never;
+
+export type ExtractPaginationType<T> = T extends StandardListResponse<any> ? StandardPagination : never;
+
+// Generic type helpers for API responses
+export interface TypedApiResponse<T> {
+  data: T;
+  pagination?: StandardPagination;
 }
+
+// Helper type for creating standardized API service methods
+export type StandardApiMethod<T> = () => Promise<StandardResponse<T>>;
+export type StandardListApiMethod<T> = (params?: any) => Promise<StandardListResponse<T>>;
+
+// Common response patterns for type safety
+export type ProductResponse = StandardResponse<Product>;
+export type ProductListResponse = StandardListResponse<Product>;
+export type CategoryResponse = StandardResponse<Category>;
+export type CategoryListResponse = StandardListResponse<Category>;
+export type UserResponse = StandardResponse<User>;
+export type UserListResponse = StandardListResponse<User>;
+export type SupplierResponse = StandardResponse<Supplier>;
+export type SupplierListResponse = StandardListResponse<Supplier>;
+export type CustomerResponse = StandardResponse<Customer>;
+export type CustomerListResponse = StandardListResponse<Customer>;
+export type BrandResponse = StandardResponse<Brand>;
+export type BrandListResponse = StandardListResponse<Brand>;
+export type VehicleBrandResponse = StandardResponse<VehicleBrand>;
+export type VehicleBrandListResponse = StandardListResponse<VehicleBrand>;
+export type VehicleModelResponse = StandardResponse<VehicleModel>;
+export type VehicleModelListResponse = StandardListResponse<VehicleModel>;
+export type VehicleCompatibilityResponse = StandardResponse<VehicleCompatibility>;
+export type VehicleCompatibilityListResponse = StandardListResponse<VehicleCompatibilityWithDetails>;
+export type PurchaseReceiptResponse = StandardResponse<PurchaseReceipt>;
+export type PurchaseReceiptListResponse = StandardListResponse<PurchaseReceipt>;
+export type InventoryResponse = StandardResponse<InventoryRecord>;
+export type InventoryListResponse = StandardListResponse<InventoryRecord>;
+export type AuditLogResponse = StandardResponse<AuditLog>;
+export type AuditLogListResponse = StandardListResponse<AuditLog>;

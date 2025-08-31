@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Package, DollarSign, Loader, Car, Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
-import type { Product, Category, Supplier, Brand, ApiResponse, CategoryListResponse, SupplierListResponse, VehicleCompatibilityWithDetails, VehicleModelWithBrand, VehicleBrand, CreateVehicleCompatibilityRequest } from '../types/api';
-import { api } from '../services/api';
+import type { Product, Category, Supplier, Brand, VehicleCompatibilityWithDetails, VehicleModelWithBrand, VehicleBrand, CreateVehicleCompatibilityRequest, ApiResponse } from '../types/api';
+import { api, extractListData } from '../services/api';
 
 interface ProductFormData {
   sku: string;
@@ -89,10 +89,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get<ApiResponse<CategoryListResponse>>('/categories');
-      if (response.data.success) {
-        setCategories(response.data.data.categories);
-      }
+      const response = await api.get('/categories');
+      const data = extractListData<Category>(response);
+      setCategories(data.data || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
@@ -100,10 +99,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const fetchSuppliers = useCallback(async () => {
     try {
-      const response = await api.get<ApiResponse<SupplierListResponse>>('/suppliers');
-      if (response.data.success) {
-        setSuppliers(response.data.data.suppliers.filter(s => s.is_active));
-      }
+      const response = await api.get('/suppliers');
+      const data = extractListData<Supplier>(response);
+      setSuppliers((data.data || []).filter(s => s.is_active));
     } catch (err) {
       console.error('Error fetching suppliers:', err);
     }
@@ -111,10 +109,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const fetchBrands = useCallback(async () => {
     try {
-      const response = await api.brands.getActive();
-      if (response.data.success) {
-        setBrands(response.data.data.data.filter((b: Brand) => b.is_active));
-      }
+      const brands = await api.brands.getActive();
+      setBrands((brands as Brand[] || []).filter((b: Brand) => b.is_active));
     } catch (err) {
       console.error('Error fetching brands:', err);
     }
@@ -122,10 +118,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const fetchVehicleBrands = useCallback(async () => {
     try {
-      const response = await api.vehicleBrands.getActive();
-      if (response.data.success) {
-        setVehicleBrands(response.data.data.data.filter((b: VehicleBrand) => b.is_active));
-      }
+      const vehicleBrands = await api.vehicleBrands.getActive();
+      setVehicleBrands((vehicleBrands as VehicleBrand[] || []).filter((b: VehicleBrand) => b.is_active));
     } catch (err) {
       console.error('Error fetching vehicle brands:', err);
     }
@@ -133,10 +127,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   const fetchVehicleModels = useCallback(async () => {
     try {
-      const response = await api.vehicleModels.getActive();
-      if (response.data.success) {
-        setVehicleModels(response.data.data.data.filter((m: VehicleModelWithBrand) => m.is_active));
-      }
+      const vehicleModels = await api.vehicleModels.getActive();
+      setVehicleModels((vehicleModels as VehicleModelWithBrand[] || []).filter((m: VehicleModelWithBrand) => m.is_active));
     } catch (err) {
       console.error('Error fetching vehicle models:', err);
     }

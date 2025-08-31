@@ -42,8 +42,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
   const loadVehicleBrands = async () => {
     try {
       setBrandsLoading(true);
-      const response = await api.vehicleBrands.getActive();
-      setVehicleBrands(response.data || []);
+      const vehicleBrands = await api.vehicleBrands.getActive();
+      setVehicleBrands(vehicleBrands as VehicleBrand[] || []);
     } catch (err) {
       console.error('Error loading vehicle brands:', err);
     } finally {
