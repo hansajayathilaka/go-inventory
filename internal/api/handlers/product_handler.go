@@ -32,18 +32,19 @@ func NewProductHandler(productService productBusiness.Service, inventoryService 
 // @Accept json
 // @Produce json
 // @Param product body dto.ProductCreateRequest true "Product creation data"
-// @Success 201 {object} dto.ApiResponse{data=dto.ProductResponse} "Product created successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid request"
-// @Failure 409 {object} dto.ErrorResponse "Product already exists"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 201 {object} dto.StandardResponse[dto.ProductResponse] "Product created successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
+// @Failure 409 {object} dto.StandardErrorResponse "Product already exists"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products [post]
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	var req dto.ProductCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_REQUEST",
+			"Invalid request",
+			err.Error(),
+		))
 		return
 	}
 
@@ -99,11 +100,10 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	response := h.convertToResponse(product)
-	c.JSON(http.StatusCreated, dto.ApiResponse{
-		Success: true,
-		Message: "Product created successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusCreated, dto.CreateStandardSuccessResponse(
+		response,
+		"Product created successfully",
+	))
 }
 
 // GetProducts godoc
@@ -118,9 +118,9 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 // @Param supplier_id query string false "Filter by supplier ID"
 // @Param brand_id query string false "Filter by brand ID"
 // @Param is_active query boolean false "Filter by active status"
-// @Success 200 {object} dto.ApiResponse{data=dto.ProductListResponse} "Products retrieved successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardListResponse[dto.ProductResponse] "Products retrieved successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products [get]
 func (h *ProductHandler) GetProducts(c *gin.Context) {
 	page := 1
@@ -210,26 +210,25 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 
 	total, err := h.productService.CountProducts(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to count products",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, dto.CreateStandardErrorResponse(
+			"COUNT_FAILED",
+			"Failed to count products",
+			err.Error(),
+		))
 		return
 	}
 
-	response := dto.ProductListResponse{
-		Products:   h.convertToResponseList(products),
-		Total:      total,
-		Page:       page,
-		PerPage:    perPage,
-		TotalPages: int((total + int64(perPage) - 1) / int64(perPage)),
-	}
+	// Create standardized pagination
+	pagination := dto.CreateStandardPagination(page, perPage, total)
+	
+	// Create standardized list response
+	response := dto.CreateStandardListResponse(
+		h.convertToResponseList(products),
+		pagination,
+		"Products retrieved successfully",
+	)
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Products retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, response)
 }
 
 // GetProduct godoc
@@ -239,10 +238,10 @@ func (h *ProductHandler) GetProducts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.ApiResponse{data=dto.ProductResponse} "Product retrieved successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.ErrorResponse "Product not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[dto.ProductResponse] "Product retrieved successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{id} [get]
 func (h *ProductHandler) GetProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -283,11 +282,10 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 		response.TotalStock = &totalStock
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Product retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Product retrieved successfully",
+	))
 }
 
 // UpdateProduct godoc
@@ -298,11 +296,11 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Product ID"
 // @Param product body dto.ProductUpdateRequest true "Product update data"
-// @Success 200 {object} dto.ApiResponse{data=dto.ProductResponse} "Product updated successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid request"
-// @Failure 404 {object} dto.ErrorResponse "Product not found"
-// @Failure 409 {object} dto.ErrorResponse "Conflict with existing data"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[dto.ProductResponse] "Product updated successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid request"
+// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
+// @Failure 409 {object} dto.StandardErrorResponse "Conflict with existing data"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{id} [put]
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -317,10 +315,11 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 
 	var req dto.ProductUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, dto.CreateStandardErrorResponse(
+			"INVALID_REQUEST",
+			"Invalid request",
+			err.Error(),
+		))
 		return
 	}
 
@@ -411,11 +410,10 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	response := h.convertToResponse(product)
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Product updated successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Product updated successfully",
+	))
 }
 
 // DeleteProduct godoc
@@ -425,10 +423,10 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.ApiResponse "Product deleted successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.ErrorResponse "Product not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[interface{}] "Product deleted successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{id} [delete]
 func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
@@ -457,10 +455,10 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Product deleted successfully",
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+		nil,
+		"Product deleted successfully",
+	))
 }
 
 // SearchProducts godoc
@@ -472,9 +470,9 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 // @Param q query string true "Search query"
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(20)
-// @Success 200 {object} dto.ApiResponse{data=dto.ProductListResponse} "Products found"
-// @Failure 400 {object} dto.ErrorResponse "Invalid parameters"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardListResponse[dto.ProductResponse] "Products found"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid parameters"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/search [get]
 func (h *ProductHandler) SearchProducts(c *gin.Context) {
 	query := c.Query("q")
@@ -515,19 +513,17 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 	// For search, we return the actual count of results found
 	total := int64(len(products))
 
-	response := dto.ProductListResponse{
-		Products:   h.convertToResponseList(products),
-		Total:      total,
-		Page:       page,
-		PerPage:    perPage,
-		TotalPages: int((total + int64(perPage) - 1) / int64(perPage)),
-	}
+	// Create standardized pagination
+	pagination := dto.CreateStandardPagination(page, perPage, total)
+	
+	// Create standardized list response
+	response := dto.CreateStandardListResponse(
+		h.convertToResponseList(products),
+		pagination,
+		"Products found",
+	)
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Products found",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, response)
 }
 
 // GetProductInventory godoc
@@ -537,10 +533,10 @@ func (h *ProductHandler) SearchProducts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductInventoryResponse} "Product inventory retrieved successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.ErrorResponse "Product not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[[]dto.ProductInventoryResponse] "Product inventory retrieved successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{id}/inventory [get]
 func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 	idStr := c.Param("id")
@@ -581,11 +577,10 @@ func (h *ProductHandler) GetProductInventory(c *gin.Context) {
 	}
 
 	response := h.convertInventoryToResponse(inventory)
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Product inventory retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Product inventory retrieved successfully",
+	))
 }
 
 // Helper methods
@@ -756,8 +751,8 @@ func (h *ProductHandler) POSLookup(c *gin.Context) {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(20)
-// @Success 200 {object} dto.ApiResponse{data=[]dto.POSProduct} "POS products"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[[]dto.POSProduct] "POS products"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/pos-ready [get]
 func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -814,11 +809,10 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 		posProducts = append(posProducts, posProduct)
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "POS products retrieved successfully",
-		Data:    posProducts,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		posProducts,
+		"POS products retrieved successfully",
+	))
 }
 
 // GetProductsByBrand godoc
@@ -828,10 +822,10 @@ func (h *ProductHandler) GetPOSReady(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param brand_id path string true "Brand ID"
-// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid brand ID"
-// @Failure 404 {object} dto.ErrorResponse "Brand not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[[]dto.ProductResponse] "Products retrieved successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid brand ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Brand not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/brand/{brand_id} [get]
 func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 	idStr := c.Param("brand_id")
@@ -862,11 +856,10 @@ func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 	}
 
 	response := h.convertToResponseList(products)
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Products retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Products retrieved successfully",
+	))
 }
 
 // GetProductsWithoutBrand godoc
@@ -875,8 +868,8 @@ func (h *ProductHandler) GetProductsByBrand(c *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Success 200 {object} dto.ApiResponse{data=[]dto.ProductResponse} "Products retrieved successfully"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[[]dto.ProductResponse] "Products retrieved successfully"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/no-brand [get]
 func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 	products, err := h.productService.GetProductsWithoutBrand(c.Request.Context())
@@ -889,11 +882,10 @@ func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 	}
 
 	response := h.convertToResponseList(products)
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Products without brand retrieved successfully",
-		Data:    response,
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse(
+		response,
+		"Products without brand retrieved successfully",
+	))
 }
 
 // SetProductBrand godoc
@@ -904,10 +896,10 @@ func (h *ProductHandler) GetProductsWithoutBrand(c *gin.Context) {
 // @Produce json
 // @Param product_id path string true "Product ID"
 // @Param brand_id path string true "Brand ID"
-// @Success 200 {object} dto.ApiResponse "Brand assigned successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid product or brand ID"
-// @Failure 404 {object} dto.ErrorResponse "Product or brand not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[interface{}] "Brand assigned successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid product or brand ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Product or brand not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{product_id}/brand/{brand_id} [put]
 func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 	productIDStr := c.Param("product_id")
@@ -953,10 +945,10 @@ func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Brand assigned successfully",
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+		nil,
+		"Brand assigned successfully",
+	))
 }
 
 // RemoveProductBrand godoc
@@ -966,10 +958,10 @@ func (h *ProductHandler) SetProductBrand(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param product_id path string true "Product ID"
-// @Success 200 {object} dto.ApiResponse "Brand removed successfully"
-// @Failure 400 {object} dto.ErrorResponse "Invalid product ID"
-// @Failure 404 {object} dto.ErrorResponse "Product not found"
-// @Failure 500 {object} dto.ErrorResponse "Internal server error"
+// @Success 200 {object} dto.StandardResponse[interface{}] "Brand removed successfully"
+// @Failure 400 {object} dto.StandardErrorResponse "Invalid product ID"
+// @Failure 404 {object} dto.StandardErrorResponse "Product not found"
+// @Failure 500 {object} dto.StandardErrorResponse "Internal server error"
 // @Router /products/{product_id}/brand [delete]
 func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
 	productIDStr := c.Param("product_id")
@@ -998,8 +990,8 @@ func (h *ProductHandler) RemoveProductBrand(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ApiResponse{
-		Success: true,
-		Message: "Brand removed successfully",
-	})
+	c.JSON(http.StatusOK, dto.CreateStandardSuccessResponse[interface{}](
+		nil,
+		"Brand removed successfully",
+	))
 }

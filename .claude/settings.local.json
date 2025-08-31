@@ -59,7 +59,9 @@
       "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m .)",
       "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run TestAuthentication)",
       "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestAuthentication\")",
-      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestHealthCheck\")"
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestHealthCheck\")",
+      "Bash(npm run dev:*)",
+      "Read(/workspaces/**)"
     ],
     "deny": [],
     "ask": []
