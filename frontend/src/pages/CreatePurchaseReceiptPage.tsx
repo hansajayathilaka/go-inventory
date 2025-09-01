@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Package, User, DollarSign, Plus, Trash2, Save, Send } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -80,16 +80,16 @@ const CreatePurchaseReceiptPage: React.FC = () => {
     if (isEdit && id) {
       loadPurchaseReceipt(id);
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, loadPurchaseReceipt]);
 
-  const loadPurchaseReceipt = async (receiptId: string) => {
+  const loadPurchaseReceipt = useCallback(async (receiptId: string) => {
     try {
       const response = await api.get(`/purchase-receipts/${receiptId}`);
-      const receipt = (response.data as any).data as PurchaseReceipt;
+      const receipt = (response.data as { data: PurchaseReceipt }).data;
       
       setFormData({
         supplier_id: receipt.supplier_id,
-        status: receipt.status === 'pending' ? 'draft' : receipt.status as any,
+        status: receipt.status === 'pending' ? 'draft' : receipt.status as 'draft' | 'submitted' | 'received' | 'cancelled',
         order_date: receipt.order_date,
         expected_date: receipt.expected_date || '',
         received_date: receipt.received_date || '',
@@ -118,7 +118,7 @@ const CreatePurchaseReceiptPage: React.FC = () => {
         description: "Please try again later.",
       });
     }
-  };
+  }, [toast]);
 
   const addItem = () => {
     setItems([...items, {
@@ -133,7 +133,7 @@ const CreatePurchaseReceiptPage: React.FC = () => {
     }]);
   };
 
-  const updateItem = (index: number, field: keyof PurchaseReceiptItemForm, value: any) => {
+  const updateItem = (index: number, field: keyof PurchaseReceiptItemForm, value: string | number) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
 
@@ -328,7 +328,7 @@ const CreatePurchaseReceiptPage: React.FC = () => {
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}>
+                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'submitted' | 'received' | 'cancelled' }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -461,8 +461,8 @@ const CreatePurchaseReceiptPage: React.FC = () => {
                                 name: p.name,
                                 sku: p.sku,
                                 cost_price: p.cost_price,
-                                quantity_on_hand: (p as any).quantity_on_hand,
-                                category: (p as any).category
+                                quantity_on_hand: (p as Product & { quantity_on_hand?: number }).quantity_on_hand || 0,
+                                category: (p as Product & { category?: Category }).category
                               }))}
                               value={item.product_id}
                               onSelect={(productId) => updateItem(index, 'product_id', productId)}
@@ -547,8 +547,8 @@ const CreatePurchaseReceiptPage: React.FC = () => {
                           name: p.name,
                           sku: p.sku,
                           cost_price: p.cost_price,
-                          quantity_on_hand: (p as any).quantity_on_hand,
-                          category: (p as any).category
+                          quantity_on_hand: (p as Product & { quantity_on_hand?: number }).quantity_on_hand || 0,
+                          category: (p as Product & { category?: Category }).category
                         }))}
                         value=""
                         onSelect={(productId) => {

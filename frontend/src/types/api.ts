@@ -90,8 +90,8 @@ export interface AuditLog {
   table_name: string;
   record_id: string;
   action: 'CREATE' | 'UPDATE' | 'DELETE';
-  old_values?: Record<string, any>;
-  new_values?: Record<string, any>;
+  old_values?: Record<string, unknown>;
+  new_values?: Record<string, unknown>;
   user_id: string;
   user?: User;
   timestamp: string;
@@ -923,7 +923,7 @@ export type ExtractDataType<T> = T extends StandardResponse<infer U> ? U :
                                   T extends StandardListResponse<infer U> ? U[] : 
                                   never;
 
-export type ExtractPaginationType<T> = T extends StandardListResponse<any> ? StandardPagination : never;
+export type ExtractPaginationType<T> = T extends StandardListResponse<unknown> ? StandardPagination : never;
 
 // Generic type helpers for API responses
 export interface TypedApiResponse<T> {
@@ -933,7 +933,7 @@ export interface TypedApiResponse<T> {
 
 // Helper type for creating standardized API service methods
 export type StandardApiMethod<T> = () => Promise<StandardResponse<T>>;
-export type StandardListApiMethod<T> = (params?: any) => Promise<StandardListResponse<T>>;
+export type StandardListApiMethod<T> = (params?: Record<string, unknown>) => Promise<StandardListResponse<T>>;
 
 // Common response patterns for type safety
 export type ProductResponse = StandardResponse<Product>;

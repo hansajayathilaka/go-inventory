@@ -49,7 +49,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       setLoading(true);
       const response = await api.get('/categories?parent_id=null');
       // API returns data in standardized structure: { data: [...] }
-      const apiResponse = response.data as any;
+      const apiResponse = response.data as { data: Category[] };
       const categories = apiResponse?.data || [];
       const treeNodes = categories.map((category: Category) => ({
         ...category,
@@ -59,9 +59,10 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       }));
       setRootCategories(treeNodes);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Extract the specific error message from the API response
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Failed to load categories';
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      const errorMessage = apiError.response?.data?.message || apiError.response?.data?.error || 'Failed to load categories';
       setError(errorMessage);
       console.error('Error loading categories:', err);
     } finally {
@@ -74,7 +75,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       setLoading(true);
       const response = await api.get(`/categories/search?q=${encodeURIComponent(query)}`);
       // API returns data in standardized structure: { data: [...] }
-      const apiResponse = response.data as any;
+      const apiResponse = response.data as { data: Category[] };
       const categories = apiResponse?.data || [];
       const treeNodes = categories.map((category: Category) => ({
         ...category,
@@ -84,7 +85,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       }));
       setRootCategories(treeNodes);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Extract the specific error message from the API response
       const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Failed to search categories';
       setError(errorMessage);
@@ -98,7 +99,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     try {
       const response = await api.get(`/categories?parent_id=${parentId}`);
       // API returns data in standardized structure: { data: [...] }
-      const apiResponse = response.data as any;
+      const apiResponse = response.data as { data: Category[] };
       const categories = apiResponse?.data || [];
       return categories.map((category: Category) => ({
         ...category,
