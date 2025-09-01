@@ -3,14 +3,26 @@ import { Plus } from 'lucide-react';
 import type { Customer } from '../types/api';
 import CustomerList from '../components/CustomerList';
 import CustomerModal from '../components/CustomerModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const CustomersPage: React.FC = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [refreshCustomers, setRefreshCustomers] = useState(0);
+  const { toast } = useToast();
 
   const handleAddCustomer = () => {
     setSelectedCustomer(null);
@@ -46,9 +58,17 @@ const CustomersPage: React.FC = () => {
       setRefreshCustomers(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedCustomer(null);
+      toast({
+        title: "Customer deleted",
+        description: `${selectedCustomer.name} has been successfully removed.`,
+      });
     } catch (error) {
       console.error('Error deleting customer:', error);
-      // TODO: Show error notification
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete customer. Please try again.",
+      });
     }
   };
 
@@ -62,13 +82,10 @@ const CustomersPage: React.FC = () => {
             Manage your customer relationships with comprehensive contact information and purchase history.
           </p>
         </div>
-        <button
-          onClick={handleAddCustomer}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-        >
+        <Button onClick={handleAddCustomer}>
           <Plus className="h-4 w-4 mr-2" />
           Add Customer
-        </button>
+        </Button>
       </div>
 
       {/* Customer List */}
@@ -90,19 +107,31 @@ const CustomersPage: React.FC = () => {
         customer={selectedCustomer}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedCustomer(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Customer"
-        message={`Are you sure you want to delete "${selectedCustomer?.name}"? This action cannot be undone and will remove all customer data including purchase history.`}
-        confirmButtonText="Delete Customer"
-        confirmButtonStyle="danger"
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedCustomer?.name}"? This action cannot be undone and will remove all customer data including purchase history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteModal(false);
+              setSelectedCustomer(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Customer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

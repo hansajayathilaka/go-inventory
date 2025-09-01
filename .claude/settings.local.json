@@ -62,9 +62,20 @@
       "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m . -run \"TestAPITestSuite/TestHealthCheck\")",
       "Bash(npm run dev:*)",
       "Read(/workspaces/**)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(npm ls:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_type"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ]
 }

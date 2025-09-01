@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,14 +8,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { 
   AlertTriangle, 
   Trash2, 
   Info, 
   CheckCircle, 
   XCircle,
-  AlertCircle,
   type LucideIcon 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

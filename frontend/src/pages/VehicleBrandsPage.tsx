@@ -3,14 +3,26 @@ import { Plus } from 'lucide-react';
 import type { VehicleBrand } from '../types/api';
 import VehicleBrandList from '../components/VehicleBrandList';
 import VehicleBrandModal from '../components/VehicleBrandModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const VehicleBrandsPage: React.FC = () => {
   const [showVehicleBrandModal, setShowVehicleBrandModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehicleBrand, setSelectedVehicleBrand] = useState<VehicleBrand | null>(null);
   const [refreshVehicleBrands, setRefreshVehicleBrands] = useState(0);
+  const { toast } = useToast();
 
   const handleAddVehicleBrand = () => {
     setSelectedVehicleBrand(null);
@@ -46,9 +58,17 @@ const VehicleBrandsPage: React.FC = () => {
       setRefreshVehicleBrands(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedVehicleBrand(null);
+      toast({
+        title: "Vehicle brand deleted",
+        description: `${selectedVehicleBrand.name} has been successfully removed.`,
+      });
     } catch (error) {
       console.error('Error deleting vehicle brand:', error);
-      // TODO: Show error notification
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete vehicle brand. Please try again.",
+      });
     }
   };
 
@@ -62,13 +82,10 @@ const VehicleBrandsPage: React.FC = () => {
             Manage vehicle manufacturers and automotive brands. Control which vehicle brands appear in vehicle model forms and maintain comprehensive manufacturer information.
           </p>
         </div>
-        <button
-          onClick={handleAddVehicleBrand}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-        >
+        <Button onClick={handleAddVehicleBrand}>
           <Plus className="h-4 w-4 mr-2" />
           Add Vehicle Brand
-        </button>
+        </Button>
       </div>
 
       {/* Vehicle Brand List */}
@@ -90,19 +107,31 @@ const VehicleBrandsPage: React.FC = () => {
         vehicleBrand={selectedVehicleBrand}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedVehicleBrand(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Vehicle Brand"
-        message={`Are you sure you want to delete "${selectedVehicleBrand?.name}"? This action cannot be undone and will remove the vehicle brand from all associated vehicle models. Vehicle models using this brand will have their brand association cleared.`}
-        confirmButtonText="Delete Vehicle Brand"
-        confirmButtonStyle="danger"
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Brand</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedVehicleBrand?.name}"? This action cannot be undone and will remove the vehicle brand from all associated vehicle models. Vehicle models using this brand will have their brand association cleared.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteModal(false);
+              setSelectedVehicleBrand(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Vehicle Brand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

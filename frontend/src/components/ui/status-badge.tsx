@@ -1,4 +1,3 @@
-import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
@@ -8,7 +7,6 @@ import {
   XCircle, 
   Info, 
   AlertTriangle,
-  Zap,
   Package,
   UserCheck,
   ShieldCheck,
@@ -189,6 +187,7 @@ export interface StatusBadgeProps {
   size?: 'sm' | 'default' | 'lg';
   className?: string;
   iconClassName?: string;
+  icon?: LucideIcon;
 }
 
 export function StatusBadge({
@@ -198,10 +197,11 @@ export function StatusBadge({
   size = 'default',
   className,
   iconClassName,
+  icon,
 }: StatusBadgeProps) {
   const config = statusConfigs[status];
   const displayLabel = label || config.label;
-  const Icon = config.icon;
+  const Icon = icon || config.icon;
 
   return (
     <Badge

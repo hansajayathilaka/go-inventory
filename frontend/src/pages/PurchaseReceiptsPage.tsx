@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { PurchaseReceipt } from '../types/api';
 import PurchaseReceiptList from '../components/PurchaseReceiptList';
-import PurchaseReceiptModal from '../components/PurchaseReceiptModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const PurchaseReceiptsPage: React.FC = () => {
-  const [showPurchaseReceiptModal, setShowPurchaseReceiptModal] = useState(false);
-  const [modalMode, setModalMode] = useState<'order' | 'receive' | 'view'>('order');
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
@@ -20,26 +31,15 @@ const PurchaseReceiptsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAddPurchaseReceipt = () => {
-    setSelectedPurchaseReceipt(null);
-    setModalMode('order');
-    setShowPurchaseReceiptModal(true);
+    navigate('/purchase-receipts/create');
   };
 
   const handleEditPurchaseReceipt = (purchaseReceipt: PurchaseReceipt) => {
-    setSelectedPurchaseReceipt(purchaseReceipt);
-    // Determine mode based on status
-    if (purchaseReceipt.status === 'received' || purchaseReceipt.status === 'partial') {
-      setModalMode('receive');
-    } else {
-      setModalMode('order');
-    }
-    setShowPurchaseReceiptModal(true);
+    navigate(`/purchase-receipts/edit/${purchaseReceipt.id}`);
   };
 
   const handleViewPurchaseReceipt = (purchaseReceipt: PurchaseReceipt) => {
-    setSelectedPurchaseReceipt(purchaseReceipt);
-    setModalMode('view');
-    setShowPurchaseReceiptModal(true);
+    navigate(`/purchase-receipts/view/${purchaseReceipt.id}`);
   };
 
   const handleDeletePurchaseReceipt = (purchaseReceipt: PurchaseReceipt) => {
@@ -58,9 +58,7 @@ const PurchaseReceiptsPage: React.FC = () => {
   };
 
   const handleReceivePurchaseReceipt = (purchaseReceipt: PurchaseReceipt) => {
-    setSelectedPurchaseReceipt(purchaseReceipt);
-    setModalMode('receive');
-    setShowPurchaseReceiptModal(true);
+    navigate(`/purchase-receipts/receive/${purchaseReceipt.id}`);
   };
 
   const handleCompletePurchaseReceipt = (purchaseReceipt: PurchaseReceipt) => {
@@ -73,9 +71,6 @@ const PurchaseReceiptsPage: React.FC = () => {
     setShowCancelModal(true);
   };
 
-  const handlePurchaseReceiptSaved = () => {
-    setRefreshPurchaseReceipts(prev => prev + 1);
-  };
 
   const confirmDelete = async () => {
     if (!selectedPurchaseReceipt || isLoading) return;
@@ -86,9 +81,17 @@ const PurchaseReceiptsPage: React.FC = () => {
       setRefreshPurchaseReceipts(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedPurchaseReceipt(null);
+      toast({
+        title: "Purchase receipt deleted",
+        description: `"${selectedPurchaseReceipt.receipt_number}" has been deleted successfully.`,
+      });
     } catch (error) {
       console.error('Error deleting purchase receipt:', error);
-      // TODO: Show error notification
+      toast({
+        variant: "destructive",
+        title: "Error deleting purchase receipt",
+        description: "Please try again later.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -185,21 +188,18 @@ const PurchaseReceiptsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Purchase Receipts</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Purchase Receipts</h1>
+          <p className="text-muted-foreground mt-1">
             Unified purchase order and goods receipt management
           </p>
         </div>
-        <button
-          onClick={handleAddPurchaseReceipt}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={20} />
+        <Button onClick={handleAddPurchaseReceipt}>
+          <Plus className="h-4 w-4 mr-2" />
           Create Purchase Receipt
-        </button>
+        </Button>
       </div>
 
       {/* Purchase Receipt List */}
@@ -215,48 +215,61 @@ const PurchaseReceiptsPage: React.FC = () => {
         onCancelPurchaseReceipt={handleCancelPurchaseReceipt}
       />
 
-      {/* Purchase Receipt Modal */}
-      {showPurchaseReceiptModal && (
-        <PurchaseReceiptModal
-          isOpen={showPurchaseReceiptModal}
-          onClose={() => setShowPurchaseReceiptModal(false)}
-          onSave={handlePurchaseReceiptSaved}
-          purchaseReceipt={selectedPurchaseReceipt}
-          mode={modalMode}
-        />
-      )}
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Purchase Receipt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete purchase receipt "{selectedPurchaseReceipt?.receipt_number}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteModal(false);
+              setSelectedPurchaseReceipt(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <ConfirmationModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={confirmDelete}
-          title="Delete Purchase Receipt"
-          message={`Are you sure you want to delete purchase receipt "${selectedPurchaseReceipt?.receipt_number}"? This action cannot be undone.`}
-          confirmButtonText="Delete"
-          confirmButtonStyle="danger"
-          isLoading={isLoading}
-        />
-      )}
-
-      {/* Approve Confirmation Modal */}
-      {showApproveModal && (
-        <ConfirmationModal
-          isOpen={showApproveModal}
-          onClose={() => setShowApproveModal(false)}
-          onConfirm={confirmApprove}
-          title="Approve Purchase Receipt"
-          message={`Are you sure you want to approve purchase receipt "${selectedPurchaseReceipt?.receipt_number}"? Once approved, it can be sent to the supplier.`}
-          confirmButtonText="Approve"
-          confirmButtonStyle="primary"
-          isLoading={isLoading}
-        />
-      )}
+      {/* Approve Confirmation Dialog */}
+      <AlertDialog open={showApproveModal} onOpenChange={setShowApproveModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve Purchase Receipt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to approve purchase receipt "{selectedPurchaseReceipt?.receipt_number}"? Once approved, it can be sent to the supplier.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowApproveModal(false);
+              setSelectedPurchaseReceipt(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmApprove} disabled={isLoading}>
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Approve
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Send Confirmation Modal */}
       {showSendModal && (
-        <ConfirmationModal
+        <ConfirmationDialog
           isOpen={showSendModal}
           onClose={() => setShowSendModal(false)}
           onConfirm={confirmSend}
@@ -270,7 +283,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Receive Confirmation Modal */}
       {showReceiveModal && (
-        <ConfirmationModal
+        <ConfirmationDialog
           isOpen={showReceiveModal}
           onClose={() => setShowReceiveModal(false)}
           onConfirm={confirmReceive}
@@ -284,7 +297,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Complete Confirmation Modal */}
       {showCompleteModal && (
-        <ConfirmationModal
+        <ConfirmationDialog
           isOpen={showCompleteModal}
           onClose={() => setShowCompleteModal(false)}
           onConfirm={confirmComplete}
@@ -298,7 +311,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
-        <ConfirmationModal
+        <ConfirmationDialog
           isOpen={showCancelModal}
           onClose={() => setShowCancelModal(false)}
           onConfirm={confirmCancel}

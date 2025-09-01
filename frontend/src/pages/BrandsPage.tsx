@@ -3,14 +3,26 @@ import { Plus } from 'lucide-react';
 import type { Brand } from '../types/api';
 import BrandList from '../components/BrandList';
 import BrandModal from '../components/BrandModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const BrandsPage: React.FC = () => {
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [refreshBrands, setRefreshBrands] = useState(0);
+  const { toast } = useToast();
 
   const handleAddBrand = () => {
     setSelectedBrand(null);
@@ -46,9 +58,17 @@ const BrandsPage: React.FC = () => {
       setRefreshBrands(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedBrand(null);
+      toast({
+        title: "Brand deleted",
+        description: `${selectedBrand.name} has been successfully removed.`,
+      });
     } catch (error) {
       console.error('Error deleting brand:', error);
-      // TODO: Show error notification
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete brand. Please try again.",
+      });
     }
   };
 
@@ -62,13 +82,10 @@ const BrandsPage: React.FC = () => {
             Manage vehicle spare part manufacturers and brands. Control which brands appear in product forms and maintain comprehensive brand information.
           </p>
         </div>
-        <button
-          onClick={handleAddBrand}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-        >
+        <Button onClick={handleAddBrand}>
           <Plus className="h-4 w-4 mr-2" />
           Add Brand
-        </button>
+        </Button>
       </div>
 
       {/* Brand List */}
@@ -90,19 +107,31 @@ const BrandsPage: React.FC = () => {
         brand={selectedBrand}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedBrand(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Brand"
-        message={`Are you sure you want to delete "${selectedBrand?.name}"? This action cannot be undone and will remove the brand from all associated products. Products using this brand will have their brand association cleared.`}
-        confirmButtonText="Delete Brand"
-        confirmButtonStyle="danger"
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Brand</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedBrand?.name}"? This action cannot be undone and will remove the brand from all associated products. Products using this brand will have their brand association cleared.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteModal(false);
+              setSelectedBrand(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Brand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -18,6 +18,7 @@ import VehicleModelsPage from './pages/VehicleModelsPage';
 import CompatibilitiesPage from './pages/CompatibilitiesPage';
 import VehicleManagementPage from './pages/VehicleManagementPage';
 import PurchaseReceiptsPage from './pages/PurchaseReceiptsPage';
+import CreatePurchaseReceiptPage from './pages/CreatePurchaseReceiptPage';
 import AuditPage from './pages/AuditPage';
 
 // Demo Components
@@ -185,6 +186,50 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <PurchaseReceiptsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/purchase-receipts/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreatePurchaseReceiptPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/purchase-receipts/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreatePurchaseReceiptPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/purchase-receipts/view/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreatePurchaseReceiptPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/purchase-receipts/receive/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreatePurchaseReceiptPage />
                   </Layout>
                 </ProtectedRoute>
               }

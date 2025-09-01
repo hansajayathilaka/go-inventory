@@ -1,8 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, ShoppingCart, AlertTriangle, TrendingUp, Activity } from 'lucide-react';
+import { Package, ShoppingCart, AlertTriangle, TrendingUp, Activity, Plus, RefreshCw, FolderPlus, UserPlus } from 'lucide-react';
 // import { api } from '../services/api'; // TODO: Use this when dashboard API is ready
 import type { DashboardStats } from '../types/api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 const DashboardPage: React.FC = () => {
   // For now, we'll use mock data since the API doesn't have a dashboard endpoint yet
@@ -31,29 +35,37 @@ const DashboardPage: React.FC = () => {
       name: 'Total Products',
       value: stats.total_products,
       icon: Package,
-      color: 'bg-blue-500',
-      change: '+5 this week'
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100 dark:bg-blue-900/20',
+      change: '+5 this week',
+      changeType: 'positive'
     },
     {
       name: 'In Stock',
       value: stats.in_stock_items,
       icon: ShoppingCart,
-      color: 'bg-green-500',
-      change: '86% of total'
+      color: 'text-green-600',
+      bgColor: 'bg-green-100 dark:bg-green-900/20',
+      change: '86% of total',
+      changeType: 'neutral'
     },
     {
       name: 'Low Stock',
       value: stats.low_stock_items,
       icon: AlertTriangle,
-      color: 'bg-yellow-500',
-      change: 'Need reorder'
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
+      change: 'Need reorder',
+      changeType: 'warning'
     },
     {
       name: 'Out of Stock',
       value: stats.out_of_stock_items,
       icon: TrendingUp,
-      color: 'bg-red-500',
-      change: 'Urgent'
+      color: 'text-red-600',
+      bgColor: 'bg-red-100 dark:bg-red-900/20',
+      change: 'Urgent',
+      changeType: 'negative'
     }
   ];
 
@@ -65,10 +77,37 @@ const DashboardPage: React.FC = () => {
     { id: 5, action: 'Category created', item: 'Power Tools', time: '2 days ago' }
   ];
 
+  const quickActions = [
+    {
+      name: 'Add Product',
+      icon: Plus,
+      color: 'bg-blue-600 hover:bg-blue-700',
+      action: () => console.log('Navigate to products page')
+    },
+    {
+      name: 'Update Stock',
+      icon: RefreshCw,
+      color: 'bg-green-600 hover:bg-green-700',
+      action: () => console.log('Navigate to inventory page')
+    },
+    {
+      name: 'New Category',
+      icon: FolderPlus,
+      color: 'bg-purple-600 hover:bg-purple-700',
+      action: () => console.log('Navigate to categories page')
+    },
+    {
+      name: 'Add Supplier',
+      icon: UserPlus,
+      color: 'bg-orange-600 hover:bg-orange-700',
+      action: () => console.log('Navigate to suppliers page')
+    }
+  ];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -77,8 +116,8 @@ const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Welcome back! Here's what's happening with your inventory today.
         </p>
       </div>
@@ -86,122 +125,123 @@ const DashboardPage: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
-          <div key={card.name} className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <Card key={card.name}>
+            <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`p-3 rounded-lg ${card.color}`}>
-                    <card.icon className="h-6 w-6 text-white" />
+                  <div className={`p-3 rounded-lg ${card.bgColor}`}>
+                    <card.icon className={`h-6 w-6 ${card.color}`} />
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      {card.name}
-                    </dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">
-                        {card.value}
-                      </div>
-                    </dd>
-                  </dl>
+                  <div className="text-sm font-medium text-muted-foreground truncate">
+                    {card.name}
+                  </div>
+                  <div className="flex items-baseline">
+                    <div className="text-2xl font-semibold text-foreground">
+                      {card.value}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="mt-3">
-                <span className="text-xs text-gray-500">{card.change}</span>
+                <Badge 
+                  variant={card.changeType === 'negative' ? 'destructive' : 
+                          card.changeType === 'warning' ? 'secondary' : 'outline'}
+                  className="text-xs"
+                >
+                  {card.change}
+                </Badge>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Quick Actions */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-6">
-            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              Quick Actions
-            </h3>
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-3 px-4 rounded-lg transition-colors">
-                Add Product
-              </button>
-              <button className="bg-green-50 hover:bg-green-100 text-green-700 font-medium py-3 px-4 rounded-lg transition-colors">
-                Update Stock
-              </button>
-              <button className="bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium py-3 px-4 rounded-lg transition-colors">
-                New Category
-              </button>
-              <button className="bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium py-3 px-4 rounded-lg transition-colors">
-                Add Supplier
-              </button>
+              {quickActions.map((action) => (
+                <Button
+                  key={action.name}
+                  variant="outline"
+                  className="h-16 flex-col space-y-2 hover:bg-accent"
+                  onClick={action.action}
+                >
+                  <action.icon className="h-5 w-5" />
+                  <span className="text-sm font-medium">{action.name}</span>
+                </Button>
+              ))}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Activity */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Recent Activity
-              </h3>
-              <Activity className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="space-y-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Recent Activity
+              <Activity className="h-5 w-5 text-muted-foreground" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <div key={activity.id} className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-foreground">
                       <span className="font-medium">{activity.action}:</span>{' '}
                       {activity.item}
                     </p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Inventory Status */}
-      <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Inventory Status
-          </h3>
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Overall Stock Health</span>
-                <span className="text-sm text-green-600 font-semibold">86% Good</span>
-              </div>
-              <div className="mt-2 bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '86%' }}></div>
-              </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Inventory Status</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-foreground">Overall Stock Health</span>
+              <Badge variant="secondary" className="text-green-600 bg-green-100 dark:bg-green-900/20">
+                86% Good
+              </Badge>
             </div>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-semibold text-green-600">{stats.in_stock_items}</p>
-                <p className="text-sm text-gray-500">In Stock</p>
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-yellow-600">{stats.low_stock_items}</p>
-                <p className="text-sm text-gray-500">Low Stock</p>
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-red-600">{stats.out_of_stock_items}</p>
-                <p className="text-sm text-gray-500">Out of Stock</p>
-              </div>
+            <Progress value={86} className="h-2" />
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="space-y-1">
+              <p className="text-2xl font-semibold text-green-600">{stats.in_stock_items}</p>
+              <p className="text-sm text-muted-foreground">In Stock</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-semibold text-yellow-600">{stats.low_stock_items}</p>
+              <p className="text-sm text-muted-foreground">Low Stock</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-semibold text-red-600">{stats.out_of_stock_items}</p>
+              <p className="text-sm text-muted-foreground">Out of Stock</p>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

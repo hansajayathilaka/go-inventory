@@ -203,7 +203,7 @@ export function AdvancedSearchInput({
                   {category}
                 </div>
               )}
-              {items.map((suggestion, index) => {
+              {items.map((suggestion) => {
                 const globalIndex = filteredSuggestions.findIndex(
                   (s) => s.id === suggestion.id
                 );

@@ -3,8 +3,19 @@ import { Plus } from 'lucide-react';
 import type { Supplier } from '../types/api';
 import SupplierList from '../components/SupplierList';
 import SupplierModal from '../components/SupplierModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const SuppliersPage: React.FC = () => {
   const [showSupplierModal, setShowSupplierModal] = useState(false);
@@ -13,6 +24,7 @@ const SuppliersPage: React.FC = () => {
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
   const [refreshSuppliers, setRefreshSuppliers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleAddSupplier = () => {
     setSelectedSupplier(null);
@@ -48,11 +60,25 @@ const SuppliersPage: React.FC = () => {
         setRefreshSuppliers(prev => prev + 1);
         setShowDeleteModal(false);
         setSelectedSupplier(null);
+        toast({
+          title: "Supplier deleted",
+          description: `${selectedSupplier.name} has been successfully removed.`,
+        });
       } else {
         console.error('Failed to delete supplier');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete supplier. Please try again.",
+        });
       }
     } catch (error) {
       console.error('Error deleting supplier:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete supplier. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -72,13 +98,10 @@ const SuppliersPage: React.FC = () => {
             Manage your supplier relationships and contact information.
           </p>
         </div>
-        <button
-          onClick={handleAddSupplier}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
+        <Button onClick={handleAddSupplier}>
           <Plus className="h-4 w-4 mr-2" />
           Add Supplier
-        </button>
+        </Button>
       </div>
 
       {/* Supplier List */}
@@ -98,21 +121,31 @@ const SuppliersPage: React.FC = () => {
         mode={modalMode}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={confirmDelete}
-        title="Delete Supplier"
-        message={
-          selectedSupplier
-            ? `Are you sure you want to delete the supplier "${selectedSupplier.name}"? This action cannot be undone.`
-            : ''
-        }
-        confirmButtonText="Delete Supplier"
-        confirmButtonStyle="danger"
-        isLoading={isLoading}
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Supplier</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedSupplier
+                ? `Are you sure you want to delete the supplier "${selectedSupplier.name}"? This action cannot be undone.`
+                : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isLoading}
+            >
+              {isLoading ? "Deleting..." : "Delete Supplier"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
