@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { useToast } from '@/hooks/use-toast';
 
 const PurchaseReceiptsPage: React.FC = () => {
@@ -268,61 +267,97 @@ const PurchaseReceiptsPage: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Send Confirmation Modal */}
-      {showSendModal && (
-        <ConfirmationModal
-          isOpen={showSendModal}
-          onClose={() => setShowSendModal(false)}
-          onConfirm={confirmSend}
-          title="Send Purchase Receipt to Supplier"
-          message={`Are you sure you want to send purchase receipt "${selectedPurchaseReceipt?.receipt_number}" to the supplier? The order will be marked as sent and awaiting delivery.`}
-          confirmButtonText="Send"
-          confirmButtonStyle="primary"
-          isLoading={isLoading}
-        />
-      )}
+      {/* Send Confirmation Dialog */}
+      <AlertDialog open={showSendModal} onOpenChange={setShowSendModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Purchase Receipt to Supplier</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to send purchase receipt "{selectedPurchaseReceipt?.receipt_number}" to the supplier? The order will be marked as sent and awaiting delivery.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmSend}
+              disabled={isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Send
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Receive Confirmation Modal */}
-      {showReceiveModal && (
-        <ConfirmationModal
-          isOpen={showReceiveModal}
-          onClose={() => setShowReceiveModal(false)}
-          onConfirm={confirmReceive}
-          title="Process Goods Receipt"
-          message={`Are you sure you want to process the receipt for "${selectedPurchaseReceipt?.receipt_number}"? This will mark the goods as received and allow detailed receipt processing.`}
-          confirmButtonText="Process Receipt"
-          confirmButtonStyle="primary"
-          isLoading={isLoading}
-        />
-      )}
+      {/* Receive Confirmation Dialog */}
+      <AlertDialog open={showReceiveModal} onOpenChange={setShowReceiveModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Process Goods Receipt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to process the receipt for "{selectedPurchaseReceipt?.receipt_number}"? This will mark the goods as received and allow detailed receipt processing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmReceive}
+              disabled={isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Process Receipt
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Complete Confirmation Modal */}
-      {showCompleteModal && (
-        <ConfirmationModal
-          isOpen={showCompleteModal}
-          onClose={() => setShowCompleteModal(false)}
-          onConfirm={confirmComplete}
-          title="Complete Purchase Receipt"
-          message={`Are you sure you want to complete purchase receipt "${selectedPurchaseReceipt?.receipt_number}"? This will finalize the receipt and update inventory levels.`}
-          confirmButtonText="Complete"
-          confirmButtonStyle="primary"
-          isLoading={isLoading}
-        />
-      )}
+      {/* Complete Confirmation Dialog */}
+      <AlertDialog open={showCompleteModal} onOpenChange={setShowCompleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Complete Purchase Receipt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to complete purchase receipt "{selectedPurchaseReceipt?.receipt_number}"? This will finalize the receipt and update inventory levels.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmComplete}
+              disabled={isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Complete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Cancel Confirmation Modal */}
-      {showCancelModal && (
-        <ConfirmationModal
-          isOpen={showCancelModal}
-          onClose={() => setShowCancelModal(false)}
-          onConfirm={confirmCancel}
-          title="Cancel Purchase Receipt"
-          message={`Are you sure you want to cancel purchase receipt "${selectedPurchaseReceipt?.receipt_number}"? This action cannot be undone and will cancel the entire order.`}
-          confirmButtonText="Cancel Order"
-          confirmButtonStyle="danger"
-          isLoading={isLoading}
-        />
-      )}
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Purchase Receipt</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel purchase receipt "{selectedPurchaseReceipt?.receipt_number}"? This action cannot be undone and will cancel the entire order.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCancel}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>}
+              Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

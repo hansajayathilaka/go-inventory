@@ -11,8 +11,20 @@ import VehicleModelList from '../components/VehicleModelList';
 import VehicleModelModal from '../components/VehicleModelModal';
 import CompatibilityList from '../components/CompatibilityList';
 import CompatibilityModal from '../components/CompatibilityModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+
+// Import shadcn/ui components
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 // Tab definitions
 type TabId = 'part-brands' | 'vehicle-brands' | 'vehicle-models' | 'compatibilities' | 'matrix';
@@ -58,6 +70,7 @@ const tabs: Tab[] = [
 ];
 
 const VehicleManagementPage: React.FC = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabId>('part-brands');
   
   // Part Brands state
@@ -116,8 +129,17 @@ const VehicleManagementPage: React.FC = () => {
       setRefreshBrands(prev => prev + 1);
       setShowBrandDeleteModal(false);
       setSelectedBrand(null);
+      toast({
+        title: "Brand deleted",
+        description: `"${selectedBrand.name}" has been successfully deleted.`,
+      });
     } catch (error) {
       console.error('Error deleting brand:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete brand. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -153,8 +175,17 @@ const VehicleManagementPage: React.FC = () => {
       setRefreshVehicleBrands(prev => prev + 1);
       setShowVehicleBrandDeleteModal(false);
       setSelectedVehicleBrand(null);
+      toast({
+        title: "Vehicle brand deleted",
+        description: `"${selectedVehicleBrand.name}" has been successfully deleted.`,
+      });
     } catch (error) {
       console.error('Error deleting vehicle brand:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete vehicle brand. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -185,13 +216,23 @@ const VehicleManagementPage: React.FC = () => {
 
   const confirmVehicleModelDelete = async () => {
     if (!selectedVehicleModel) return;
+    const modelName = selectedVehicleModel.name;
     try {
       await api.vehicleModels.delete(selectedVehicleModel.id);
       setRefreshVehicleModels(prev => prev + 1);
       setShowVehicleModelDeleteModal(false);
       setSelectedVehicleModel(null);
+      toast({
+        title: "Vehicle model deleted",
+        description: `"${modelName}" has been successfully deleted.`,
+      });
     } catch (error) {
       console.error('Error deleting vehicle model:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete vehicle model. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -227,8 +268,17 @@ const VehicleManagementPage: React.FC = () => {
       setRefreshCompatibilities(prev => prev + 1);
       setShowCompatibilityDeleteModal(false);
       setSelectedCompatibility(null);
+      toast({
+        title: "Compatibility deleted",
+        description: "Vehicle compatibility has been successfully deleted.",
+      });
     } catch (error) {
       console.error('Error deleting compatibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete compatibility. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -481,71 +531,109 @@ const VehicleManagementPage: React.FC = () => {
         compatibility={selectedCompatibility}
       />
 
-      {/* Delete Confirmation Modals */}
+      {/* Delete Confirmation Dialogs */}
       
-      {/* Brand Delete Modal */}
-      <ConfirmationModal
-        isOpen={showBrandDeleteModal}
-        onClose={() => {
-          setShowBrandDeleteModal(false);
-          setSelectedBrand(null);
-        }}
-        onConfirm={confirmBrandDelete}
-        title="Delete Brand"
-        message={`Are you sure you want to delete "${selectedBrand?.name}"? This action cannot be undone and will remove the brand from all associated products. Products using this brand will have their brand association cleared.`}
-        confirmButtonText="Delete Brand"
-        confirmButtonStyle="danger"
-      />
+      {/* Brand Delete Dialog */}
+      <AlertDialog open={showBrandDeleteModal} onOpenChange={setShowBrandDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Brand</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedBrand?.name}"? This action cannot be undone and will remove the brand from all associated products. Products using this brand will have their brand association cleared.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedBrand(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                confirmBrandDelete();
+                setSelectedBrand(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Brand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Vehicle Brand Delete Modal */}
-      <ConfirmationModal
-        isOpen={showVehicleBrandDeleteModal}
-        onClose={() => {
-          setShowVehicleBrandDeleteModal(false);
-          setSelectedVehicleBrand(null);
-        }}
-        onConfirm={confirmVehicleBrandDelete}
-        title="Delete Vehicle Brand"
-        message={`Are you sure you want to delete "${selectedVehicleBrand?.name}"? This action cannot be undone and will remove the vehicle brand from all associated vehicle models. Vehicle models using this brand will have their brand association cleared.`}
-        confirmButtonText="Delete Vehicle Brand"
-        confirmButtonStyle="danger"
-      />
+      {/* Vehicle Brand Delete Dialog */}
+      <AlertDialog open={showVehicleBrandDeleteModal} onOpenChange={setShowVehicleBrandDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Brand</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{selectedVehicleBrand?.name}"? This action cannot be undone and will remove the vehicle brand from all associated vehicle models. Vehicle models using this brand will have their brand association cleared.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedVehicleBrand(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                confirmVehicleBrandDelete();
+                setSelectedVehicleBrand(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Vehicle Brand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Vehicle Model Delete Modal */}
-      <ConfirmationModal
-        isOpen={showVehicleModelDeleteModal}
-        onClose={() => {
-          setShowVehicleModelDeleteModal(false);
-          setSelectedVehicleModel(null);
-        }}
-        onConfirm={confirmVehicleModelDelete}
-        title="Delete Vehicle Model"
-        message={
-          selectedVehicleModel
-            ? `Are you sure you want to delete "${selectedVehicleModel.name}" (${selectedVehicleModel.vehicle_brand.name}, ${formatYearRange(selectedVehicleModel.year_from, selectedVehicleModel.year_to)})? This action cannot be undone and will remove the vehicle model from all associated compatibility records and purchase orders.`
-            : 'Are you sure you want to delete this vehicle model?'
-        }
-        confirmButtonText="Delete Vehicle Model"
-        confirmButtonStyle="danger"
-      />
+      {/* Vehicle Model Delete Dialog */}
+      <AlertDialog open={showVehicleModelDeleteModal} onOpenChange={setShowVehicleModelDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Model</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedVehicleModel
+                ? `Are you sure you want to delete "${selectedVehicleModel.name}" (${selectedVehicleModel.vehicle_brand.name}, ${formatYearRange(selectedVehicleModel.year_from, selectedVehicleModel.year_to)})? This action cannot be undone and will remove the vehicle model from all associated compatibility records and purchase orders.`
+                : 'Are you sure you want to delete this vehicle model?'
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedVehicleModel(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                confirmVehicleModelDelete();
+                setSelectedVehicleModel(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Vehicle Model
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Compatibility Delete Modal */}
-      <ConfirmationModal
-        isOpen={showCompatibilityDeleteModal}
-        onClose={() => {
-          setShowCompatibilityDeleteModal(false);
-          setSelectedCompatibility(null);
-        }}
-        onConfirm={confirmCompatibilityDelete}
-        title="Delete Vehicle Compatibility"
-        message={
-          selectedCompatibility
-            ? `Are you sure you want to delete the compatibility between "${formatProductInfo(selectedCompatibility)}" and "${formatVehicleModelInfo(selectedCompatibility)}" (${formatCompatibilityYearRange(selectedCompatibility)})? This action cannot be undone and will permanently remove this compatibility relationship.`
-            : 'Are you sure you want to delete this compatibility?'
-        }
-        confirmButtonText="Delete Compatibility"
-        confirmButtonStyle="danger"
-      />
+      {/* Compatibility Delete Dialog */}
+      <AlertDialog open={showCompatibilityDeleteModal} onOpenChange={setShowCompatibilityDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Compatibility</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedCompatibility
+                ? `Are you sure you want to delete the compatibility between "${formatProductInfo(selectedCompatibility)}" and "${formatVehicleModelInfo(selectedCompatibility)}" (${formatCompatibilityYearRange(selectedCompatibility)})? This action cannot be undone and will permanently remove this compatibility relationship.`
+                : 'Are you sure you want to delete this compatibility?'
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedCompatibility(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                confirmCompatibilityDelete();
+                setSelectedCompatibility(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Compatibility
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
