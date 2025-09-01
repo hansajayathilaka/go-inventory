@@ -125,7 +125,7 @@ const UserList: React.FC<UserListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -141,15 +141,15 @@ const UserList: React.FC<UserListProps> = ({
   }
 
   return (
-    <div className="bg-white shadow rounded-lg">
+    <div className="bg-card text-card-foreground shadow rounded-lg">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-foreground">
               Users ({totalUsers})
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Manage system users and permissions
             </p>
           </div>
@@ -160,7 +160,7 @@ const UserList: React.FC<UserListProps> = ({
               className={`p-2 rounded-md ${
                 viewMode === 'grid'
                   ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-400 hover:text-gray-600'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               <Grid className="h-5 w-5" />
@@ -170,7 +170,7 @@ const UserList: React.FC<UserListProps> = ({
               className={`p-2 rounded-md ${
                 viewMode === 'table'
                   ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-400 hover:text-gray-600'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               <ListIcon className="h-5 w-5" />
@@ -180,17 +180,17 @@ const UserList: React.FC<UserListProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+      <div className="px-6 py-4 bg-muted/50 border-b border-border">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
               type="text"
               placeholder="Search users..."
               value={searchTerm}
               onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
@@ -198,7 +198,7 @@ const UserList: React.FC<UserListProps> = ({
           <select
             value={roleFilter}
             onChange={handleRoleFilterChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -216,7 +216,7 @@ const UserList: React.FC<UserListProps> = ({
             <div className="text-red-500 mb-4">
               <Users className="mx-auto h-12 w-12" />
             </div>
-            <p className="text-gray-500">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={fetchUsers}
               className="mt-2 text-blue-600 hover:text-blue-800"
@@ -226,9 +226,9 @@ const UserList: React.FC<UserListProps> = ({
           </div>
         ) : users.length === 0 ? (
           <div className="text-center py-8">
-            <Users className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No users found</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-medium text-foreground">No users found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
               {searchTerm ? 'Try adjusting your search criteria.' : 'No users available.'}
             </p>
           </div>
@@ -240,14 +240,14 @@ const UserList: React.FC<UserListProps> = ({
                 {users.map((user) => (
                   <div
                     key={user.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
+                        <h4 className="text-sm font-medium text-foreground truncate">
                           {user.username}
                         </h4>
-                        <div className="mt-1 flex items-center text-sm text-gray-500">
+                        <div className="mt-1 flex items-center text-sm text-muted-foreground">
                           <Mail className="h-4 w-4 mr-1" />
                           <span className="truncate">{user.email}</span>
                         </div>
@@ -257,7 +257,7 @@ const UserList: React.FC<UserListProps> = ({
                             {user.role}
                           </span>
                         </div>
-                        <div className="mt-2 flex items-center text-xs text-gray-400">
+                        <div className="mt-2 flex items-center text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 mr-1" />
                           Last login: {formatDate(user.last_login || '')}
                         </div>
@@ -265,20 +265,20 @@ const UserList: React.FC<UserListProps> = ({
                     </div>
                     
                     <div className="mt-4 flex items-center justify-between">
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-muted-foreground">
                         Created: {formatDate(user.created_at)}
                       </div>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => onViewUser(user)}
-                          className="text-gray-400 hover:text-blue-600 transition-colors"
+                          className="text-muted-foreground hover:text-blue-600 transition-colors"
                           title="View user"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => onEditUser(user)}
-                          className="text-gray-400 hover:text-green-600 transition-colors"
+                          className="text-muted-foreground hover:text-green-600 transition-colors"
                           title="Edit user"
                         >
                           <Edit className="h-4 w-4" />
@@ -286,7 +286,7 @@ const UserList: React.FC<UserListProps> = ({
                         {user.username !== 'admin' && (
                           <button
                             onClick={() => onDeleteUser(user)}
-                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            className="text-muted-foreground hover:text-red-600 transition-colors"
                             title="Delete user"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -302,35 +302,35 @@ const UserList: React.FC<UserListProps> = ({
             {/* Table View */}
             {viewMode === 'table' && (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         User
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Role
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Last Login
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-card text-card-foreground divide-y divide-border">
                     {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
+                      <tr key={user.id} className="hover:bg-muted/50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-foreground">
                               {user.username}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                               {user.email}
                             </div>
                           </div>
@@ -341,24 +341,24 @@ const UserList: React.FC<UserListProps> = ({
                             {user.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                           {formatDate(user.last_login || '')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                           {formatDate(user.created_at)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
                             <button
                               onClick={() => onViewUser(user)}
-                              className="text-gray-400 hover:text-blue-600 transition-colors"
+                              className="text-muted-foreground hover:text-blue-600 transition-colors"
                               title="View user"
                             >
                               <Eye className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => onEditUser(user)}
-                              className="text-gray-400 hover:text-green-600 transition-colors"
+                              className="text-muted-foreground hover:text-green-600 transition-colors"
                               title="Edit user"
                             >
                               <Edit className="h-4 w-4" />
@@ -366,7 +366,7 @@ const UserList: React.FC<UserListProps> = ({
                             {user.username !== 'admin' && (
                               <button
                                 onClick={() => onDeleteUser(user)}
-                                className="text-gray-400 hover:text-red-600 transition-colors"
+                                className="text-muted-foreground hover:text-red-600 transition-colors"
                                 title="Delete user"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -386,23 +386,23 @@ const UserList: React.FC<UserListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+        <div className="px-6 py-4 bg-muted/50 border-t border-border rounded-b-lg">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-foreground">
               Page {currentPage} of {totalPages}
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-sm border border-input rounded-md hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-sm border border-input rounded-md hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

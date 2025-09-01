@@ -113,7 +113,7 @@ const BrandList: React.FC<BrandListProps> = ({
 
   // Render brand card for grid view
   const renderBrandCard = (brand: Brand) => (
-    <div key={brand.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div key={brand.id} className="bg-card text-card-foreground rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -133,35 +133,35 @@ const BrandList: React.FC<BrandListProps> = ({
                   }}
                 />
               ) : null}
-              <Tag className="h-4 w-4 text-gray-400" style={{ display: brand.logo_url ? 'none' : 'block' }} />
+              <Tag className="h-4 w-4 text-muted-foreground" style={{ display: brand.logo_url ? 'none' : 'block' }} />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-medium text-gray-900 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate">
                 {brand.name}
               </h3>
               {brand.code && (
-                <p className="text-xs text-gray-500">#{brand.code}</p>
+                <p className="text-xs text-muted-foreground">#{brand.code}</p>
               )}
             </div>
           </div>
           <div className="flex items-center space-x-1 flex-shrink-0">
             <button
               onClick={() => onViewBrand(brand)}
-              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-muted-foreground transition-colors"
               title="View brand"
             >
               <Eye className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onEditBrand(brand)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
               title="Edit brand"
             >
               <Edit className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDeleteBrand(brand)}
-              className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
               title="Delete brand"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -171,7 +171,7 @@ const BrandList: React.FC<BrandListProps> = ({
 
         {/* Brand Info */}
         <div className="space-y-1">
-          <div className="flex items-center text-xs text-gray-600">
+          <div className="flex items-center text-xs text-muted-foreground">
             {!brand.is_active && (
               <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded-full">
                 Inactive
@@ -186,13 +186,13 @@ const BrandList: React.FC<BrandListProps> = ({
           </div>
           
           {brand.description && (
-            <p className="text-xs text-gray-600 line-clamp-2">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               {brand.description}
             </p>
           )}
           
           {brand.website && (
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <Globe className="h-3 w-3 mr-1 flex-shrink-0" />
               <a 
                 href={brand.website} 
@@ -212,7 +212,7 @@ const BrandList: React.FC<BrandListProps> = ({
 
   // Render brand row for table view
   const renderBrandRow = (brand: Brand) => (
-    <tr key={brand.id} className="hover:bg-gray-50">
+    <tr key={brand.id} className="hover:bg-muted/50">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -229,22 +229,22 @@ const BrandList: React.FC<BrandListProps> = ({
                 }}
               />
             ) : null}
-            <Tag className="h-4 w-4 text-gray-400" style={{ display: brand.logo_url ? 'none' : 'block' }} />
+            <Tag className="h-4 w-4 text-muted-foreground" style={{ display: brand.logo_url ? 'none' : 'block' }} />
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
+            <div className="text-sm font-medium text-foreground truncate">
               {brand.name}
             </div>
             {brand.code && (
-              <div className="text-xs text-gray-500">#{brand.code}</div>
+              <div className="text-xs text-muted-foreground">#{brand.code}</div>
             )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {brand.description || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {brand.country_code ? (
           <span className="flex items-center">
             <MapPin className="h-3 w-3 mr-1" />
@@ -252,7 +252,7 @@ const BrandList: React.FC<BrandListProps> = ({
           </span>
         ) : '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {brand.website ? (
           <a 
             href={brand.website} 
@@ -279,21 +279,21 @@ const BrandList: React.FC<BrandListProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewBrand(brand)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-muted-foreground transition-colors"
             title="View brand"
           >
             <Eye className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEditBrand(brand)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
             title="Edit brand"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => onDeleteBrand(brand)}
-            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
             title="Delete brand"
           >
             <Trash2 className="h-4 w-4" />
@@ -305,7 +305,7 @@ const BrandList: React.FC<BrandListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -322,11 +322,11 @@ const BrandList: React.FC<BrandListProps> = ({
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="text-center">
             <div className="text-red-500 mb-2">Error</div>
-            <p className="text-gray-500">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={loadBrands}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -342,19 +342,19 @@ const BrandList: React.FC<BrandListProps> = ({
   return (
     <div className="space-y-4">
       {/* Filters Bar */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-card text-card-foreground shadow rounded-lg p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <input
                 type="text"
                 placeholder="Search brands..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
+                className="pl-10 pr-4 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
               />
             </div>
 
@@ -362,7 +362,7 @@ const BrandList: React.FC<BrandListProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -376,14 +376,14 @@ const BrandList: React.FC<BrandListProps> = ({
               value={countryFilter}
               onChange={(e) => setCountryFilter(e.target.value.toUpperCase())}
               maxLength={2}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
+              className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
             />
 
             {/* Clear Filters */}
             {(searchTerm || statusFilter !== 'active' || countryFilter) && (
               <button
                 onClick={clearFilters}
-                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-input rounded-md hover:bg-muted/50"
               >
                 Clear
               </button>
@@ -396,8 +396,8 @@ const BrandList: React.FC<BrandListProps> = ({
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-card text-card-foreground text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Grid view"
             >
@@ -407,8 +407,8 @@ const BrandList: React.FC<BrandListProps> = ({
               onClick={() => setViewMode('table')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-card text-card-foreground text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Table view"
             >
@@ -419,17 +419,17 @@ const BrandList: React.FC<BrandListProps> = ({
       </div>
 
       {/* Results Summary */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-muted-foreground">
         Showing {brands.length} of {totalBrands} brands
       </div>
 
       {/* Brand List */}
       {brands.length === 0 ? (
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-card text-card-foreground shadow rounded-lg">
           <div className="p-12 text-center">
-            <Tag className="mx-auto h-16 w-16 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No brands found</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <Tag className="mx-auto h-16 w-16 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-medium text-foreground">No brands found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
               {searchTerm || statusFilter !== 'active' || countryFilter
                 ? 'Try adjusting your search criteria'
                 : 'Get started by adding your first brand'
@@ -442,31 +442,31 @@ const BrandList: React.FC<BrandListProps> = ({
           {brands.map(renderBrandCard)}
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Brand
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Country
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Website
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card text-card-foreground divide-y divide-border">
               {brands.map(renderBrandRow)}
             </tbody>
           </table>
@@ -475,26 +475,26 @@ const BrandList: React.FC<BrandListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
+        <div className="flex items-center justify-between bg-card text-card-foreground px-4 py-3 border-t border-border sm:px-6 rounded-lg shadow">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-card text-card-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-card text-card-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-foreground">
                 Showing page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>
@@ -504,14 +504,14 @@ const BrandList: React.FC<BrandListProps> = ({
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
                   disabled={currentPage <= 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-input bg-card text-card-foreground text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage >= totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-input bg-card text-card-foreground text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

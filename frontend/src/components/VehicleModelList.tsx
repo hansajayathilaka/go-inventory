@@ -148,43 +148,43 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
   // Render vehicle model card for grid view
   const renderVehicleModelCard = (vehicleModel: VehicleModelWithBrand) => (
-    <div key={vehicleModel.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div key={vehicleModel.id} className="bg-card text-card-foreground rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start space-x-3 min-w-0 flex-1">
             {/* Vehicle Model Icon */}
             <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Car className="h-4 w-4 text-gray-400" />
+              <Car className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-medium text-gray-900 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate">
                 {vehicleModel.name}
               </h3>
-              <p className="text-xs text-gray-500">{vehicleModel.vehicle_brand.name}</p>
+              <p className="text-xs text-muted-foreground">{vehicleModel.vehicle_brand.name}</p>
               {vehicleModel.code && (
-                <p className="text-xs text-gray-500">#{vehicleModel.code}</p>
+                <p className="text-xs text-muted-foreground">#{vehicleModel.code}</p>
               )}
             </div>
           </div>
           <div className="flex items-center space-x-1 flex-shrink-0">
             <button
               onClick={() => onViewVehicleModel(vehicleModel)}
-              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-muted-foreground transition-colors"
               title="View vehicle model"
             >
               <Eye className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onEditVehicleModel(vehicleModel)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
               title="Edit vehicle model"
             >
               <Edit className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDeleteVehicleModel(vehicleModel)}
-              className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
               title="Delete vehicle model"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -195,7 +195,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
         {/* Vehicle Model Info */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <Calendar className="h-3 w-3 mr-1" />
               {formatYearRange(vehicleModel.year_from, vehicleModel.year_to)}
             </div>
@@ -206,7 +206,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
             )}
           </div>
           
-          <div className="flex items-center justify-between text-xs text-gray-600">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             {vehicleModel.fuel_type && (
               <div className="flex items-center">
                 <Zap className="h-3 w-3 mr-1" />
@@ -222,13 +222,13 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
           </div>
 
           {vehicleModel.engine_size && (
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-muted-foreground">
               Engine: {vehicleModel.engine_size}
             </div>
           )}
           
           {vehicleModel.description && (
-            <p className="text-xs text-gray-600 line-clamp-2">
+            <p className="text-xs text-muted-foreground line-clamp-2">
               {vehicleModel.description}
             </p>
           )}
@@ -239,35 +239,35 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
   // Render vehicle model row for table view
   const renderVehicleModelRow = (vehicleModel: VehicleModelWithBrand) => (
-    <tr key={vehicleModel.id} className="hover:bg-gray-50">
+    <tr key={vehicleModel.id} className="hover:bg-muted/50">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Car className="h-4 w-4 text-gray-400" />
+            <Car className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
+            <div className="text-sm font-medium text-foreground truncate">
               {vehicleModel.name}
             </div>
             {vehicleModel.code && (
-              <div className="text-xs text-gray-500">#{vehicleModel.code}</div>
+              <div className="text-xs text-muted-foreground">#{vehicleModel.code}</div>
             )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-900">
+      <td className="px-4 py-3 text-sm text-foreground">
         {vehicleModel.vehicle_brand.name}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {formatYearRange(vehicleModel.year_from, vehicleModel.year_to)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {vehicleModel.fuel_type || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {vehicleModel.transmission || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {vehicleModel.engine_size || '-'}
       </td>
       <td className="px-4 py-3">
@@ -283,21 +283,21 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewVehicleModel(vehicleModel)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-muted-foreground transition-colors"
             title="View vehicle model"
           >
             <Eye className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEditVehicleModel(vehicleModel)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
             title="Edit vehicle model"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => onDeleteVehicleModel(vehicleModel)}
-            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
             title="Delete vehicle model"
           >
             <Trash2 className="h-4 w-4" />
@@ -309,7 +309,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -326,11 +326,11 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="text-center">
             <div className="text-red-500 mb-2">Error</div>
-            <p className="text-gray-500">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={loadVehicleModels}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -346,7 +346,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
   return (
     <div className="space-y-4">
       {/* Filters Bar */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-card text-card-foreground shadow rounded-lg p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search and Filters */}
           <div className="flex flex-col gap-3 flex-1">
@@ -354,13 +354,13 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   placeholder="Search vehicle models..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
+                  className="pl-10 pr-4 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
                 />
               </div>
 
@@ -368,7 +368,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -379,7 +379,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
               <select
                 value={brandFilter}
                 onChange={(e) => setBrandFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
+                className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
               >
                 <option value="">All Brands</option>
                 {vehicleBrands.map((brand) => (
@@ -395,7 +395,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
                 placeholder="Fuel type (e.g., Petrol, Diesel)..."
                 value={fuelTypeFilter}
                 onChange={(e) => setFuelTypeFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
+                className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-48"
               />
             </div>
 
@@ -409,7 +409,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
                 onChange={(e) => setYearFromFilter(e.target.value)}
                 min="1900"
                 max="2030"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32"
+                className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32"
               />
 
               {/* Year To Filter */}
@@ -420,14 +420,14 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
                 onChange={(e) => setYearToFilter(e.target.value)}
                 min="1900"
                 max="2030"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32"
+                className="px-3 py-2 border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-32"
               />
 
               {/* Clear Filters */}
               {(searchTerm || statusFilter !== 'active' || brandFilter || fuelTypeFilter || yearFromFilter || yearToFilter) && (
                 <button
                   onClick={clearFilters}
-                  className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-input rounded-md hover:bg-muted/50"
                 >
                   Clear
                 </button>
@@ -441,8 +441,8 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-card text-card-foreground text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Grid view"
             >
@@ -452,8 +452,8 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
               onClick={() => setViewMode('table')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-card text-card-foreground text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Table view"
             >
@@ -464,17 +464,17 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
       </div>
 
       {/* Results Summary */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-muted-foreground">
         Showing {vehicleModels.length} of {totalVehicleModels} vehicle models
       </div>
 
       {/* Vehicle Model List */}
       {vehicleModels.length === 0 ? (
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-card text-card-foreground shadow rounded-lg">
           <div className="p-12 text-center">
-            <Car className="mx-auto h-16 w-16 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No vehicle models found</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <Car className="mx-auto h-16 w-16 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-medium text-foreground">No vehicle models found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
               {searchTerm || statusFilter !== 'active' || brandFilter || fuelTypeFilter || yearFromFilter || yearToFilter
                 ? 'Try adjusting your search criteria'
                 : 'Get started by adding your first vehicle model'
@@ -487,37 +487,37 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
           {vehicleModels.map(renderVehicleModelCard)}
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Model
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Brand
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Year Range
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Fuel Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Transmission
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Engine Size
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card text-card-foreground divide-y divide-border">
               {vehicleModels.map(renderVehicleModelRow)}
             </tbody>
           </table>
@@ -526,26 +526,26 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
+        <div className="flex items-center justify-between bg-card text-card-foreground px-4 py-3 border-t border-border sm:px-6 rounded-lg shadow">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-card text-card-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-card text-card-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-foreground">
                 Showing page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>
@@ -555,14 +555,14 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
                   disabled={currentPage <= 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-input bg-card text-card-foreground text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage >= totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-input bg-card text-card-foreground text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

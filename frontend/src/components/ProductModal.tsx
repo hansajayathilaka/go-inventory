@@ -412,19 +412,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-muted/500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="bg-card text-card-foreground rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center">
             <Package className="h-6 w-6 text-blue-600 mr-3" />
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-foreground">
               {title || (product ? 'Edit Product' : 'Add New Product')}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none"
+            className="text-muted-foreground hover:text-muted-foreground focus:outline-none"
             disabled={saving}
           >
             <X className="h-6 w-6" />
@@ -448,10 +448,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Basic Information */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                <h3 className="text-lg font-medium text-foreground mb-4">Basic Information</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Product Name *
                     </label>
                     <input
@@ -459,7 +459,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
+                        errors.name ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="Enter product name"
                       required
@@ -470,7 +470,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       SKU *
                     </label>
                     <input
@@ -478,7 +478,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.sku}
                       onChange={(e) => handleInputChange('sku', e.target.value)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.sku ? 'border-red-300' : 'border-gray-300'
+                        errors.sku ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="Enter or auto-generate SKU"
                       required
@@ -489,14 +489,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div className="lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Description
                     </label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       rows={3}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter product description"
                     />
                   </div>
@@ -505,10 +505,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Category, Supplier, and Brand */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Classification</h3>
+                <h3 className="text-lg font-medium text-foreground mb-4">Classification</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Category *
                     </label>
                     <SearchableTreeSelect
@@ -533,14 +533,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Supplier *
                     </label>
                     <select
                       value={formData.supplier_id}
                       onChange={(e) => handleInputChange('supplier_id', e.target.value)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.supplier_id ? 'border-red-300' : 'border-gray-300'
+                        errors.supplier_id ? 'border-red-300' : 'border-input'
                       }`}
                       required
                     >
@@ -557,14 +557,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Brand
                     </label>
                     <select
                       value={formData.brand_id}
                       onChange={(e) => handleInputChange('brand_id', e.target.value)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.brand_id ? 'border-red-300' : 'border-gray-300'
+                        errors.brand_id ? 'border-red-300' : 'border-input'
                       }`}
                     >
                       <option value="">Select a brand (optional)</option>
@@ -577,7 +577,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     {errors.brand_id && (
                       <p className="mt-1 text-sm text-red-600">{errors.brand_id}</p>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Select the manufacturer/brand (e.g., Bosch, NGK, Castrol)
                     </p>
                   </div>
@@ -586,10 +586,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Pricing */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Pricing</h3>
+                <h3 className="text-lg font-medium text-foreground mb-4">Pricing</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Cost Price * ($)
                     </label>
                     <input
@@ -597,7 +597,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.cost_price}
                       onChange={(e) => handleInputChange('cost_price', parseFloat(e.target.value) || 0)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.cost_price ? 'border-red-300' : 'border-gray-300'
+                        errors.cost_price ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="0.00"
                       step="0.01"
@@ -610,7 +610,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Retail Price * ($)
                     </label>
                     <input
@@ -618,7 +618,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.retail_price}
                       onChange={(e) => handleInputChange('retail_price', parseFloat(e.target.value) || 0)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.retail_price ? 'border-red-300' : 'border-gray-300'
+                        errors.retail_price ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="0.00"
                       step="0.01"
@@ -631,7 +631,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Wholesale Price ($)
                     </label>
                     <input
@@ -639,7 +639,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       value={formData.wholesale_price || ''}
                       onChange={(e) => handleInputChange('wholesale_price', parseFloat(e.target.value) || 0)}
                       className={`w-full border rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.wholesale_price ? 'border-red-300' : 'border-gray-300'
+                        errors.wholesale_price ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="Auto-calculated"
                       step="0.01"
@@ -667,30 +667,30 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Additional Details */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
+                <h3 className="text-lg font-medium text-foreground mb-4">Additional Details</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Barcode
                     </label>
                     <input
                       type="text"
                       value={formData.barcode}
                       onChange={(e) => handleInputChange('barcode', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter barcode"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Weight (lbs)
                     </label>
                     <input
                       type="number"
                       value={formData.weight || ''}
                       onChange={(e) => handleInputChange('weight', parseFloat(e.target.value) || 0)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="0.0"
                       step="0.1"
                       min="0"
@@ -698,14 +698,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Dimensions
                     </label>
                     <input
                       type="text"
                       value={formData.dimensions}
                       onChange={(e) => handleInputChange('dimensions', e.target.value)}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="L x W x H"
                     />
                   </div>
@@ -714,16 +714,16 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Status */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Status</h3>
+                <h3 className="text-lg font-medium text-foreground mb-4">Status</h3>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-input rounded"
                   />
-                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="is_active" className="ml-2 block text-sm text-foreground">
                     Product is active and available for sale
                   </label>
                 </div>
@@ -733,7 +733,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               {product && (
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                    <h3 className="text-lg font-medium text-foreground flex items-center">
                       <Car className="h-5 w-5 mr-2 text-blue-600" />
                       Vehicle Compatibility
                     </h3>
@@ -750,18 +750,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   {/* Existing Compatibilities */}
                   <div className="space-y-3">
                     {compatibilities.length === 0 ? (
-                      <div className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-md">
+                      <div className="text-sm text-muted-foreground text-center py-4 bg-muted/50 rounded-md">
                         No vehicle compatibilities defined yet. Click "Add Compatibility" to specify which vehicles this part fits.
                       </div>
                     ) : (
                       compatibilities.map((compatibility) => (
                         <div
                           key={compatibility.id}
-                          className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md"
+                          className="flex items-center justify-between p-3 bg-card text-card-foreground border border-border rounded-md"
                         >
                           <div className="flex-1">
                             <div className="flex items-center">
-                              <span className="font-medium text-gray-900">
+                              <span className="font-medium text-foreground">
                                 {compatibility.vehicle_model && formatVehicleModel(compatibility.vehicle_model as VehicleModelWithBrand)}
                               </span>
                               <div className="ml-2" title={compatibility.is_verified ? "Verified compatibility" : "Unverified compatibility"}>
@@ -773,12 +773,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                               </div>
                             </div>
                             {compatibility.year_from && (
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-muted-foreground">
                                 Years: {compatibility.year_from}{compatibility.year_to && compatibility.year_to !== compatibility.year_from ? `-${compatibility.year_to}` : '+'}
                               </div>
                             )}
                             {compatibility.notes && (
-                              <div className="text-sm text-gray-600 mt-1">
+                              <div className="text-sm text-muted-foreground mt-1">
                                 {compatibility.notes}
                               </div>
                             )}
@@ -802,13 +802,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <h4 className="text-sm font-medium text-blue-900 mb-3">Add New Vehicle Compatibility</h4>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-foreground mb-1">
                             Vehicle Model *
                           </label>
                           <select
                             value={newCompatibility.vehicle_model_id}
                             onChange={(e) => handleCompatibilityChange('vehicle_model_id', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                           >
                             <option value="">Select a vehicle model</option>
@@ -829,28 +829,28 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-foreground mb-1">
                               Year From
                             </label>
                             <input
                               type="number"
                               value={newCompatibility.year_from || ''}
                               onChange={(e) => handleCompatibilityChange('year_from', parseInt(e.target.value) || undefined)}
-                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                               placeholder="2020"
                               min="1900"
                               max={new Date().getFullYear() + 5}
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-foreground mb-1">
                               Year To
                             </label>
                             <input
                               type="number"
                               value={newCompatibility.year_to || ''}
                               onChange={(e) => handleCompatibilityChange('year_to', parseInt(e.target.value) || undefined)}
-                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                               placeholder="2025 (optional)"
                               min="1900"
                               max={new Date().getFullYear() + 5}
@@ -859,14 +859,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         </div>
 
                         <div className="lg:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-foreground mb-1">
                             Notes
                           </label>
                           <input
                             type="text"
                             value={newCompatibility.notes || ''}
                             onChange={(e) => handleCompatibilityChange('notes', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full border border-input rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Optional notes about this compatibility"
                           />
                         </div>
@@ -875,7 +875,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           <button
                             type="button"
                             onClick={() => setShowCompatibilityForm(false)}
-                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                            className="px-3 py-1 text-sm font-medium text-foreground bg-card text-card-foreground border border-input rounded-md hover:bg-muted/50"
                           >
                             Cancel
                           </button>
@@ -898,11 +898,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end px-6 py-4 bg-gray-50 space-x-3">
+        <div className="flex items-center justify-end px-6 py-4 bg-muted/50 space-x-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-foreground bg-card text-card-foreground border border-input rounded-md hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             disabled={saving}
           >
             Cancel

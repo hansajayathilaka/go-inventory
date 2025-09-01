@@ -125,7 +125,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
   // Render customer card for grid view
   const renderCustomerCard = (customer: Customer) => (
-    <div key={customer.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div key={customer.id} className="bg-card text-card-foreground rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -145,21 +145,21 @@ const CustomerList: React.FC<CustomerListProps> = ({
           <div className="flex items-center space-x-1 flex-shrink-0">
             <button
               onClick={() => onViewCustomer(customer)}
-              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
               title="View customer"
             >
               <Eye className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onEditCustomer(customer)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
               title="Edit customer"
             >
               <Edit className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDeleteCustomer(customer)}
-              className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
               title="Delete customer"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -282,7 +282,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -299,7 +299,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="text-center">
             <div className="text-red-500 mb-2">Error</div>
@@ -319,13 +319,13 @@ const CustomerList: React.FC<CustomerListProps> = ({
   return (
     <div className="space-y-4">
       {/* Filters Bar */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-card text-card-foreground shadow rounded-lg p-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search and Filters */}
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <input
                 type="text"
                 placeholder="Search customers..."
@@ -412,10 +412,10 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
       {/* Customer List */}
       {customers.length === 0 ? (
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-card text-card-foreground shadow rounded-lg">
           <div className="p-12 text-center">
-            <Users className="mx-auto h-16 w-16 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No customers found</h3>
+            <Users className="mx-auto h-16 w-16 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-medium text-foreground">No customers found</h3>
             <p className="mt-2 text-sm text-gray-500">
               {searchTerm || customerType !== 'all' || statusFilter !== 'active' || cityFilter
                 ? 'Try adjusting your search criteria'
@@ -429,7 +429,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
           {customers.map(renderCustomerCard)}
         </div>
       ) : (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -459,7 +459,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {customers.map(renderCustomerRow)}
             </tbody>
           </table>
@@ -468,12 +468,12 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-lg shadow">
+        <div className="flex items-center justify-between bg-card px-4 py-3 border-t border-border sm:px-6 rounded-lg shadow">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -497,14 +497,14 @@ const CustomerList: React.FC<CustomerListProps> = ({
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
                   disabled={currentPage <= 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-input bg-background text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage >= totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-input bg-background text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

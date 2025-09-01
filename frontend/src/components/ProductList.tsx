@@ -133,49 +133,49 @@ export const ProductList: React.FC<ProductListProps> = ({
   const renderGridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product) => (
-        <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+        <div key={product.id} className="bg-card text-card-foreground rounded-lg border border-border overflow-hidden hover:shadow-lg transition-shadow">
           <div className="p-4">
             {/* Product Header */}
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-2">
                   {product.name}
                 </h3>
-                <div className="flex items-center text-xs text-gray-500 mb-2">
+                <div className="flex items-center text-xs text-muted-foreground mb-2">
                   <Tag className="h-3 w-3 mr-1" />
                   <span>{product.sku}</span>
                 </div>
               </div>
               <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                 product.is_active 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-800'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
               }`}>
                 {product.is_active ? 'Active' : 'Inactive'}
               </div>
             </div>
 
             {/* Product Description */}
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
               {product.description}
             </p>
 
             {/* Category, Supplier, and Brand */}
             <div className="space-y-1 mb-3">
               {product.category && (
-                <div className="flex items-center text-xs text-gray-500">
+                <div className="flex items-center text-xs text-muted-foreground">
                   <Package className="h-3 w-3 mr-1" />
                   <span className="truncate">{product.category.name}</span>
                 </div>
               )}
               {product.supplier && (
-                <div className="flex items-center text-xs text-gray-500">
+                <div className="flex items-center text-xs text-muted-foreground">
                   <Building2 className="h-3 w-3 mr-1" />
                   <span className="truncate">{product.supplier.name}</span>
                 </div>
               )}
               {product.brand && (
-                <div className="flex items-center text-xs text-gray-500">
+                <div className="flex items-center text-xs text-muted-foreground">
                   <Tag className="h-3 w-3 mr-1" />
                   <span className="truncate">Brand: {product.brand.name}</span>
                 </div>
@@ -183,15 +183,15 @@ export const ProductList: React.FC<ProductListProps> = ({
             </div>
 
             {/* Pricing */}
-            <div className="border-t border-gray-100 pt-3 mb-3">
+            <div className="border-t border-border pt-3 mb-3">
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Retail:</span>
+                  <span className="text-muted-foreground">Retail:</span>
                   <div className="font-semibold text-green-600">{formatCurrency(product.retail_price)}</div>
                 </div>
                 <div>
-                  <span className="text-gray-500">Cost:</span>
-                  <div className="font-medium text-gray-900">{formatCurrency(product.cost_price)}</div>
+                  <span className="text-muted-foreground">Cost:</span>
+                  <div className="font-medium text-foreground">{formatCurrency(product.cost_price)}</div>
                 </div>
               </div>
             </div>
@@ -201,7 +201,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               {onViewProduct && (
                 <button
                   onClick={() => onViewProduct(product)}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  className="p-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:hover:text-blue-400 rounded transition-colors"
                   title="View Product"
                 >
                   <Eye className="h-4 w-4" />
@@ -210,7 +210,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               {onEditProduct && (
                 <button
                   onClick={() => onEditProduct(product)}
-                  className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                  className="p-2 text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950 dark:hover:text-green-400 rounded transition-colors"
                   title="Edit Product"
                 >
                   <Edit className="h-4 w-4" />
@@ -219,7 +219,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               {onDeleteProduct && (
                 <button
                   onClick={() => onDeleteProduct(product)}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                  className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 dark:hover:text-red-400 rounded transition-colors"
                   title="Delete Product"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -233,63 +233,63 @@ export const ProductList: React.FC<ProductListProps> = ({
   );
 
   const renderListView = () => (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
+      <table className="min-w-full divide-y divide-border">
+        <thead className="bg-muted/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Product
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Category
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Supplier
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Brand
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Pricing
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-card divide-y divide-border">
           {products.map((product) => (
-            <tr key={product.id} className="hover:bg-gray-50">
+            <tr key={product.id} className="hover:bg-muted/50">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                  <div className="text-sm text-gray-500">{product.sku}</div>
-                  <div className="text-sm text-gray-500 max-w-xs truncate">{product.description}</div>
+                  <div className="text-sm font-medium text-foreground">{product.name}</div>
+                  <div className="text-sm text-muted-foreground">{product.sku}</div>
+                  <div className="text-sm text-muted-foreground max-w-xs truncate">{product.description}</div>
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                 {product.category?.name || '-'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                 {product.supplier?.name || '-'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                 {product.brand?.name || '-'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                 <div>
                   <div className="text-green-600 font-semibold">{formatCurrency(product.retail_price)}</div>
-                  <div className="text-gray-500 text-xs">Cost: {formatCurrency(product.cost_price)}</div>
+                  <div className="text-muted-foreground text-xs">Cost: {formatCurrency(product.cost_price)}</div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                   product.is_active 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                 }`}>
                   {product.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -336,26 +336,26 @@ export const ProductList: React.FC<ProductListProps> = ({
     if (totalPages <= 1) return null;
 
     return (
-      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between border-t border-border bg-card px-4 py-3 sm:px-6">
         <div className="flex flex-1 justify-between sm:hidden">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative inline-flex items-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative ml-3 inline-flex items-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
         </div>
         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-muted-foreground">
               Showing{' '}
               <span className="font-medium">{((currentPage - 1) * 20) + 1}</span>
               {' '}to{' '}
@@ -372,7 +372,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-muted-foreground ring-1 ring-inset ring-border hover:bg-muted/50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Previous</span>
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -389,7 +389,7 @@ export const ProductList: React.FC<ProductListProps> = ({
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                       page === currentPage
                         ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                        : 'text-foreground ring-1 ring-inset ring-border hover:bg-muted/50 focus:z-20 focus:outline-offset-0'
                     }`}
                   >
                     {page}
@@ -400,7 +400,7 @@ export const ProductList: React.FC<ProductListProps> = ({
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-muted-foreground ring-1 ring-inset ring-border hover:bg-muted/50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Next</span>
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -429,26 +429,26 @@ export const ProductList: React.FC<ProductListProps> = ({
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search products..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
             />
           </div>
         </form>
 
         {/* View Toggle and Filter Button */}
         <div className="flex items-center space-x-2">
-          <div className="flex border border-gray-300 rounded-md overflow-hidden">
+          <div className="flex border border-border rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode('grid')}
               className={`px-3 py-2 text-sm ${
                 viewMode === 'grid'
-                  ? 'bg-blue-50 text-blue-700 border-r border-blue-200'
-                  : 'text-gray-700 hover:bg-gray-50 border-r border-gray-300'
+                  ? 'bg-primary/10 text-primary border-r border-primary/20'
+                  : 'text-foreground hover:bg-muted/50 border-r border-border'
               }`}
             >
               <Grid className="h-4 w-4" />
@@ -457,8 +457,8 @@ export const ProductList: React.FC<ProductListProps> = ({
               onClick={() => setViewMode('list')}
               className={`px-3 py-2 text-sm ${
                 viewMode === 'list'
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-foreground hover:bg-muted/50'
               }`}
             >
               <List className="h-4 w-4" />
@@ -467,7 +467,7 @@ export const ProductList: React.FC<ProductListProps> = ({
 
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-3 py-2 border border-border shadow-sm text-sm leading-4 font-medium rounded-md text-foreground bg-background hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
             <Filter className="h-4 w-4 mr-1" />
             Filters
@@ -477,17 +477,17 @@ export const ProductList: React.FC<ProductListProps> = ({
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-muted/50 rounded-lg p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Category
               </label>
               <select
                 value={filters.category_id || ''}
                 onChange={(e) => handleFilterChange({ category_id: e.target.value || undefined })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 <option value="">All Categories</option>
                 {categories.map((category) => (
@@ -500,13 +500,13 @@ export const ProductList: React.FC<ProductListProps> = ({
 
             {/* Supplier Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Supplier
               </label>
               <select
                 value={filters.supplier_id || ''}
                 onChange={(e) => handleFilterChange({ supplier_id: e.target.value || undefined })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 <option value="">All Suppliers</option>
                 {suppliers.map((supplier) => (
@@ -519,13 +519,13 @@ export const ProductList: React.FC<ProductListProps> = ({
 
             {/* Brand Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Brand
               </label>
               <select
                 value={(filters as any).brand_id || ''}
                 onChange={(e) => handleFilterChange({ brand_id: e.target.value || undefined } as any)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 <option value="">All Brands</option>
                 {brands.map((brand) => (
@@ -538,13 +538,13 @@ export const ProductList: React.FC<ProductListProps> = ({
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Status
               </label>
               <select
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange({ status: e.target.value || undefined })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
@@ -556,7 +556,7 @@ export const ProductList: React.FC<ProductListProps> = ({
             <div className="flex items-end">
               <button
                 onClick={clearFilters}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-border rounded-md text-sm font-medium text-foreground bg-background hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 Clear Filters
               </button>
@@ -575,9 +575,9 @@ export const ProductList: React.FC<ProductListProps> = ({
       {/* Products */}
       {products.length === 0 && !loading ? (
         <div className="text-center py-12">
-          <Package className="mx-auto h-16 w-16 text-gray-400" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No products found</h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <Package className="mx-auto h-16 w-16 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-medium text-foreground">No products found</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
             {searchTerm || Object.keys(filters).length > 0
               ? 'Try adjusting your search or filters'
               : 'Get started by adding your first product'

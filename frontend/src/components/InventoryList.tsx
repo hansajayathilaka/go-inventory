@@ -117,12 +117,12 @@ const InventoryList: React.FC<InventoryListProps> = ({
   return (
     <div className="space-y-6">
       {/* Header with Controls */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-card text-card-foreground shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Inventory Overview</h2>
+          <h2 className="text-xl font-semibold text-foreground">Inventory Overview</h2>
           <button
             onClick={() => { loadInventory(); loadAlerts(); }}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            className="inline-flex items-center px-3 py-2 border border-input rounded-md text-sm font-medium text-foreground bg-background hover:bg-muted/50"
             disabled={loading}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -133,13 +133,13 @@ const InventoryList: React.FC<InventoryListProps> = ({
         {/* Search and Filters */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search products, SKU, barcode..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
             />
           </div>
 
@@ -152,8 +152,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
               }}
               className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md ${
                 showLowStock
-                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-900 dark:text-yellow-300'
+                  : 'bg-background text-foreground border border-input hover:bg-muted/50'
               }`}
             >
               <AlertTriangle className="w-4 h-4 mr-1" />
@@ -168,8 +168,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
               }}
               className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md ${
                 showZeroStock
-                  ? 'bg-red-100 text-red-800 border border-red-300'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-red-100 text-red-800 border border-red-300 dark:bg-red-900 dark:text-red-300'
+                  : 'bg-background text-foreground border border-input hover:bg-muted/50'
               }`}
             >
               <Package className="w-4 h-4 mr-1" />
@@ -184,8 +184,8 @@ const InventoryList: React.FC<InventoryListProps> = ({
               }}
               className={`flex-1 inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md ${
                 showPOSReady
-                  ? 'bg-green-100 text-green-800 border border-green-300'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300'
+                  : 'bg-background text-foreground border border-input hover:bg-muted/50'
               }`}
             >
               <ShoppingCart className="w-4 h-4 mr-1" />
@@ -196,41 +196,41 @@ const InventoryList: React.FC<InventoryListProps> = ({
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-            <p className="text-red-700">{error}</p>
+            <p className="text-destructive">{error}</p>
           </div>
         )}
 
         {loading ? (
           <div className="p-8 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">Loading inventory...</p>
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Loading inventory...</p>
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className="p-8 text-center">
-            <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-500">No inventory records found</p>
+            <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">No inventory records found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Barcode
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Stock Levels
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Last Updated
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -238,36 +238,36 @@ const InventoryList: React.FC<InventoryListProps> = ({
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {filteredRecords.map((record) => {
                   const stockStatus = getStockStatus(record);
                   const availableQuantity = record.quantity - record.reserved_quantity;
                   
                   return (
-                    <tr key={record.id} className="hover:bg-gray-50">
+                    <tr key={record.id} className="hover:bg-muted/50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {record.product?.name || 'Unknown Product'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             SKU: {record.product?.sku || 'N/A'}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <Scan className="w-4 h-4 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900">
+                          <Scan className="w-4 h-4 text-muted-foreground mr-2" />
+                          <span className="text-sm text-foreground">
                             {record.product?.barcode || 'No barcode'}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-foreground">
                           <div>Available: <span className="font-semibold">{availableQuantity}</span></div>
-                          <div>Reserved: <span className="text-gray-600">{record.reserved_quantity}</span></div>
-                          <div>Reorder Level: <span className="text-gray-600">{record.reorder_level}</span></div>
+                          <div>Reserved: <span className="text-muted-foreground">{record.reserved_quantity}</span></div>
+                          <div>Reorder Level: <span className="text-muted-foreground">{record.reorder_level}</span></div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -275,7 +275,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
                           {stockStatus.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {new Date(record.last_updated).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -319,26 +319,26 @@ const InventoryList: React.FC<InventoryListProps> = ({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+          <div className="bg-card px-4 py-3 flex items-center justify-between border-t border-border">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-muted-foreground">
                   Showing page <span className="font-medium">{currentPage}</span> of{' '}
                   <span className="font-medium">{totalPages}</span>
                 </p>
@@ -348,14 +348,14 @@ const InventoryList: React.FC<InventoryListProps> = ({
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-input bg-background text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-input bg-background text-sm font-medium text-muted-foreground hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>

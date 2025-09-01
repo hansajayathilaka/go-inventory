@@ -92,15 +92,15 @@ const CategoriesPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Categories</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Organize your products into hierarchical categories.
           </p>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={handleRefresh}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="inline-flex items-center px-3 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -116,14 +116,14 @@ const CategoriesPage: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white shadow rounded-lg p-4">
+      <div className="bg-card text-card-foreground shadow rounded-lg p-4">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="block w-full pl-10 pr-10 py-2 border border-input rounded-md leading-5 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:placeholder-muted-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
             placeholder="Search categories by name or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,7 +133,7 @@ const CategoriesPage: React.FC = () => {
               onClick={clearSearch}
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
             >
-              <span className="text-gray-400 hover:text-gray-600 text-sm">Clear</span>
+              <span className="text-muted-foreground hover:text-foreground text-sm">Clear</span>
             </button>
           )}
         </div>
@@ -143,9 +143,9 @@ const CategoriesPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category Tree */}
         <div className="lg:col-span-2">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Category Hierarchy</h3>
+          <div className="bg-card text-card-foreground shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-medium text-foreground">Category Hierarchy</h3>
             </div>
             <div className="p-6">
               <CategoryTree
@@ -163,31 +163,31 @@ const CategoriesPage: React.FC = () => {
 
         {/* Category Details */}
         <div className="lg:col-span-1">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Category Details</h3>
+          <div className="bg-card text-card-foreground shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-lg font-medium text-foreground">Category Details</h3>
             </div>
             <div className="p-6">
               {selectedCategory ? (
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900">
+                    <h4 className="text-lg font-semibold text-foreground">
                       {selectedCategory.name}
                     </h4>
-                    <p className="text-sm text-gray-500">Level {selectedCategory.level + 1}</p>
+                    <p className="text-sm text-muted-foreground">Level {selectedCategory.level + 1}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Description</p>
-                    <p className="text-gray-600">{selectedCategory.description}</p>
+                    <p className="text-sm font-medium text-foreground mb-1">Description</p>
+                    <p className="text-muted-foreground">{selectedCategory.description}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Path</p>
-                    <p className="text-sm text-gray-500 font-mono">{selectedCategory.path}</p>
+                    <p className="text-sm font-medium text-foreground mb-1">Path</p>
+                    <p className="text-sm text-muted-foreground font-mono">{selectedCategory.path}</p>
                   </div>
                   <div className="pt-4 space-y-2">
                     <button
                       onClick={() => handleEditCategory(selectedCategory)}
-                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      className="w-full inline-flex items-center justify-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors"
                     >
                       Edit Category
                     </button>
@@ -201,7 +201,7 @@ const CategoriesPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Select a category to view details</p>
+                  <p className="text-muted-foreground">Select a category to view details</p>
                 </div>
               )}
             </div>

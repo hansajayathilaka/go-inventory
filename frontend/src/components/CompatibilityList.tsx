@@ -280,17 +280,17 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Vehicle Compatibilities</h2>
+        <h2 className="text-2xl font-bold text-foreground">Vehicle Compatibilities</h2>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-foreground'}`}
           >
             <Grid className="h-4 w-4" />
           </button>
           <button
             onClick={() => setViewMode('table')}
-            className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-foreground'}`}
           >
             <ListIcon className="h-4 w-4" />
           </button>
@@ -298,17 +298,17 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
+      <div className="bg-card text-card-foreground p-4 rounded-lg border border-border">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
               type="text"
               placeholder="Search compatibilities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -316,7 +316,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -327,7 +327,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
           <select
             value={verificationFilter}
             onChange={(e) => setVerificationFilter(e.target.value as VerificationFilter)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Verification</option>
             <option value="verified">Verified</option>
@@ -338,7 +338,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
           <select
             value={productFilter}
             onChange={(e) => setProductFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Products</option>
             {products.map((product) => (
@@ -352,7 +352,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
           <select
             value={vehicleModelFilter}
             onChange={(e) => setVehicleModelFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">All Vehicle Models</option>
             {vehicleModels.map((model) => (
@@ -370,7 +370,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
             onChange={(e) => setYearFilter(e.target.value)}
             min="1980"
             max="2030"
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -422,9 +422,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       {/* Content */}
       {filteredCompatibilities.length === 0 ? (
         <div className="text-center py-12">
-          <Link className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No compatibilities found</h3>
-          <p className="text-gray-500">
+          <Link className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">No compatibilities found</h3>
+          <p className="text-muted-foreground">
             {searchTerm || statusFilter !== 'all' || verificationFilter !== 'all' || productFilter || vehicleModelFilter || yearFilter
               ? 'Try adjusting your filters to see more results.'
               : 'Get started by adding your first vehicle compatibility.'}
@@ -436,7 +436,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
           {viewMode === 'grid' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredCompatibilities.map((compatibility) => (
-                <div key={compatibility.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div key={compatibility.id} className="bg-card text-card-foreground rounded-lg border border-border p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <input
                       type="checkbox"
@@ -463,26 +463,26 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                   </div>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Package className="h-4 w-4 mr-2 text-blue-500" />
                       <span className="font-medium">
                         {compatibility.product?.name || 'Unknown Product'}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Car className="h-4 w-4 mr-2 text-green-500" />
                       <span>
                         {(compatibility.vehicle_model as VehicleModelWithBrand)?.vehicle_brand?.name} {compatibility.vehicle_model?.name}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-2 text-orange-500" />
                       <span>
                         {compatibility.year_from}-{compatibility.year_to || 'Present'}
                       </span>
                     </div>
                     {compatibility.notes && (
-                      <p className="text-sm text-gray-500 truncate" title={compatibility.notes}>
+                      <p className="text-sm text-muted-foreground truncate" title={compatibility.notes}>
                         {compatibility.notes}
                       </p>
                     )}
@@ -505,7 +505,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                         onClick={() => handleToggleStatus(compatibility)}
                         className={`p-1 rounded ${
                           compatibility.is_active
-                            ? 'text-gray-600 hover:bg-gray-100'
+                            ? 'text-muted-foreground hover:bg-gray-100'
                             : 'text-blue-600 hover:bg-blue-100'
                         }`}
                         title={compatibility.is_active ? 'Deactivate' : 'Activate'}
@@ -544,41 +544,41 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
 
           {/* Table View */}
           {viewMode === 'table' && (
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-lg border border-border overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-border">
+                  <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         <input
                           type="checkbox"
                           checked={selectedCompatibilities.length === filteredCompatibilities.length}
                           onChange={handleSelectAll}
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Product
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Vehicle Model
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Year Range
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Verification
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-card text-card-foreground divide-y divide-border">
                     {filteredCompatibilities.map((compatibility) => (
-                      <tr key={compatibility.id} className="hover:bg-gray-50">
+                      <tr key={compatibility.id} className="hover:bg-muted/50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
@@ -587,19 +587,19 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {compatibility.product?.name || 'Unknown Product'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             SKU: {compatibility.product?.sku || 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {(compatibility.vehicle_model as VehicleModelWithBrand)?.vehicle_brand?.name} {compatibility.vehicle_model?.name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                           {compatibility.year_from}-{compatibility.year_to || 'Present'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -645,7 +645,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                             </button>
                             <button
                               onClick={() => handleToggleStatus(compatibility)}
-                              className={compatibility.is_active ? 'text-gray-600 hover:text-gray-900' : 'text-blue-600 hover:text-blue-900'}
+                              className={compatibility.is_active ? 'text-muted-foreground hover:text-foreground' : 'text-blue-600 hover:text-blue-900'}
                               title={compatibility.is_active ? 'Deactivate' : 'Activate'}
                             >
                               {compatibility.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
@@ -669,9 +669,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-200 rounded-md">
+            <div className="flex items-center justify-between bg-card text-card-foreground px-4 py-3 border border-border rounded-md">
               <div className="flex items-center">
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-foreground">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCompatibilities)} of {totalCompatibilities} results
                 </span>
               </div>
@@ -679,7 +679,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 text-muted-foreground hover:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -695,7 +695,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                       className={`px-3 py-1 text-sm rounded-md ${
                         currentPage === page
                           ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          : 'text-foreground hover:bg-gray-100'
                       }`}
                     >
                       {page}
@@ -706,7 +706,7 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 text-muted-foreground hover:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
