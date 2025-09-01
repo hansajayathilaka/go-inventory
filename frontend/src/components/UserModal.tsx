@@ -187,16 +187,16 @@ const UserModal: React.FC<UserModalProps> = ({
         />
 
         {/* Modal */}
-        <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+        <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-card text-card-foreground shadow-xl rounded-lg">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-foreground flex items-center">
               <User className="h-5 w-5 mr-2" />
               {mode === 'create' ? 'Create New User' : mode === 'edit' ? 'Edit User' : 'View User'}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
@@ -206,11 +206,11 @@ const UserModal: React.FC<UserModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
                 Username *
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   id="username"
@@ -218,8 +218,8 @@ const UserModal: React.FC<UserModalProps> = ({
                   value={formData.username}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.username ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.username ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter username"
                 />
@@ -231,11 +231,11 @@ const UserModal: React.FC<UserModalProps> = ({
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                 Email Address *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="email"
                   id="email"
@@ -243,8 +243,8 @@ const UserModal: React.FC<UserModalProps> = ({
                   value={formData.email}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.email ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter email address"
                 />
@@ -257,26 +257,26 @@ const UserModal: React.FC<UserModalProps> = ({
             {/* Password */}
             {(mode === 'create' || mode === 'edit') && (
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
                   Password {mode === 'create' ? '*' : '(leave blank to keep current)'}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-10 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.password ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full pl-10 pr-10 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.password ? 'border-red-300' : 'border-input'
                     }`}
                     placeholder="Enter password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
@@ -290,19 +290,19 @@ const UserModal: React.FC<UserModalProps> = ({
             {/* Confirm Password */}
             {(mode === 'create' || (mode === 'edit' && formData.password)) && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
                   Confirm Password *
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="confirmPassword"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.confirmPassword ? 'border-red-300' : 'border-input'
                     }`}
                     placeholder="Confirm password"
                   />
@@ -315,19 +315,19 @@ const UserModal: React.FC<UserModalProps> = ({
 
             {/* Role */}
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="role" className="block text-sm font-medium text-foreground mb-1">
                 Role *
               </label>
               <div className="relative">
-                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <select
                   id="role"
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
                   disabled={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.role ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.role ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                 >
                   <option value="viewer">Viewer - Read-only access</option>
@@ -343,17 +343,17 @@ const UserModal: React.FC<UserModalProps> = ({
 
             {/* Additional Info for View Mode */}
             {mode === 'view' && user && (
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-border">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700">Created:</span>
-                    <p className="text-gray-600">
+                    <span className="font-medium text-foreground">Created:</span>
+                    <p className="text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Last Login:</span>
-                    <p className="text-gray-600">
+                    <span className="font-medium text-foreground">Last Login:</span>
+                    <p className="text-muted-foreground">
                       {user.last_login 
                         ? new Date(user.last_login).toLocaleDateString()
                         : 'Never'
@@ -365,11 +365,11 @@ const UserModal: React.FC<UserModalProps> = ({
             )}
 
             {/* Actions */}
-            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-input rounded-md hover:bg-muted/50 focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 {mode === 'view' ? 'Close' : 'Cancel'}
               </button>
@@ -378,7 +378,7 @@ const UserModal: React.FC<UserModalProps> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

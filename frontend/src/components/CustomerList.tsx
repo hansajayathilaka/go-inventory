@@ -134,11 +134,11 @@ const CustomerList: React.FC<CustomerListProps> = ({
               {getCustomerTypeIcon(customer.customer_type)}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-sm font-medium text-gray-900 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate">
                 {customer.name}
               </h3>
               {customer.code && (
-                <p className="text-xs text-gray-500">#{customer.code}</p>
+                <p className="text-xs text-muted-foreground">#{customer.code}</p>
               )}
             </div>
           </div>
@@ -169,8 +169,8 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
         {/* Customer Info */}
         <div className="space-y-1">
-          <div className="flex items-center text-xs text-gray-600">
-            <span className="px-2 py-0.5 bg-gray-100 rounded-full">
+          <div className="flex items-center text-xs text-muted-foreground">
+            <span className="px-2 py-0.5 bg-muted/50 rounded-full">
               {getCustomerTypeLabel(customer.customer_type)}
             </span>
             {!customer.is_active && (
@@ -181,28 +181,28 @@ const CustomerList: React.FC<CustomerListProps> = ({
           </div>
           
           {customer.email && (
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
               <span className="truncate">{customer.email}</span>
             </div>
           )}
           
           {customer.phone && (
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
               <span className="truncate">{customer.phone}</span>
             </div>
           )}
           
           {customer.city && (
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
               <span className="truncate">{customer.city}</span>
             </div>
           )}
 
           {customer.credit_limit && customer.credit_limit > 0 && (
-            <div className="flex items-center text-xs text-gray-600">
+            <div className="flex items-center text-xs text-muted-foreground">
               <CreditCard className="h-3 w-3 mr-1 flex-shrink-0" />
               <span>${customer.credit_limit.toLocaleString()}</span>
             </div>
@@ -214,33 +214,33 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
   // Render customer row for table view
   const renderCustomerRow = (customer: Customer) => (
-    <tr key={customer.id} className="hover:bg-gray-50">
+    <tr key={customer.id} className="hover:bg-muted/50">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-2">
           {getCustomerTypeIcon(customer.customer_type)}
           <div className="min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
+            <div className="text-sm font-medium text-foreground truncate">
               {customer.name}
             </div>
             {customer.code && (
-              <div className="text-xs text-gray-500">#{customer.code}</div>
+              <div className="text-xs text-muted-foreground">#{customer.code}</div>
             )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {getCustomerTypeLabel(customer.customer_type)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {customer.email || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {customer.phone || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {customer.city || '-'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">
+      <td className="px-4 py-3 text-sm text-muted-foreground">
         {customer.credit_limit ? `$${customer.credit_limit.toLocaleString()}` : '-'}
       </td>
       <td className="px-4 py-3">
@@ -256,21 +256,21 @@ const CustomerList: React.FC<CustomerListProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewCustomer(customer)}
-            className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             title="View customer"
           >
             <Eye className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEditCustomer(customer)}
-            className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-blue-600 transition-colors"
             title="Edit customer"
           >
             <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => onDeleteCustomer(customer)}
-            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-red-600 transition-colors"
             title="Delete customer"
           >
             <Trash2 className="h-4 w-4" />
@@ -285,10 +285,10 @@ const CustomerList: React.FC<CustomerListProps> = ({
       <div className="bg-card text-card-foreground shadow rounded-lg">
         <div className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-muted/50 rounded w-1/4"></div>
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-4 bg-gray-200 rounded"></div>
+                <div key={i} className="h-4 bg-muted/50 rounded"></div>
               ))}
             </div>
           </div>
@@ -303,7 +303,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
         <div className="p-6">
           <div className="text-center">
             <div className="text-red-500 mb-2">Error</div>
-            <p className="text-gray-500">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={loadCustomers}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -331,7 +331,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
                 placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
+                className="pl-10 pr-4 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent w-full sm:w-64"
               />
             </div>
 
@@ -339,7 +339,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
             <select
               value={customerType}
               onChange={(e) => setCustomerType(e.target.value as CustomerType)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
             >
               <option value="all">All Types</option>
               <option value="individual">Individual</option>
@@ -350,7 +350,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -363,14 +363,14 @@ const CustomerList: React.FC<CustomerListProps> = ({
               placeholder="Filter by city..."
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-full sm:w-40"
+              className="px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent w-full sm:w-40"
             />
 
             {/* Clear Filters */}
             {(searchTerm || customerType !== 'all' || statusFilter !== 'active' || cityFilter) && (
               <button
                 onClick={clearFilters}
-                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-input rounded-md hover:bg-muted/50"
               >
                 Clear
               </button>
@@ -378,13 +378,13 @@ const CustomerList: React.FC<CustomerListProps> = ({
           </div>
 
           {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-md p-1">
+          <div className="flex items-center bg-muted/50 rounded-md p-1">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Grid view"
             >
@@ -394,8 +394,8 @@ const CustomerList: React.FC<CustomerListProps> = ({
               onClick={() => setViewMode('table')}
               className={`p-2 rounded-md transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
               title="Table view"
             >
@@ -406,7 +406,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
       </div>
 
       {/* Results Summary */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-muted-foreground">
         Showing {customers.length} of {totalCustomers} customers
       </div>
 
@@ -416,7 +416,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
           <div className="p-12 text-center">
             <Users className="mx-auto h-16 w-16 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-medium text-foreground">No customers found</h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted-foreground">
               {searchTerm || customerType !== 'all' || statusFilter !== 'active' || cityFilter
                 ? 'Try adjusting your search criteria'
                 : 'Get started by adding your first customer'
@@ -430,31 +430,31 @@ const CustomerList: React.FC<CustomerListProps> = ({
         </div>
       ) : (
         <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Phone
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   City
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Credit Limit
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -480,14 +480,14 @@ const CustomerList: React.FC<CustomerListProps> = ({
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-foreground bg-background hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Showing page <span className="font-medium">{currentPage}</span> of{' '}
                 <span className="font-medium">{totalPages}</span>
               </p>

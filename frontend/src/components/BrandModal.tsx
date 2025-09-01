@@ -198,19 +198,19 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-card text-card-foreground rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+          <div className="bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Tag className="h-6 w-6 text-gray-400 mr-2" />
-                <h3 className="text-lg font-medium text-gray-900">
+                <Tag className="h-6 w-6 text-muted-foreground mr-2" />
+                <h3 className="text-lg font-medium text-foreground">
                   {isEditing ? 'Edit Brand' : 'Add New Brand'}
                 </h3>
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -218,7 +218,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-white px-4 pt-5 pb-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="bg-card px-4 pt-5 pb-4 sm:p-6">
             {/* General Error */}
             {errors.general && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -229,11 +229,11 @@ const BrandModal: React.FC<BrandModalProps> = ({
             <div className="space-y-6">
               {/* Basic Information */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Basic Information</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Basic Information</h4>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Brand Name */}
                   <div className="sm:col-span-2">
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="name" className="block text-sm font-medium text-foreground">
                       Brand Name *
                     </label>
                     <input
@@ -242,8 +242,8 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       value={formData.name}
                       onChange={(e) => handleFieldChange('name', e.target.value)}
                       onBlur={() => handleFieldBlur('name')}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                        errors.name ? 'border-red-300' : 'border-input'
                       }`}
                       placeholder="Enter brand name (e.g., Bosch, NGK, Denso)"
                     />
@@ -254,7 +254,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
                   {/* Brand Code */}
                   <div>
-                    <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="code" className="block text-sm font-medium text-foreground">
                       Brand Code
                     </label>
                     <input
@@ -264,9 +264,9 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       onChange={(e) => handleFieldChange('code', e.target.value.toUpperCase())}
                       onBlur={() => handleFieldBlur('code')}
                       disabled={isEditing}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                        isEditing ? 'bg-gray-100' : 'border-gray-300'
-                      } ${errors.code ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                        isEditing ? 'bg-gray-100' : 'border-input'
+                      } ${errors.code ? 'border-red-300' : 'border-input'}`}
                       placeholder="Auto-generated if empty"
                     />
                     {errors.code && (
@@ -276,7 +276,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
                   {/* Country Code */}
                   <div>
-                    <label htmlFor="country_code" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="country_code" className="block text-sm font-medium text-foreground">
                       Country Code
                     </label>
                     <div className="mt-1 relative">
@@ -286,8 +286,8 @@ const BrandModal: React.FC<BrandModalProps> = ({
                         value={formData.country_code}
                         onChange={(e) => handleFieldChange('country_code', e.target.value.toUpperCase())}
                         onBlur={() => handleFieldBlur('country_code')}
-                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.country_code ? 'border-red-300' : 'border-gray-300'
+                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                          errors.country_code ? 'border-red-300' : 'border-input'
                         }`}
                         placeholder="US, DE, JP..."
                         maxLength={2}
@@ -309,7 +309,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
               {/* Description */}
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="description" className="block text-sm font-medium text-foreground">
                   Description
                 </label>
                 <textarea
@@ -318,23 +318,23 @@ const BrandModal: React.FC<BrandModalProps> = ({
                   onChange={(e) => handleFieldChange('description', e.target.value)}
                   onBlur={() => handleFieldBlur('description')}
                   rows={3}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   placeholder="Brief description of the brand..."
                 />
               </div>
 
               {/* Website & Logo */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Web Presence</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Web Presence</h4>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Website */}
                   <div className="sm:col-span-2">
-                    <label htmlFor="website" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="website" className="block text-sm font-medium text-foreground">
                       Website
                     </label>
                     <div className="mt-1 relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Globe className="h-4 w-4 text-gray-400" />
+                        <Globe className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <input
                         type="url"
@@ -342,8 +342,8 @@ const BrandModal: React.FC<BrandModalProps> = ({
                         value={formData.website}
                         onChange={(e) => handleFieldChange('website', e.target.value)}
                         onBlur={() => handleFieldBlur('website')}
-                        className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.website ? 'border-red-300' : 'border-gray-300'
+                        className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                          errors.website ? 'border-red-300' : 'border-input'
                         }`}
                         placeholder="https://www.brand-website.com"
                       />
@@ -353,7 +353,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
                             href={formData.website.startsWith('http') ? formData.website : `https://${formData.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-blue-600"
+                            className="text-muted-foreground hover:text-blue-600"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>
@@ -367,12 +367,12 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
                   {/* Logo URL */}
                   <div className="sm:col-span-2">
-                    <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="logo_url" className="block text-sm font-medium text-foreground">
                       Logo URL
                     </label>
                     <div className="mt-1 relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Image className="h-4 w-4 text-gray-400" />
+                        <Image className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <input
                         type="url"
@@ -380,8 +380,8 @@ const BrandModal: React.FC<BrandModalProps> = ({
                         value={formData.logo_url}
                         onChange={(e) => handleFieldChange('logo_url', e.target.value)}
                         onBlur={() => handleFieldBlur('logo_url')}
-                        className={`block w-full pl-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.logo_url ? 'border-red-300' : 'border-gray-300'
+                        className={`block w-full pl-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
+                          errors.logo_url ? 'border-red-300' : 'border-input'
                         }`}
                         placeholder="https://example.com/logo.png"
                       />
@@ -394,10 +394,10 @@ const BrandModal: React.FC<BrandModalProps> = ({
                   {/* Logo Preview */}
                   {logoPreview && (
                     <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Logo Preview
                       </label>
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-input">
                         <img
                           src={logoPreview}
                           alt="Brand logo preview"
@@ -409,7 +409,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
                             if (sibling) sibling.style.display = 'block';
                           }}
                         />
-                        <div className="text-gray-400 text-xs hidden">
+                        <div className="text-muted-foreground text-xs hidden">
                           Failed to load image
                         </div>
                       </div>
@@ -420,20 +420,20 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
               {/* Status */}
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Status</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Status</h4>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => handleFieldChange('is_active', e.target.checked.toString())}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                   />
-                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="is_active" className="ml-2 block text-sm text-foreground">
                     Active Brand
                   </label>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Inactive brands will not appear in product creation forms
                 </p>
               </div>
@@ -446,7 +446,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
               type="submit"
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -464,7 +464,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-input shadow-sm px-4 py-2 bg-card text-base font-medium text-foreground hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
             >
               Cancel
             </button>

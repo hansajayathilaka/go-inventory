@@ -81,18 +81,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             ? 'py-3 px-4 bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500' 
             : level === 1 
               ? 'py-2.5 px-3 hover:bg-green-50' 
-              : 'py-2 px-3 hover:bg-gray-50'
+              : 'py-2 px-3 hover:bg-muted/50'
         }
-        hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset
+        hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
         ${isSelected 
           ? level === 0 
             ? 'bg-blue-100 text-blue-900 shadow-md border-l-4 border-blue-600' 
             : level === 1
               ? 'bg-green-100 text-green-900 border-l-2 border-green-500'
               : 'bg-amber-100 text-amber-900 border-l-2 border-amber-500'
-          : 'text-gray-900'
+          : 'text-foreground'
         }
-        ${showConnectionLines && level > 0 ? 'border-l border-gray-200' : ''}
+        ${showConnectionLines && level > 0 ? 'border-l border-border' : ''}
       `}
       onClick={handleSelect}
     >
@@ -106,7 +106,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 ? 'border-green-300' 
                 : level === 2 
                   ? 'border-amber-300' 
-                  : 'border-gray-300'
+                  : 'border-input'
             }`}
             style={{
               left: `${(level - 1) * levelIndentSize + 12}px`,
@@ -122,7 +122,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 ? 'border-green-300' 
                 : level === 2 
                   ? 'border-amber-300' 
-                  : 'border-gray-300'
+                  : 'border-input'
             }`}
             style={{
               left: `${(level - 1) * levelIndentSize + 12}px`,
@@ -143,8 +143,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             onClick={handleToggleExpand}
             className={`
               flex items-center justify-center w-4 h-4 mr-3 rounded-sm
-              transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500
-              text-gray-500 hover:text-gray-700 hover:bg-gray-100
+              transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring
+              text-muted-foreground hover:text-foreground hover:bg-muted/50
               ${isExpanded ? 'transform rotate-90' : ''}
             `}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
@@ -166,7 +166,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 ? 'text-sm font-semibold' 
                 : 'text-sm font-medium'
           }
-          ${isSelected ? 'text-blue-900' : 'text-gray-900'}
+          ${isSelected ? 'text-blue-900' : 'text-foreground'}
         `}>
           {category.matchesSearch && category.highlightedText ? (
             <span dangerouslySetInnerHTML={{ __html: category.highlightedText }} />
@@ -196,7 +196,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         {/* Loading Indicator */}
         {!category.isLoaded && onLoadChildren && (
           <div className="ml-2">
-            <span className="text-gray-400 text-xs">Loading...</span>
+            <span className="text-muted-foreground text-xs">Loading...</span>
           </div>
         )}
         

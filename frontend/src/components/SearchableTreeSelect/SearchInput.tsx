@@ -83,7 +83,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
     <div className="relative">
       {/* Search Icon */}
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <span className="text-gray-400 text-sm">{searchIcon || '🔍'}</span>
+        <span className="text-muted-foreground text-sm">{searchIcon || '🔍'}</span>
       </div>
       
       {/* Search Input */}
@@ -97,9 +97,9 @@ const SearchInput: React.FC<SearchInputProps> = ({
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedBy}
         className={`
-          w-full pl-10 pr-10 py-2 text-sm border border-gray-300 rounded-md
-          placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
-          ${disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'}
+          w-full pl-10 pr-10 py-2 text-sm border border-input rounded-md
+          placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+          ${disabled ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'bg-background'}
         `}
         autoComplete="off"
         spellCheck="false"
@@ -110,7 +110,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         {/* Loading Spinner */}
         {loading && (
           <div className="mr-2">
-            <span className="text-gray-400 text-sm animate-spin inline-block">⧗</span>
+            <span className="text-muted-foreground text-sm animate-spin inline-block">⧗</span>
           </div>
         )}
         
@@ -121,12 +121,12 @@ const SearchInput: React.FC<SearchInputProps> = ({
             onClick={handleClear}
             disabled={disabled}
             className={`
-              p-1 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500
+              p-1 hover:bg-muted/50 rounded-full focus:outline-none focus:ring-2 focus:ring-ring
               ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
             `}
             aria-label="Clear search"
           >
-            <span className="text-gray-400 text-xs">{clearIcon || '✕'}</span>
+            <span className="text-muted-foreground text-xs">{clearIcon || '✕'}</span>
           </button>
         )}
       </div>
@@ -134,7 +134,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       {/* Search Hint */}
       {!localValue && !loading && (
         <div className="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
-          <span className="text-xs text-gray-400">ESC to clear</span>
+          <span className="text-xs text-muted-foreground">ESC to clear</span>
         </div>
       )}
     </div>

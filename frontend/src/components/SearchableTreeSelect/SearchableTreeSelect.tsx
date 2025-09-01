@@ -239,7 +239,7 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
   const dropdownContent = (
     <div className="py-1">
       {searchable && (
-        <div className="px-3 pb-2 border-b border-gray-200">
+        <div className="px-3 pb-2 border-b border-border">
           <SearchInput
             value={treeState.searchTerm}
             onChange={handleSearchChange}
@@ -261,15 +261,15 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
             {renderTreeNodes(visibleData)}
           </div>
         ) : (
-          <div className="px-3 py-2 text-gray-500 text-center">
+          <div className="px-3 py-2 text-muted-foreground text-center">
             {treeState.isSearching ? 'No categories found' : 'No categories available'}
           </div>
         )}
       </div>
       
       {loading && (
-        <div className="px-3 py-2 border-t border-gray-200 text-center">
-          <span className="text-sm text-gray-600">Loading...</span>
+        <div className="px-3 py-2 border-t border-border text-center">
+          <span className="text-sm text-muted-foreground">Loading...</span>
         </div>
       )}
     </div>
@@ -288,14 +288,14 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
         aria-label={ariaLabel || 'Select category'}
         aria-describedby={ariaDescribedBy}
         className={`
-          w-full px-3 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm
-          focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500
-          ${disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'}
+          w-full px-3 py-2 text-left bg-card text-card-foreground border border-input rounded-md shadow-sm
+          focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+          ${disabled ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'cursor-pointer hover:border-border'}
           ${error ? 'border-red-300' : ''}
         `}
       >
         <div className="flex items-center justify-between">
-          <span className={selectedDisplayText ? 'text-gray-900' : 'text-gray-500'}>
+          <span className={selectedDisplayText ? 'text-foreground' : 'text-muted-foreground'}>
             {selectedDisplayText || placeholder}
           </span>
           
@@ -307,15 +307,15 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
                   e.stopPropagation();
                   handleClear();
                 }}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-muted/50 rounded"
                 aria-label="Clear selection"
               >
-                <span className="text-gray-400 text-xs">{finalIconConfig.clearIcon}</span>
+                <span className="text-muted-foreground text-xs">{finalIconConfig.clearIcon}</span>
               </button>
             )}
             
             <span className={`
-              text-gray-400 text-sm transition-transform duration-200
+              text-muted-foreground text-sm transition-transform duration-200
               ${isOpen ? 'transform rotate-180' : ''}
             `}>▼</span>
           </div>

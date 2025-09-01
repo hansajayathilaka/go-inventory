@@ -41,11 +41,11 @@ const CategoryIconDemo: React.FC = () => {
     return (
       <div className="p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-10 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 bg-muted rounded w-1/4 mb-4"></div>
+          <div className="h-10 bg-muted rounded mb-4"></div>
           <div className="space-y-2">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-8 bg-gray-100 rounded"></div>
+              <div key={i} className="h-8 bg-muted/50 rounded"></div>
             ))}
           </div>
         </div>
@@ -74,18 +74,18 @@ const CategoryIconDemo: React.FC = () => {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           🌳 Clean Category Selection Demo
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Clean, icon-free category selection with visual hierarchy and enhanced UX
         </p>
       </div>
 
       <div className="space-y-6">
         {/* Demo SearchableTreeSelect */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             🌳 Category Tree Selector
           </h2>
           
@@ -145,8 +145,8 @@ const CategoryIconDemo: React.FC = () => {
         )}
 
         {/* Visual Hierarchy Legend */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-muted/50 border border-border rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             🎨 Visual Hierarchy Legend
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -175,8 +175,8 @@ const CategoryIconDemo: React.FC = () => {
         </div>
 
         {/* Category Statistics */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
             📊 Category Statistics
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -184,25 +184,25 @@ const CategoryIconDemo: React.FC = () => {
               <div className="text-2xl font-bold text-blue-600">
                 {categories.filter(c => c.level === 0).length}
               </div>
-              <div className="text-sm text-gray-600">Root Categories</div>
+              <div className="text-sm text-muted-foreground">Root Categories</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
                 {categories.filter(c => c.level === 1).length}
               </div>
-              <div className="text-sm text-gray-600">Subcategories</div>
+              <div className="text-sm text-muted-foreground">Subcategories</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-amber-600">
                 {categories.filter(c => c.level >= 2).length}
               </div>
-              <div className="text-sm text-gray-600">Deep Categories</div>
+              <div className="text-sm text-muted-foreground">Deep Categories</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">
+              <div className="text-2xl font-bold text-muted-foreground">
                 {categories.length}
               </div>
-              <div className="text-sm text-gray-600">Total Categories</div>
+              <div className="text-sm text-muted-foreground">Total Categories</div>
             </div>
           </div>
         </div>

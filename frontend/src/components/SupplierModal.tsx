@@ -178,16 +178,16 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         />
 
         {/* Modal */}
-        <div className="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+        <div className="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-card text-card-foreground shadow-xl rounded-lg">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-foreground flex items-center">
               <Truck className="h-5 w-5 mr-2" />
               {mode === 'create' ? 'Create New Supplier' : mode === 'edit' ? 'Edit Supplier' : 'View Supplier'}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
@@ -197,11 +197,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Supplier Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
                 Supplier Name *
               </label>
               <div className="relative">
-                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   id="name"
@@ -209,8 +209,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   value={formData.name}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.name ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter supplier name"
                 />
@@ -222,11 +222,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
             {/* Supplier Code */}
             <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="code" className="block text-sm font-medium text-foreground mb-1">
                 Supplier Code *
               </label>
               <div className="relative">
-                <Truck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Truck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   id="code"
@@ -234,8 +234,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   value={formData.code}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.code ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.code ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="e.g., SUP001"
                 />
@@ -247,11 +247,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
             {/* Contact Person */}
             <div>
-              <label htmlFor="contact_person" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="contact_person" className="block text-sm font-medium text-foreground mb-1">
                 Contact Person
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   id="contact_person"
@@ -259,8 +259,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   value={formData.contact_person}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.contact_person ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.contact_person ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter contact person name"
                 />
@@ -272,11 +272,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="email"
                   id="email"
@@ -284,8 +284,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   value={formData.email}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.email ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter email address"
                 />
@@ -297,11 +297,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-1">
                 Phone Number
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <input
                   type="text"
                   id="phone"
@@ -309,8 +309,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   value={formData.phone}
                   onChange={handleChange}
                   readOnly={isReadOnly}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.phone ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter phone number"
                 />
@@ -322,11 +322,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
             {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="address" className="block text-sm font-medium text-foreground mb-1">
                 Address
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
+                <MapPin className="absolute left-3 top-3 text-muted-foreground h-4 w-4" />
                 <textarea
                   id="address"
                   name="address"
@@ -334,8 +334,8 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   onChange={handleChange}
                   readOnly={isReadOnly}
                   rows={3}
-                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.address ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                    errors.address ? 'border-red-300' : 'border-input'
                   } ${isReadOnly ? 'bg-gray-50' : ''}`}
                   placeholder="Enter supplier address"
                 />
@@ -354,26 +354,26 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 checked={formData.is_active}
                 onChange={handleChange}
                 disabled={isReadOnly}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
               />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="is_active" className="ml-2 block text-sm text-foreground">
                 Active supplier
               </label>
             </div>
 
             {/* Additional Info for View Mode */}
             {mode === 'view' && supplier && (
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-border">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700">Created:</span>
-                    <p className="text-gray-600">
+                    <span className="font-medium text-foreground">Created:</span>
+                    <p className="text-muted-foreground">
                       {supplier.created_at ? new Date(supplier.created_at).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Updated:</span>
-                    <p className="text-gray-600">
+                    <span className="font-medium text-foreground">Updated:</span>
+                    <p className="text-muted-foreground">
                       {supplier.updated_at ? new Date(supplier.updated_at).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
@@ -382,11 +382,11 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
             )}
 
             {/* Actions */}
-            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-input rounded-md hover:bg-muted/50 focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 {mode === 'view' ? 'Close' : 'Cancel'}
               </button>
@@ -395,7 +395,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

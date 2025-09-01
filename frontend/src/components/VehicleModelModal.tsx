@@ -203,20 +203,20 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
               <Car className="h-4 w-4 text-blue-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               {isEditing ? 'Edit Vehicle Model' : 'Add Vehicle Model'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -227,11 +227,11 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
           <form className="space-y-6">
             {/* Basic Information */}
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Basic Information</h3>
+              <h3 className="text-sm font-medium text-foreground mb-3">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Vehicle Model Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Model Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -240,8 +240,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('name', e.target.value)}
                     onBlur={() => handleFieldBlur('name')}
                     placeholder="e.g., Camry, Civic, Corolla"
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.name ? 'border-red-500' : 'border-input'
                     }`}
                   />
                   {errors.name && (
@@ -251,7 +251,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
                 {/* Code */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Model Code
                   </label>
                   <input
@@ -260,8 +260,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('code', e.target.value)}
                     onBlur={() => handleFieldBlur('code')}
                     placeholder="e.g., XV70, FC1, ZRE210"
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.code ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.code ? 'border-red-500' : 'border-input'
                     }`}
                   />
                   {errors.code && (
@@ -271,7 +271,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
                 {/* Vehicle Brand */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Vehicle Brand <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -279,8 +279,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('vehicle_brand_id', e.target.value)}
                     onBlur={() => handleFieldBlur('vehicle_brand_id')}
                     disabled={brandsLoading}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.vehicle_brand_id ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.vehicle_brand_id ? 'border-red-500' : 'border-input'
                     }`}
                   >
                     <option value="">
@@ -301,14 +301,14 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
             {/* Year Range */}
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+              <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
                 <Calendar className="h-4 w-4 mr-2" />
                 Production Years
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Year From */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     From Year <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -319,8 +319,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('year_from', e.target.value)}
                     onBlur={() => handleFieldBlur('year_from')}
                     placeholder={`e.g., ${currentYear - 5}`}
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.year_from ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.year_from ? 'border-red-500' : 'border-input'
                     }`}
                   />
                   {errors.year_from && (
@@ -330,7 +330,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
                 {/* Year To */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     To Year
                   </label>
                   <input
@@ -341,8 +341,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('year_to', e.target.value)}
                     onBlur={() => handleFieldBlur('year_to')}
                     placeholder="Leave empty for current production"
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.year_to ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.year_to ? 'border-red-500' : 'border-input'
                     }`}
                   />
                   {errors.year_to && (
@@ -354,21 +354,21 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
             {/* Engine & Transmission */}
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+              <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
                 <Settings className="h-4 w-4 mr-2" />
                 Engine & Transmission
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Fuel Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Fuel Type
                   </label>
                   <select
                     value={formData.fuel_type}
                     onChange={(e) => handleFieldChange('fuel_type', e.target.value)}
                     onBlur={() => handleFieldBlur('fuel_type')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
                   >
                     <option value="">Select fuel type</option>
                     <option value="Petrol">Petrol</option>
@@ -382,14 +382,14 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
                 {/* Transmission */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Transmission
                   </label>
                   <select
                     value={formData.transmission}
                     onChange={(e) => handleFieldChange('transmission', e.target.value)}
                     onBlur={() => handleFieldBlur('transmission')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
                   >
                     <option value="">Select transmission</option>
                     <option value="Manual">Manual</option>
@@ -401,7 +401,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
                 {/* Engine Size */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Engine Size
                   </label>
                   <input
@@ -410,8 +410,8 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                     onChange={(e) => handleFieldChange('engine_size', e.target.value)}
                     onBlur={() => handleFieldBlur('engine_size')}
                     placeholder="e.g., 2.0L, 1500cc"
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      errors.engine_size ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
+                      errors.engine_size ? 'border-red-500' : 'border-input'
                     }`}
                   />
                   {errors.engine_size && (
@@ -423,7 +423,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Description
               </label>
               <textarea
@@ -432,7 +432,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                 onBlur={() => handleFieldBlur('description')}
                 rows={3}
                 placeholder="Additional model information, variants, or notes..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
@@ -443,9 +443,9 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
                 id="is_active"
                 checked={formData.is_active}
                 onChange={(e) => handleFieldChange('is_active', e.target.checked.toString())}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary focus:ring-2 focus:ring-ring border-input rounded"
               />
-              <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="is_active" className="ml-2 text-sm text-foreground">
                 Active vehicle model
               </label>
             </div>
@@ -453,11 +453,11 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+        <div className="flex items-center justify-end space-x-3 p-6 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-muted-foreground border border-input rounded-md hover:bg-muted/50 transition-colors"
             disabled={loading}
           >
             Cancel

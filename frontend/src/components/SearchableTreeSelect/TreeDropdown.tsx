@@ -144,7 +144,7 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
       <div
         ref={dropdownRef}
         className={`
-          fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg
+          fixed z-50 bg-card text-card-foreground border border-border rounded-md shadow-lg
           ${actualPlacement === 'top' ? 'shadow-top' : 'shadow-bottom'}
           ${className}
         `}
@@ -162,8 +162,8 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
           className={`
             absolute w-0 h-0 border-l-8 border-r-8 border-transparent z-10
             ${actualPlacement === 'top' 
-              ? 'border-t-8 border-t-white bottom-[-8px]' 
-              : 'border-b-8 border-b-white top-[-8px]'
+              ? 'border-t-8 border-t-card bottom-[-8px]' 
+              : 'border-b-8 border-b-card top-[-8px]'
             }
           `}
           style={{
@@ -181,8 +181,8 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
           className={`
             absolute w-0 h-0 border-l-8 border-r-8 border-transparent
             ${actualPlacement === 'top' 
-              ? 'border-t-8 border-t-gray-200 bottom-[-9px]' 
-              : 'border-b-8 border-b-gray-200 top-[-9px]'
+              ? 'border-t-8 border-t-border bottom-[-9px]' 
+              : 'border-b-8 border-b-border top-[-9px]'
             }
           `}
           style={{
@@ -196,7 +196,7 @@ const TreeDropdown: React.FC<TreeDropdownProps> = ({
         />
         
         {/* Content */}
-        <div className="relative bg-white rounded-md overflow-hidden">
+        <div className="relative bg-card text-card-foreground rounded-md overflow-hidden">
           {children}
         </div>
       </div>
