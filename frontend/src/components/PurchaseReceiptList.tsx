@@ -117,63 +117,63 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
     switch (status) {
       case 'draft':
         return (
-          <span className={`${baseClass} bg-gray-100 text-gray-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-secondary text-secondary-foreground flex items-center gap-1`}>
             <FileText size={12} />
             Draft
           </span>
         );
       case 'pending':
         return (
-          <span className={`${baseClass} bg-yellow-100 text-yellow-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 flex items-center gap-1`}>
             <Clock size={12} />
             Pending
           </span>
         );
       case 'approved':
         return (
-          <span className={`${baseClass} bg-green-100 text-green-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 flex items-center gap-1`}>
             <CheckCircle size={12} />
             Approved
           </span>
         );
       case 'ordered':
         return (
-          <span className={`${baseClass} bg-blue-100 text-blue-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 flex items-center gap-1`}>
             <Send size={12} />
             Ordered
           </span>
         );
       case 'received':
         return (
-          <span className={`${baseClass} bg-purple-100 text-purple-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 flex items-center gap-1`}>
             <Package size={12} />
             Received
           </span>
         );
       case 'partial':
         return (
-          <span className={`${baseClass} bg-orange-100 text-orange-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 flex items-center gap-1`}>
             <AlertCircle size={12} />
             Partial
           </span>
         );
       case 'completed':
         return (
-          <span className={`${baseClass} bg-emerald-100 text-emerald-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 flex items-center gap-1`}>
             <FileCheck size={12} />
             Completed
           </span>
         );
       case 'cancelled':
         return (
-          <span className={`${baseClass} bg-red-100 text-red-800 flex items-center gap-1`}>
+          <span className={`${baseClass} bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 flex items-center gap-1`}>
             <XCircle size={12} />
             Cancelled
           </span>
         );
       default:
         return (
-          <span className={`${baseClass} bg-gray-100 text-gray-800`}>
+          <span className={`${baseClass} bg-secondary text-secondary-foreground`}>
             {status}
           </span>
         );
@@ -369,13 +369,13 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
         </div>
         
         {/* View Mode Toggle */}
-        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center bg-muted rounded-lg p-1">
           <button
             onClick={() => setViewMode('grid')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
               viewMode === 'grid'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Grid size={16} />
@@ -385,8 +385,8 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
             onClick={() => setViewMode('table')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
               viewMode === 'table'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <ListIcon size={16} />
@@ -396,7 +396,7 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border space-y-4">
+      <div className="bg-card text-card-foreground p-4 rounded-lg border space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -475,14 +475,14 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
           {purchaseReceipts.map((receipt) => (
             <div
               key={receipt.id}
-              className="bg-white rounded-lg border hover:shadow-md transition-shadow"
+              className="bg-card text-card-foreground rounded-lg border hover:shadow-md transition-shadow"
             >
               {/* Card Header */}
               <div className="p-4 border-b">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-medium text-gray-900">{receipt.receipt_number}</h3>
-                    <p className="text-sm text-gray-600">{receipt.supplier?.name}</p>
+                    <h3 className="font-medium text-card-foreground">{receipt.receipt_number}</h3>
+                    <p className="text-sm text-muted-foreground">{receipt.supplier?.name}</p>
                   </div>
                   {getStatusBadge(receipt.status)}
                 </div>
@@ -490,34 +490,34 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
 
               {/* Card Body */}
               <div className="p-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar size={14} />
                   <span>Order: {formatDate(receipt.order_date)}</span>
                 </div>
                 
                 {receipt.received_date && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Truck size={14} />
                     <span>Received: {formatDate(receipt.received_date)}</span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DollarSign size={14} />
                   <span>{formatCurrency(receipt.total_amount, receipt.currency)}</span>
                 </div>
 
                 {receipt.reference && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <span className="font-medium">Ref:</span> {receipt.reference}
                   </div>
                 )}
               </div>
 
               {/* Card Footer */}
-              <div className="px-4 py-3 bg-gray-50 rounded-b-lg">
+              <div className="px-4 py-3 bg-muted rounded-b-lg">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     {receipt.items?.length || 0} items
                   </div>
                   <div className="flex items-center gap-1">
@@ -530,7 +530,7 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
         </div>
       ) : (
         /* Table View */
-        <div className="bg-white rounded-lg border overflow-hidden">
+        <div className="bg-card rounded-lg border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -558,7 +558,7 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {purchaseReceipts.map((receipt) => (
                   <tr key={receipt.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap">
@@ -623,7 +623,7 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border rounded-lg">
+        <div className="flex items-center justify-between px-4 py-3 bg-card border rounded-lg">
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <span>
               Showing page {currentPage} of {totalPages}
