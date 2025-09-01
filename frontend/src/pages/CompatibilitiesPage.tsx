@@ -3,10 +3,22 @@ import { Plus } from 'lucide-react';
 import type { VehicleCompatibilityWithDetails } from '../types/api';
 import CompatibilityList from '../components/CompatibilityList';
 import CompatibilityModal from '../components/CompatibilityModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const CompatibilitiesPage: React.FC = () => {
+  const { toast } = useToast();
   const [showCompatibilityModal, setShowCompatibilityModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCompatibility, setSelectedCompatibility] = useState<VehicleCompatibilityWithDetails | null>(null);
@@ -46,9 +58,17 @@ const CompatibilitiesPage: React.FC = () => {
       setRefreshCompatibilities(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedCompatibility(null);
+      toast({
+        title: "Compatibility deleted",
+        description: "The vehicle compatibility has been successfully deleted.",
+      });
     } catch (error) {
       console.error('Error deleting compatibility:', error);
-      // TODO: Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to delete compatibility. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -90,13 +110,10 @@ const CompatibilitiesPage: React.FC = () => {
             Manage product-vehicle compatibility relationships. Define which products are compatible with specific vehicle models and years for accurate parts matching and inventory management.
           </p>
         </div>
-        <button
-          onClick={handleAddCompatibility}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-        >
+        <Button onClick={handleAddCompatibility}>
           <Plus className="h-4 w-4 mr-2" />
           Add Compatibility
-        </button>
+        </Button>
       </div>
 
       {/* Compatibility List */}
@@ -118,23 +135,28 @@ const CompatibilitiesPage: React.FC = () => {
         compatibility={selectedCompatibility}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedCompatibility(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Vehicle Compatibility"
-        message={
-          selectedCompatibility
-            ? `Are you sure you want to delete the compatibility between "${formatProductInfo(selectedCompatibility)}" and "${formatVehicleModelInfo(selectedCompatibility)}" (${formatYearRange(selectedCompatibility)})? This action cannot be undone and will permanently remove this compatibility relationship.`
-            : 'Are you sure you want to delete this compatibility?'
-        }
-        confirmButtonText="Delete Compatibility"
-        confirmButtonStyle="danger"
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Compatibility</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedCompatibility
+                ? `Are you sure you want to delete the compatibility between "${formatProductInfo(selectedCompatibility)}" and "${formatVehicleModelInfo(selectedCompatibility)}" (${formatYearRange(selectedCompatibility)})? This action cannot be undone and will permanently remove this compatibility relationship.`
+                : 'Are you sure you want to delete this compatibility?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedCompatibility(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Compatibility
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

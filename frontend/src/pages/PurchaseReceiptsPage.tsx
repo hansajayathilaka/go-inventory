@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useToast } from '@/hooks/use-toast';
 
 const PurchaseReceiptsPage: React.FC = () => {
@@ -269,7 +270,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Send Confirmation Modal */}
       {showSendModal && (
-        <ConfirmationDialog
+        <ConfirmationModal
           isOpen={showSendModal}
           onClose={() => setShowSendModal(false)}
           onConfirm={confirmSend}
@@ -283,7 +284,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Receive Confirmation Modal */}
       {showReceiveModal && (
-        <ConfirmationDialog
+        <ConfirmationModal
           isOpen={showReceiveModal}
           onClose={() => setShowReceiveModal(false)}
           onConfirm={confirmReceive}
@@ -297,7 +298,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Complete Confirmation Modal */}
       {showCompleteModal && (
-        <ConfirmationDialog
+        <ConfirmationModal
           isOpen={showCompleteModal}
           onClose={() => setShowCompleteModal(false)}
           onConfirm={confirmComplete}
@@ -311,7 +312,7 @@ const PurchaseReceiptsPage: React.FC = () => {
 
       {/* Cancel Confirmation Modal */}
       {showCancelModal && (
-        <ConfirmationDialog
+        <ConfirmationModal
           isOpen={showCancelModal}
           onClose={() => setShowCancelModal(false)}
           onConfirm={confirmCancel}

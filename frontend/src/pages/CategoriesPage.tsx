@@ -3,10 +3,21 @@ import { Search, Plus, RefreshCw } from 'lucide-react';
 import type { Category } from '../types/api';
 import CategoryTree from '../components/CategoryTree';
 import CategoryModal from '../components/CategoryModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const CategoriesPage: React.FC = () => {
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -52,9 +63,17 @@ const CategoriesPage: React.FC = () => {
       setRefreshKey(prev => prev + 1);
       setSelectedCategory(null);
       setIsDeleteModalOpen(false);
+      toast({
+        title: "Category deleted",
+        description: `${selectedCategory.name} has been successfully deleted.`,
+      });
     } catch (error: any) {
       console.error('Error deleting category:', error);
-      alert(error.response?.data?.message || 'Failed to delete category');
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || 'Failed to delete category',
+        variant: "destructive",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -199,16 +218,26 @@ const CategoriesPage: React.FC = () => {
         parentId={parentIdForNew}
       />
 
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Category"
-        message={`Are you sure you want to delete the category "${selectedCategory?.name}"? This action cannot be undone and will also delete all subcategories and their associated products.`}
-        confirmButtonText="Delete"
-        confirmButtonStyle="danger"
-        isLoading={isDeleting}
-      />
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the category "{selectedCategory?.name}"? This action cannot be undone and will also delete all subcategories and their associated products.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

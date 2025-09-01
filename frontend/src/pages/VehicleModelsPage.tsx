@@ -3,10 +3,22 @@ import { Plus } from 'lucide-react';
 import type { VehicleModelWithBrand } from '../types/api';
 import VehicleModelList from '../components/VehicleModelList';
 import VehicleModelModal from '../components/VehicleModelModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const VehicleModelsPage: React.FC = () => {
+  const { toast } = useToast();
   const [showVehicleModelModal, setShowVehicleModelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVehicleModel, setSelectedVehicleModel] = useState<VehicleModelWithBrand | null>(null);
@@ -46,9 +58,17 @@ const VehicleModelsPage: React.FC = () => {
       setRefreshVehicleModels(prev => prev + 1);
       setShowDeleteModal(false);
       setSelectedVehicleModel(null);
+      toast({
+        title: "Vehicle model deleted",
+        description: `${selectedVehicleModel.name} has been successfully deleted.`,
+      });
     } catch (error) {
       console.error('Error deleting vehicle model:', error);
-      // TODO: Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to delete vehicle model. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -70,13 +90,10 @@ const VehicleModelsPage: React.FC = () => {
             Manage vehicle models and their specifications. Define model details, production years, engine types, and compatibility information for accurate spare parts matching.
           </p>
         </div>
-        <button
-          onClick={handleAddVehicleModel}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-        >
+        <Button onClick={handleAddVehicleModel}>
           <Plus className="h-4 w-4 mr-2" />
           Add Vehicle Model
-        </button>
+        </Button>
       </div>
 
       {/* Vehicle Model List */}
@@ -98,23 +115,28 @@ const VehicleModelsPage: React.FC = () => {
         vehicleModel={selectedVehicleModel}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedVehicleModel(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Vehicle Model"
-        message={
-          selectedVehicleModel
-            ? `Are you sure you want to delete "${selectedVehicleModel.name}" (${selectedVehicleModel.vehicle_brand.name}, ${formatYearRange(selectedVehicleModel.year_from, selectedVehicleModel.year_to)})? This action cannot be undone and will remove the vehicle model from all associated compatibility records and purchase orders.`
-            : 'Are you sure you want to delete this vehicle model?'
-        }
-        confirmButtonText="Delete Vehicle Model"
-        confirmButtonStyle="danger"
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Vehicle Model</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedVehicleModel
+                ? `Are you sure you want to delete "${selectedVehicleModel.name}" (${selectedVehicleModel.vehicle_brand.name}, ${formatYearRange(selectedVehicleModel.year_from, selectedVehicleModel.year_to)})? This action cannot be undone and will remove the vehicle model from all associated compatibility records and purchase orders.`
+                : 'Are you sure you want to delete this vehicle model?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedVehicleModel(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Vehicle Model
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

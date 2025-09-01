@@ -3,10 +3,22 @@ import { Plus } from 'lucide-react';
 import type { User } from '../types/api';
 import UserList from '../components/UserList';
 import UserModal from '../components/UserModal';
-import ConfirmationModal from '../components/ConfirmationModal';
 import { api } from '../services/api';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const UsersPage: React.FC = () => {
+  const { toast } = useToast();
   const [showUserModal, setShowUserModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -48,11 +60,25 @@ const UsersPage: React.FC = () => {
         setRefreshUsers(prev => prev + 1);
         setShowDeleteModal(false);
         setSelectedUser(null);
+        toast({
+          title: "User deleted",
+          description: `${selectedUser.username} has been successfully deleted.`,
+        });
       } else {
         console.error('Failed to delete user');
+        toast({
+          title: "Error",
+          description: "Failed to delete user. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -72,13 +98,10 @@ const UsersPage: React.FC = () => {
             Manage system users and access permissions.
           </p>
         </div>
-        <button
-          onClick={handleAddUser}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
+        <Button onClick={handleAddUser}>
           <Plus className="h-4 w-4 mr-2" />
           Add User
-        </button>
+        </Button>
       </div>
 
       {/* User List */}
@@ -98,21 +121,29 @@ const UsersPage: React.FC = () => {
         mode={modalMode}
       />
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={confirmDelete}
-        title="Delete User"
-        message={
-          selectedUser
-            ? `Are you sure you want to delete the user "${selectedUser.username}"? This action cannot be undone.`
-            : ''
-        }
-        confirmButtonText="Delete User"
-        confirmButtonStyle="danger"
-        isLoading={isLoading}
-      />
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedUser
+                ? `Are you sure you want to delete the user "${selectedUser.username}"? This action cannot be undone.`
+                : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
