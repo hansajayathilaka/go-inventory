@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Package, ShoppingCart, AlertTriangle, TrendingUp, Activity, Plus, RefreshCw, FolderPlus, UserPlus } from 'lucide-react';
 // import { api } from '../services/api'; // TODO: Use this when dashboard API is ready
@@ -7,8 +7,75 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { LoadingCard } from '@/components/ui/loading';
+import { ErrorDisplay } from '@/components/ui/error-boundary';
+import { usePerformanceMonitor } from '@/components/ui/optimized';
+
+// Memoized StatCard component for better performance
+const StatCard = memo<{
+  name: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  bgColor: string;
+  change: string;
+  changeType: string;
+}>(({ name, value, icon: Icon, color, bgColor, change, changeType }) => (
+  <Card>
+    <CardContent className="p-6">
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <div className={`p-3 rounded-lg ${bgColor}`}>
+            <Icon className={`h-6 w-6 ${color}`} aria-hidden="true" />
+          </div>
+        </div>
+        <div className="ml-5 w-0 flex-1">
+          <div className="text-sm font-medium text-muted-foreground truncate">
+            {name}
+          </div>
+          <div className="flex items-baseline">
+            <div className="text-2xl font-semibold text-foreground">
+              {value}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3">
+        <Badge 
+          variant={changeType === 'negative' ? 'destructive' : 
+                  changeType === 'warning' ? 'secondary' : 'outline'}
+          className="text-xs"
+        >
+          {change}
+        </Badge>
+      </div>
+    </CardContent>
+  </Card>
+));
+
+StatCard.displayName = 'StatCard';
+
+// Memoized QuickAction component
+const QuickAction = memo<{
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  action: () => void;
+}>(({ name, icon: Icon, action }) => (
+  <Button
+    variant="outline"
+    className="h-16 flex-col space-y-2 hover:bg-accent"
+    onClick={action}
+    aria-label={`Quick action: ${name}`}
+  >
+    <Icon className="h-5 w-5" aria-hidden="true" />
+    <span className="text-sm font-medium">{name}</span>
+  </Button>
+));
+
+QuickAction.displayName = 'QuickAction';
 
 const DashboardPage: React.FC = () => {
+  usePerformanceMonitor('DashboardPage');
   // For now, we'll use mock data since the API doesn't have a dashboard endpoint yet
   const mockStats: DashboardStats = {
     total_products: 156,
@@ -20,17 +87,21 @@ const DashboardPage: React.FC = () => {
     recent_movements: []
   };
 
-  const { data: stats = mockStats, isLoading } = useQuery({
+  const { data: stats = mockStats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
+      // Simulate network delay for better UX testing
+      await new Promise(resolve => setTimeout(resolve, 300));
       // For now, return mock data
       // Later we'll implement: const response = await api.get<DashboardStats>('/dashboard/stats');
       // return response.data;
       return mockStats;
-    }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
-  const statCards = [
+  const statCards = useMemo(() => [
     {
       name: 'Total Products',
       value: stats.total_products,
@@ -67,7 +138,7 @@ const DashboardPage: React.FC = () => {
       change: 'Urgent',
       changeType: 'negative'
     }
-  ];
+  ], [stats]);
 
   const recentActivities = [
     { id: 1, action: 'Product added', item: 'Hammer - Claw 16oz', time: '2 hours ago' },
@@ -77,37 +148,58 @@ const DashboardPage: React.FC = () => {
     { id: 5, action: 'Category created', item: 'Power Tools', time: '2 days ago' }
   ];
 
-  const quickActions = [
+  // Memoized action handlers
+  const handleAddProduct = useCallback(() => console.log('Navigate to products page'), []);
+  const handleUpdateStock = useCallback(() => console.log('Navigate to inventory page'), []);
+  const handleNewCategory = useCallback(() => console.log('Navigate to categories page'), []);
+  const handleAddSupplier = useCallback(() => console.log('Navigate to suppliers page'), []);
+
+  const quickActions = useMemo(() => [
     {
       name: 'Add Product',
       icon: Plus,
-      color: 'bg-blue-600 hover:bg-blue-700',
-      action: () => console.log('Navigate to products page')
+      action: handleAddProduct
     },
     {
       name: 'Update Stock',
       icon: RefreshCw,
-      color: 'bg-green-600 hover:bg-green-700',
-      action: () => console.log('Navigate to inventory page')
+      action: handleUpdateStock
     },
     {
       name: 'New Category',
       icon: FolderPlus,
-      color: 'bg-purple-600 hover:bg-purple-700',
-      action: () => console.log('Navigate to categories page')
+      action: handleNewCategory
     },
     {
       name: 'Add Supplier',
       icon: UserPlus,
-      color: 'bg-orange-600 hover:bg-orange-700',
-      action: () => console.log('Navigate to suppliers page')
+      action: handleAddSupplier
     }
-  ];
+  ], [handleAddProduct, handleUpdateStock, handleNewCategory, handleAddSupplier]);
+
+  if (error) {
+    return (
+      <ErrorDisplay 
+        error={error as Error}
+        title="Failed to load dashboard"
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Loading your inventory overview...
+          </p>
+        </div>
+        <LoadingCard 
+          title="Loading Dashboard"
+          description="Fetching your latest inventory statistics and activity..."
+        />
       </div>
     );
   }
@@ -125,36 +217,7 @@ const DashboardPage: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (
-          <Card key={card.name}>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className={`p-3 rounded-lg ${card.bgColor}`}>
-                    <card.icon className={`h-6 w-6 ${card.color}`} />
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <div className="text-sm font-medium text-muted-foreground truncate">
-                    {card.name}
-                  </div>
-                  <div className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-foreground">
-                      {card.value}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3">
-                <Badge 
-                  variant={card.changeType === 'negative' ? 'destructive' : 
-                          card.changeType === 'warning' ? 'secondary' : 'outline'}
-                  className="text-xs"
-                >
-                  {card.change}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard key={card.name} {...card} />
         ))}
       </div>
 
@@ -168,15 +231,7 @@ const DashboardPage: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               {quickActions.map((action) => (
-                <Button
-                  key={action.name}
-                  variant="outline"
-                  className="h-16 flex-col space-y-2 hover:bg-accent"
-                  onClick={action.action}
-                >
-                  <action.icon className="h-5 w-5" />
-                  <span className="text-sm font-medium">{action.name}</span>
-                </Button>
+                <QuickAction key={action.name} {...action} />
               ))}
             </div>
           </CardContent>
@@ -187,7 +242,7 @@ const DashboardPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               Recent Activity
-              <Activity className="h-5 w-5 text-muted-foreground" />
+              <Activity className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
             </CardTitle>
           </CardHeader>
           <CardContent>

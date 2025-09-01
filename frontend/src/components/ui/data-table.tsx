@@ -183,8 +183,9 @@ export function DataTable<T extends Record<string, any>>({
   if (loading) {
     return (
       <Card className={cn('p-6', className)}>
-        <div className="flex items-center justify-center h-32">
+        <div className="flex items-center justify-center h-32" role="status" aria-label="Loading data">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <span className="sr-only">Loading data, please wait...</span>
         </div>
       </Card>
     );
@@ -197,12 +198,14 @@ export function DataTable<T extends Record<string, any>>({
         <div className="flex flex-1 items-center space-x-2">
           {searchable && (
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
+                aria-label={`Search ${searchPlaceholder.toLowerCase()}`}
+                role="searchbox"
               />
             </div>
           )}
@@ -270,52 +273,81 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* Table */}
       <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((column, index) => (
-                <TableHead
-                  key={index}
-                  className={cn(
-                    column.width && `w-${column.width}`,
-                    column.sortable !== false && sortable && 'cursor-pointer select-none'
-                  )}
-                  onClick={() =>
-                    column.accessorKey &&
-                    column.sortable !== false &&
-                    handleSort(column.accessorKey)
-                  }
-                >
-                  <div className="flex items-center space-x-2">
-                    <span>{column.header}</span>
-                    {column.accessorKey && column.sortable !== false && sortable && (
-                      getSortIcon(column.accessorKey)
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-              {actions && <TableHead className="w-[50px]"></TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedData.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table role="table" aria-label="Data table">
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={columns.length + (actions ? 1 : 0)}
-                  className="h-32 text-center"
-                >
-                  {emptyState || (
-                    <div className="flex flex-col items-center space-y-2">
-                      <Search className="h-8 w-8 text-muted-foreground" />
-                      <div className="text-muted-foreground">
-                        {searchTerm || Object.values(filters).some(Boolean)
-                          ? 'No results found'
-                          : 'No data available'}
-                      </div>
+                {columns.map((column, index) => (
+                  <TableHead
+                    key={index}
+                    className={cn(
+                      'whitespace-nowrap',
+                      column.width && `w-${column.width}`,
+                      column.sortable !== false && sortable && 'cursor-pointer select-none'
+                    )}
+                    onClick={() =>
+                      column.accessorKey &&
+                      column.sortable !== false &&
+                      handleSort(column.accessorKey)
+                    }
+                    role="columnheader"
+                    tabIndex={column.sortable !== false && sortable ? 0 : undefined}
+                    aria-sort={
+                      sortConfig.key === column.accessorKey
+                        ? sortConfig.direction === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                    onKeyDown={(e) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && column.accessorKey && column.sortable !== false && sortable) {
+                        e.preventDefault();
+                        handleSort(column.accessorKey);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span>{column.header}</span>
+                      {column.accessorKey && column.sortable !== false && sortable && (
+                        <span aria-hidden="true">
+                          {getSortIcon(column.accessorKey)}
+                        </span>
+                      )}
                     </div>
-                  )}
-                </TableCell>
+                  </TableHead>
+                ))}
+                {actions && (
+                  <TableHead 
+                    className="w-[50px] whitespace-nowrap"
+                    role="columnheader"
+                    aria-label="Actions"
+                  >
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
+              </TableHeader>
+            <TableBody>
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length + (actions ? 1 : 0)}
+                    className="h-32 text-center"
+                    role="cell"
+                    aria-label="No data available"
+                  >
+                    {emptyState || (
+                      <div className="flex flex-col items-center space-y-2">
+                        <Search className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+                        <div className="text-muted-foreground">
+                          {searchTerm || Object.values(filters).some(Boolean)
+                            ? 'No results found'
+                            : 'No data available'}
+                        </div>
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
             ) : (
               paginatedData.map((item, index) => (
                 <TableRow
@@ -351,53 +383,60 @@ export function DataTable<T extends Record<string, any>>({
               ))
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </Card>
 
       {/* Pagination */}
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <p className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <nav role="navigation" aria-label="Table pagination">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                aria-label="Go to first page"
+              >
+                <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                aria-label="Go to previous page"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                aria-label="Go to next page"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                aria-label="Go to last page"
+              >
+                <ChevronsRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+          </nav>
         </div>
       )}
     </div>

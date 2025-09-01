@@ -63,18 +63,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top header */}
-        <header className="bg-card shadow-sm border-b border-border">
+        <header className="bg-card shadow-sm border-b border-border" role="banner">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center">
               {/* Mobile menu */}
               <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="h-5 w-5" />
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="md:hidden"
+                    aria-label="Toggle navigation menu"
+                    aria-expanded={sidebarOpen}
+                    aria-controls="mobile-navigation"
+                  >
+                    <Menu className="h-5 w-5" aria-hidden="true" />
                     <span className="sr-only">Toggle navigation</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-64">
+                <SheetContent side="left" className="p-0 w-64" id="mobile-navigation">
                   <SidebarContent navigation={navigation} currentPath={location.pathname} />
                 </SheetContent>
               </Sheet>
@@ -106,7 +113,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none" role="main">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {children}
@@ -126,40 +133,48 @@ const SidebarContent: React.FC<{
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Logo */}
-      <div className="flex items-center h-16 px-4 bg-primary">
-        <Warehouse className="h-8 w-8 text-primary-foreground mr-3" />
+      <div className="flex items-center h-16 px-4 bg-primary" role="banner">
+        <Warehouse className="h-8 w-8 text-primary-foreground mr-3" aria-hidden="true" />
         <span className="text-xl font-bold text-primary-foreground">Inventory Pro</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 overflow-y-auto">
-        <div className="space-y-1">
+      <nav className="flex-1 p-2 overflow-y-auto" role="navigation" aria-label="Main navigation">
+        <ul className="space-y-1" role="list">
           {navigation.map((item) => {
             const isActive = currentPath === item.href;
             return (
-              <Button
-                key={item.name}
-                variant={isActive ? 'secondary' : 'ghost'}
-                className={`w-full justify-start h-10 px-3 ${
-                  isActive
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-                asChild
-              >
-                <Link to={item.href}>
-                  <item.icon className="mr-3 h-5 w-5" />
-                  <span className="flex-1 text-left">{item.name}</span>
-                  {item.badge && (
-                    <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              </Button>
+              <li key={item.name} role="listitem">
+                <Button
+                  variant={isActive ? 'secondary' : 'ghost'}
+                  className={`w-full justify-start h-10 px-3 ${
+                    isActive
+                      ? 'bg-secondary text-secondary-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                  asChild
+                >
+                  <Link 
+                    to={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    aria-label={`Navigate to ${item.name}`}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" aria-hidden="true" />
+                    <span className="flex-1 text-left">{item.name}</span>
+                    {item.badge && (
+                      <span 
+                        className="ml-auto px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full"
+                        aria-label={`${item.badge} items`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                </Button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </nav>
 
       <Separator />
