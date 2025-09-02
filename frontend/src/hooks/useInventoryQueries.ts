@@ -51,8 +51,12 @@ export function useProducts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get<PaginatedResponse<Product>>(`/products${queryString}`);
-      return response.data;
+      const response = await apiClient.get<any>(`/products${queryString}`);
+      // Map API response to PaginatedResponse format
+      return {
+        data: response.data,
+        pagination: response.pagination
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -298,8 +302,12 @@ export function usePurchaseReceipts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get<PaginatedResponse<PurchaseReceipt>>(`/purchase-receipts${queryString}`);
-      return response.data;
+      const response = await apiClient.get<any>(`/purchase-receipts${queryString}`);
+      // Map API response to PaginatedResponse format
+      return {
+        data: response.data,
+        pagination: response.pagination
+      };
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - purchase receipts change more frequently
   });
