@@ -3,6 +3,8 @@
 ## Project Overview
 Building a comprehensive React frontend for the existing Go backend inventory management system. The system manages vehicle spare parts inventory, customer relationships, brand management, vehicle compatibility tracking, and unified purchase receipt processing.
 
+**Note**: During frontend development, any missing backend APIs should be documented in `REQUESTED_APIS.md` for backend team prioritization.
+
 ## Tech Stack
 - React 18 + TypeScript
 - Vite for build system  
@@ -241,6 +243,7 @@ frontend/
 - JWT token management with auto-refresh
 - Centralized error handling with user-friendly messages
 - Request/response TypeScript interfaces matching backend DTOs
+- Missing API documentation workflow via `REQUESTED_APIS.md`
 
 ## Deployment Strategy
 

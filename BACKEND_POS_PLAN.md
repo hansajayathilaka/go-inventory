@@ -3,6 +3,8 @@
 ## Overview
 The existing Go backend has comprehensive inventory management but lacks Point of Sale (POS) functionality. This plan outlines the backend extensions needed to support a complete POS system for the hardware store.
 
+**Note**: Frontend-requested missing APIs are tracked in `REQUESTED_APIS.md` and should be prioritized during development.
+
 ## Current Backend Status
 - ✅ Product management with categories, brands, and inventory
 - ✅ Customer management with codes and credit limits

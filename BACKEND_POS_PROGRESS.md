@@ -164,9 +164,10 @@
 *None currently*
 
 ### Next Actions:
-1. Create database models for sales system
-2. Write and run database migrations
-3. Implement basic repository interfaces
+1. Check `REQUESTED_APIS.md` for high-priority missing APIs from frontend
+2. Create database models for sales system
+3. Write and run database migrations
+4. Implement basic repository interfaces
 
 ---
 
@@ -209,6 +210,9 @@
 
 ### Issues to Address:
 *None currently*
+
+### Missing API Priority:
+*Check `REQUESTED_APIS.md` before starting each development session to prioritize frontend-requested APIs*
 
 ### Technical Decisions Made:
 - Follow existing Go architecture patterns
