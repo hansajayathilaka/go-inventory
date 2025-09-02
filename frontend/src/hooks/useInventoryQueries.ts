@@ -302,11 +302,27 @@ export function usePurchaseReceipts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get<any>(`/purchase-receipts${queryString}`);
-      // Map API response to PaginatedResponse format
+      // Fetch purchase receipts and suppliers in parallel
+      const [receiptsResponse, suppliersResponse] = await Promise.all([
+        apiClient.get<any>(`/purchase-receipts${queryString}`),
+        apiClient.get<any>('/suppliers?limit=1000') // Get all suppliers for lookup
+      ]);
+      
+      // Create supplier lookup map
+      const supplierMap = new Map();
+      suppliersResponse.data.forEach((supplier: any) => {
+        supplierMap.set(supplier.id, supplier);
+      });
+      
+      // Join purchase receipts with suppliers
+      const receiptsWithSuppliers = receiptsResponse.data.map((receipt: any) => ({
+        ...receipt,
+        supplier: receipt.supplier_id ? supplierMap.get(receipt.supplier_id) : null
+      }));
+      
       return {
-        data: response.data,
-        pagination: response.pagination
+        data: receiptsWithSuppliers,
+        pagination: receiptsResponse.pagination
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - purchase receipts change more frequently

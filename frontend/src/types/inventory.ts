@@ -136,6 +136,7 @@ export type PurchaseReceiptStatus =
   | 'ordered'
   | 'partially_received'
   | 'received'
+  | 'completed'
   | 'cancelled';
 
 export interface StockMovement {
