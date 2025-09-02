@@ -76,7 +76,10 @@
       "Bash(for:*)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(done)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_console_messages"
     ],
     "deny": [],
     "ask": []
