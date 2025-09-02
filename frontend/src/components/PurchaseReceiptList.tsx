@@ -363,8 +363,8 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Purchase Receipts</h2>
-          <p className="text-sm text-gray-600">
+          <h2 className="text-xl font-semibold text-foreground">Purchase Receipts</h2>
+          <p className="text-sm text-muted-foreground">
             Manage your unified purchase orders and goods receipts
           </p>
         </div>

@@ -174,7 +174,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+          className="fixed inset-0 transition-opacity bg-black/50"
           onClick={onClose}
         />
 
@@ -212,7 +212,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.name ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter supplier name"
                 />
               </div>
@@ -237,7 +237,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.code ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="e.g., SUP001"
                 />
               </div>
@@ -262,7 +262,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.contact_person ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter contact person name"
                 />
               </div>
@@ -287,7 +287,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.email ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter email address"
                 />
               </div>
@@ -312,7 +312,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.phone ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter phone number"
                 />
               </div>
@@ -337,7 +337,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   rows={3}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.address ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter supplier address"
                 />
               </div>

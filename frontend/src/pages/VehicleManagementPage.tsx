@@ -442,14 +442,14 @@ const VehicleManagementPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vehicle Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Vehicle Management</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Comprehensive vehicle and spare parts management system. Manage brands, models, and compatibility relationships.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -461,12 +461,12 @@ const VehicleManagementPage: React.FC = () => {
                   className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
                     isActive
                       ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
                   }`}
                 >
                   <Icon
                     className={`-ml-0.5 mr-2 h-5 w-5 transition-colors ${
-                      isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                      isActive ? 'text-blue-500' : 'text-muted-foreground group-hover:text-foreground'
                     }`}
                   />
                   {tab.name}

@@ -201,7 +201,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
+        <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose}></div>
 
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
 
@@ -272,7 +272,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       onBlur={() => handleFieldBlur('code')}
                       disabled={isEditing}
                       className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                        isEditing ? 'bg-gray-100' : 'border-input'
+                        isEditing ? 'bg-muted/50' : 'border-input'
                       } ${errors.code ? 'border-red-300' : 'border-input'}`}
                       placeholder="Auto-generated if empty"
                     />
@@ -404,7 +404,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Logo Preview
                       </label>
-                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-input">
+                      <div className="w-16 h-16 bg-muted/50 rounded-lg flex items-center justify-center border border-input">
                         <img
                           src={logoPreview}
                           alt="Brand logo preview"
@@ -448,7 +448,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
           </form>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div className="bg-muted/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="submit"
               onClick={handleSubmit}

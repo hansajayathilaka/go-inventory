@@ -166,7 +166,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     return (
       <div key={node.id} className="select-none">
         <div
-          className={`flex items-center py-2 px-3 rounded-md cursor-pointer group hover:bg-gray-50 ${
+          className={`flex items-center py-2 px-3 rounded-md cursor-pointer group hover:bg-muted/50 ${
             isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : ''
           }`}
           style={{ paddingLeft: `${paddingLeft}px` }}
@@ -179,7 +179,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                 e.stopPropagation();
                 toggleExpansion(node.id);
               }}
-              className="p-1 rounded hover:bg-gray-200 mr-1"
+              className="p-1 rounded hover:bg-muted mr-1"
               disabled={node.isLoading}
             >
               {node.isLoading ? (
@@ -197,12 +197,12 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
             {node.isExpanded ? (
               <FolderOpen className="h-4 w-4 text-blue-500" />
             ) : (
-              <Folder className="h-4 w-4 text-gray-500" />
+              <Folder className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
 
           {/* Category Name */}
-          <span className="flex-1 text-sm font-medium text-gray-900 truncate">
+          <span className="flex-1 text-sm font-medium text-foreground truncate">
             {node.name}
           </span>
 
@@ -213,7 +213,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                 e.stopPropagation();
                 onAddCategory?.(node.id);
               }}
-              className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-green-600"
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-green-600"
               title="Add subcategory"
             >
               <Plus className="h-3 w-3" />
@@ -223,7 +223,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                 e.stopPropagation();
                 onEditCategory?.(node);
               }}
-              className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-blue-600"
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-blue-600"
               title="Edit category"
             >
               <Edit2 className="h-3 w-3" />
@@ -233,7 +233,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                 e.stopPropagation();
                 onDeleteCategory?.(node);
               }}
-              className="p-1 rounded hover:bg-gray-200 text-gray-500 hover:text-red-600"
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-red-600"
               title="Delete category"
             >
               <Trash2 className="h-3 w-3" />
@@ -255,7 +255,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-        <span className="ml-3 text-gray-600">Loading categories...</span>
+        <span className="ml-3 text-muted-foreground">Loading categories...</span>
       </div>
     );
   }
@@ -277,9 +277,9 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
   if (rootCategories.length === 0) {
     return (
       <div className="p-6 text-center">
-        <Folder className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Categories Found</h3>
-        <p className="text-gray-500 mb-4">
+        <Folder className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+        <h3 className="text-lg font-medium text-foreground mb-2">No Categories Found</h3>
+        <p className="text-muted-foreground mb-4">
           {searchQuery ? 'No categories match your search.' : 'Start by creating your first category.'}
         </p>
         {!searchQuery && (

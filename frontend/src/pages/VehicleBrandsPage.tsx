@@ -77,8 +77,8 @@ const VehicleBrandsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vehicle Brands</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Vehicle Brands</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage vehicle manufacturers and automotive brands. Control which vehicle brands appear in vehicle model forms and maintain comprehensive manufacturer information.
           </p>
         </div>

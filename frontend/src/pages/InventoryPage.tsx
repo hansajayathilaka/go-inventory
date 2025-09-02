@@ -36,8 +36,8 @@ const InventoryPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Hardware Store Inventory</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-foreground">Hardware Store Inventory</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Track stock levels, manage inventory, and prepare for point-of-sale operations.
         </p>
       </div>

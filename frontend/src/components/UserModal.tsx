@@ -188,7 +188,7 @@ const UserModal: React.FC<UserModalProps> = ({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+          className="fixed inset-0 transition-opacity bg-black/50"
           onClick={onClose}
         />
 
@@ -226,7 +226,7 @@ const UserModal: React.FC<UserModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.username ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter username"
                 />
               </div>
@@ -251,7 +251,7 @@ const UserModal: React.FC<UserModalProps> = ({
                   readOnly={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.email ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                   placeholder="Enter email address"
                 />
               </div>
@@ -334,7 +334,7 @@ const UserModal: React.FC<UserModalProps> = ({
                   disabled={isReadOnly}
                   className={`w-full pl-10 pr-3 py-2 border rounded-md focus:ring-2 focus:ring-ring focus:border-transparent ${
                     errors.role ? 'border-red-300' : 'border-input'
-                  } ${isReadOnly ? 'bg-gray-50' : ''}`}
+                  } ${isReadOnly ? 'bg-muted/50' : ''}`}
                 >
                   <option value="viewer">Viewer - Read-only access</option>
                   <option value="staff">Staff - Basic operations</option>

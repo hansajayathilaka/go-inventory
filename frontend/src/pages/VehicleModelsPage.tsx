@@ -85,8 +85,8 @@ const VehicleModelsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vehicle Models</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Vehicle Models</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage vehicle models and their specifications. Define model details, production years, engine types, and compatibility information for accurate spare parts matching.
           </p>
         </div>

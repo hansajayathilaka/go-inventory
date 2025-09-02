@@ -93,8 +93,8 @@ const SuppliersPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Suppliers</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage your supplier relationships and contact information.
           </p>
         </div>
