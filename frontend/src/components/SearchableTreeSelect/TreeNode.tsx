@@ -78,18 +78,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({
         relative flex items-center cursor-pointer select-none transition-all duration-150
         ${
           level === 0 
-            ? 'py-3 px-4 bg-gradient-to-r from-blue-50 to-transparent border-l-4 border-blue-500' 
+            ? 'py-3 px-4 bg-gradient-to-r from-accent/20 to-transparent border-l-4 border-primary' 
             : level === 1 
-              ? 'py-2.5 px-3 hover:bg-green-50' 
+              ? 'py-2.5 px-3 hover:bg-accent/10' 
               : 'py-2 px-3 hover:bg-muted/50'
         }
         hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
         ${isSelected 
           ? level === 0 
-            ? 'bg-blue-100 text-blue-900 shadow-md border-l-4 border-blue-600' 
+            ? 'bg-accent text-accent-foreground shadow-md border-l-4 border-primary' 
             : level === 1
-              ? 'bg-green-100 text-green-900 border-l-2 border-green-500'
-              : 'bg-amber-100 text-amber-900 border-l-2 border-amber-500'
+              ? 'bg-accent/80 text-accent-foreground border-l-2 border-primary'
+              : 'bg-accent/60 text-accent-foreground border-l-2 border-primary'
           : 'text-foreground'
         }
         ${showConnectionLines && level > 0 ? 'border-l border-border' : ''}
@@ -166,7 +166,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 ? 'text-sm font-semibold' 
                 : 'text-sm font-medium'
           }
-          ${isSelected ? 'text-blue-900' : 'text-foreground'}
+          ${isSelected ? 'text-accent-foreground' : 'text-foreground'}
         `}>
           {category.matchesSearch && category.highlightedText ? (
             <span dangerouslySetInnerHTML={{ __html: category.highlightedText }} />
@@ -181,12 +181,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             ml-2 px-2 py-1 text-xs font-medium rounded-full transition-colors duration-150
             ${
               isSelected 
-                ? 'bg-blue-200 text-blue-800' 
+                ? 'bg-accent-foreground/20 text-accent-foreground' 
                 : level === 0
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                  ? 'bg-primary/10 text-primary border border-primary/20'
                   : level === 1
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                    ? 'bg-accent/20 text-accent-foreground border border-accent/30'
+                    : 'bg-muted text-muted-foreground border border-border'
             }
           `}>
             {category.product_count}

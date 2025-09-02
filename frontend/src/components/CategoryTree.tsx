@@ -167,7 +167,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       <div key={node.id} className="select-none">
         <div
           className={`flex items-center py-2 px-3 rounded-md cursor-pointer group hover:bg-muted/50 ${
-            isSelected ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+            isSelected ? 'bg-accent text-accent-foreground border-r-2 border-primary' : ''
           }`}
           style={{ paddingLeft: `${paddingLeft}px` }}
           onClick={() => onCategorySelect?.(node)}
