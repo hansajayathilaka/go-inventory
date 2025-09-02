@@ -87,7 +87,8 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
       setError(null);
     } catch (err: unknown) {
       // Extract the specific error message from the API response
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Failed to search categories';
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      const errorMessage = apiError.response?.data?.message || apiError.response?.data?.error || 'Failed to search categories';
       setError(errorMessage);
       console.error('Error searching categories:', err);
     } finally {

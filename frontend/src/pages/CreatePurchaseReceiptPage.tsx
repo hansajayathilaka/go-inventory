@@ -12,7 +12,7 @@ import { ProductCombobox } from '@/components/ui/product-combobox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { api, extractListData } from '../services/api';
-import type { Product, Supplier, PurchaseReceipt, CreatePurchaseReceiptRequest, PurchaseReceiptItem } from '../types/api';
+import type { Product, Supplier, PurchaseReceipt, CreatePurchaseReceiptRequest, PurchaseReceiptItem, Category } from '../types/api';
 
 interface PurchaseReceiptFormData {
   supplier_id: string;
@@ -75,13 +75,6 @@ const CreatePurchaseReceiptPage: React.FC = () => {
     }
   });
 
-  // Load existing purchase receipt for edit
-  useEffect(() => {
-    if (isEdit && id) {
-      loadPurchaseReceipt(id);
-    }
-  }, [isEdit, id, loadPurchaseReceipt]);
-
   const loadPurchaseReceipt = useCallback(async (receiptId: string) => {
     try {
       const response = await api.get(`/purchase-receipts/${receiptId}`);
@@ -89,7 +82,7 @@ const CreatePurchaseReceiptPage: React.FC = () => {
       
       setFormData({
         supplier_id: receipt.supplier_id,
-        status: receipt.status === 'pending' ? 'draft' : receipt.status as 'draft' | 'submitted' | 'received' | 'cancelled',
+        status: receipt.status === 'pending' ? 'draft' : receipt.status as 'draft' | 'approved' | 'sent' | 'received' | 'partial' | 'completed' | 'cancelled',
         order_date: receipt.order_date,
         expected_date: receipt.expected_date || '',
         received_date: receipt.received_date || '',
@@ -119,6 +112,13 @@ const CreatePurchaseReceiptPage: React.FC = () => {
       });
     }
   }, [toast]);
+
+  // Load existing purchase receipt for edit
+  useEffect(() => {
+    if (isEdit && id) {
+      loadPurchaseReceipt(id);
+    }
+  }, [isEdit, id, loadPurchaseReceipt]);
 
   const addItem = () => {
     setItems([...items, {
@@ -328,7 +328,7 @@ const CreatePurchaseReceiptPage: React.FC = () => {
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'submitted' | 'received' | 'cancelled' }))}>
+                <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'approved' | 'sent' | 'received' | 'partial' | 'completed' | 'cancelled' }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

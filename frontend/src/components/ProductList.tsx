@@ -112,7 +112,7 @@ export const ProductList: React.FC<ProductListProps> = ({
     fetchProducts(1, value, filters);
   };
 
-  const handleFilterChange = (newFilters: Partial<ProductFilters>) => {
+  const handleFilterChange = (newFilters: Partial<ProductFiltersExtended>) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     fetchProducts(1, searchTerm, updatedFilters);

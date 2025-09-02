@@ -19,7 +19,8 @@ const CategoryIconDemo: React.FC = () => {
       try {
         setLoading(true);
         const response = await api.get<{ success: boolean; data?: Category[]; message?: string }>('/categories');
-        const categoriesData = (response.data as { success: boolean; data?: Category[]; message?: string })?.data || (response.data as Category[]) || [];
+        const apiResponse = response.data as { success: boolean; data?: Category[]; message?: string };
+        const categoriesData = apiResponse?.data || [];
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
         setError('');
       } catch (err) {

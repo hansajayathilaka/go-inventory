@@ -170,7 +170,7 @@ const VehicleBrandModal: React.FC<VehicleBrandModalProps> = ({
         setErrors(apiErrors);
       } else {
         setErrors({ 
-          general: error.response?.data?.message || 'Failed to save vehicle brand. Please try again.' 
+          general: (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to save vehicle brand. Please try again.' 
         });
       }
     } finally {

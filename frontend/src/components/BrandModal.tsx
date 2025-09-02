@@ -172,7 +172,7 @@ const BrandModal: React.FC<BrandModalProps> = ({
       console.error('Error saving brand:', error);
       
       if (error && typeof error === 'object' && 'response' in error) {
-        const responseError = error as { response?: { data?: { errors?: Array<{ field?: string; message: string }> } } };
+        const responseError = error as { response?: { data?: { errors?: Array<{ field?: string; message: string }>; message?: string } } };
         if (responseError.response?.data?.errors) {
           const apiErrors: Record<string, string> = {};
           responseError.response.data.errors.forEach((err) => {

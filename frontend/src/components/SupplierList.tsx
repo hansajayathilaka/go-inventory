@@ -70,11 +70,10 @@ const SupplierList: React.FC<SupplierListProps> = ({
       const data = response.data as SupplierListResponse;
       
       if (data.success && data.data) {
-        const supplierData = data.data.suppliers || data.data || [];
-        setSuppliers(Array.isArray(supplierData) ? supplierData : []);
-        if (data.data.pagination) {
-          setTotalPages(Math.ceil(data.data.pagination.total / itemsPerPage));
-          setTotalSuppliers(data.data.pagination.total || 0);
+        setSuppliers(Array.isArray(data.data) ? data.data : []);
+        if (data.pagination) {
+          setTotalPages(data.pagination.total_pages || Math.ceil(data.pagination.total / itemsPerPage));
+          setTotalSuppliers(data.pagination.total || 0);
         }
       } else {
         setError('Failed to fetch suppliers');

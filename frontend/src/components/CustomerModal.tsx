@@ -181,7 +181,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
         const apiErrors: Record<string, string> = {};
         apiError.response.data.errors.forEach((err: { field?: string; message?: string }) => {
           if (err.field) {
-            apiErrors[err.field] = err.message;
+            apiErrors[err.field] = err.message || 'Validation error';
           }
         });
         setErrors(apiErrors);
