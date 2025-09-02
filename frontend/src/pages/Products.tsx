@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,9 +39,9 @@ export function Products() {
   const { data: brands = [] } = useBrands()
   const { data: suppliers = [] } = useSuppliers()
 
-  const products = productsData?.items || []
-  const totalCount = productsData?.total || 0
-  const totalPages = productsData?.pages || 1
+  const products = productsData?.data || []
+  const totalCount = productsData?.pagination?.total || 0
+  const totalPages = productsData?.pagination?.total_pages || 1
 
   // Stock status helpers
   const getStockStatus = (product: Product) => {
@@ -314,7 +314,7 @@ export function Products() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setEditingProduct(product)}>
+                            <DropdownMenuItem onClick={() => setEditingProduct(product as Product)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Product
                             </DropdownMenuItem>

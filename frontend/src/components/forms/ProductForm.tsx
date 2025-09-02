@@ -1,4 +1,3 @@
-import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -44,7 +43,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
   const isEditing = !!product
 
   // Fetch reference data
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories()
+  const { isLoading: categoriesLoading } = useCategories()
   const { data: categoryHierarchy, isLoading: hierarchyLoading } = useCategoryHierarchy()
   const { data: brands = [], isLoading: brandsLoading } = useBrands()
   const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers()
