@@ -19,6 +19,25 @@ A comprehensive Terminal User Interface (TUI) based inventory management system 
 
 **IMPORTANT**: Read `CLAUDE.md` first - it contains the complete project plan, architecture, and development roadmap.
 
+## 🚀 Automated Development with GitHub Actions
+
+This project includes automated development workflows that can be triggered manually to continue frontend and backend development:
+
+### Available Workflows
+- **`/frontend-next`** - Continue React frontend development (next pending task)
+- **`/backend-pos-next`** - Continue backend POS system implementation (next pending task)
+
+### How to Use
+1. Go to **Actions** → **Claude Development Tasks** in GitHub
+2. Click **Run workflow**
+3. Select task type (`frontend-next` or `backend-pos-next`)
+4. Choose target branch
+5. Add optional custom instructions
+6. The workflow will execute the next task and push changes automatically
+
+📋 **Progress Tracking**: `FRONTEND_PROGRESS.md` and `BACKEND_POS_PROGRESS.md`  
+📖 **Full Documentation**: `.github/CLAUDE_DEV_WORKFLOW.md`
+
 ### Current Status - PRODUCTION READY ✅
 - ✅ Complete 3-layer architecture implemented
 - ✅ Database models and repositories
