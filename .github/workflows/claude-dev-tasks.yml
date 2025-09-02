@@ -53,6 +53,54 @@ jobs:
           git config --local user.name "GitHub Action"
           git config --local pull.rebase false
 
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Verify Go build (Pre-development)
+        run: |
+          echo "🔧 Verifying Go backend builds successfully..."
+          if go build -o hardware-store-inventory ./cmd/main.go; then
+            echo "✅ Go backend builds successfully"
+            rm -f hardware-store-inventory
+          else
+            echo "❌ Go backend build failed"
+            exit 1
+          fi
+
+      - name: Install frontend dependencies (if exists)
+        run: |
+          if [ -f "frontend/package.json" ]; then
+            echo "📦 Installing frontend dependencies..."
+            cd frontend && npm ci
+          else
+            echo "ℹ️ No frontend package.json found - will be created during development"
+          fi
+
+      - name: Verify frontend build (if exists)
+        run: |
+          if [ -f "frontend/package.json" ]; then
+            echo "🔧 Verifying frontend builds successfully..."
+            cd frontend
+            if npm run build; then
+              echo "✅ Frontend builds successfully"
+            else
+              echo "❌ Frontend build failed"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Skipping frontend build verification - no frontend setup yet"
+          fi
+
       - name: Run Claude Development Task
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -92,7 +140,46 @@ jobs:
             Please execute the task and commit your changes. If you encounter any blockers or need clarification, document them in the progress file and create an issue for follow-up.
           
           claude_args: |
-            --allowed-tools "Bash(*),Read(*),Write(*),Edit(*),MultiEdit(*),Glob(*),Grep(*),TodoWrite(*)"
+            --allowed-tools "Bash(*),Read(*),Write(*),Edit(*),MultiEdit(*),Glob(*),Grep(*),TodoWrite(*),WebSearch(*),WebFetch(*),mcp__playwright__*,mcp__shadcn__*"
+
+      - name: Post-development build verification
+        run: |
+          echo "🔧 Verifying builds after development changes..."
+          
+          # Verify Go backend still builds
+          echo "Testing Go backend build..."
+          if go build -o hardware-store-inventory ./cmd/main.go; then
+            echo "✅ Go backend builds successfully after changes"
+            rm -f hardware-store-inventory
+          else
+            echo "❌ Go backend build failed after changes"
+            echo "Changes may have introduced build errors"
+            exit 1
+          fi
+          
+          # Verify frontend build if it exists
+          if [ -f "frontend/package.json" ]; then
+            echo "Testing frontend build..."
+            cd frontend
+            
+            # Install dependencies if package-lock.json changed
+            if git diff --name-only HEAD~1 2>/dev/null | grep -q "frontend/package"; then
+              echo "Package files changed, reinstalling dependencies..."
+              npm ci
+            fi
+            
+            if npm run build; then
+              echo "✅ Frontend builds successfully after changes"
+            else
+              echo "❌ Frontend build failed after changes"
+              echo "Changes may have introduced build errors"
+              exit 1
+            fi
+          else
+            echo "ℹ️ No frontend to verify yet"
+          fi
+          
+          echo "🎉 All builds verified successfully!"
 
       - name: Push changes
         id: push

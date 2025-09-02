@@ -82,13 +82,16 @@ gh workflow run claude-dev-tasks.yml \
 
 ### What the Workflow Does:
 1. **Checkout**: Checks out the specified branch
-2. **Git Config**: Configures Git for automated commits
-3. **Claude Execution**: Runs Claude with the development task
-4. **Progress Update**: Claude updates the appropriate progress file
-5. **Implementation**: Claude implements the next pending task
-6. **Commit**: Claude creates a descriptive commit message
-7. **Push**: Workflow pushes changes back to the branch
-8. **Summary**: Creates a workflow summary with results
+2. **Setup Environment**: Configures Go 1.23 and Node.js 18
+3. **Pre-Build Verification**: Ensures backend and frontend build successfully before changes
+4. **Git Config**: Configures Git for automated commits
+5. **Claude Execution**: Runs Claude with the development task and enhanced permissions
+6. **Progress Update**: Claude updates the appropriate progress file
+7. **Implementation**: Claude implements the next pending task
+8. **Post-Build Verification**: Ensures builds still work after changes
+9. **Commit**: Claude creates a descriptive commit message
+10. **Push**: Workflow pushes changes back to the branch
+11. **Summary**: Creates a workflow summary with results
 
 ### Permissions Required:
 - `contents: write` - To push changes to repository
@@ -96,6 +99,13 @@ gh workflow run claude-dev-tasks.yml \
 - `issues: write` - To create issues for blockers
 - `actions: read` - To read workflow results
 - `id-token: write` - For Claude authentication
+
+### Enhanced Claude Capabilities:
+- **Web Search & Fetch**: Access to external documentation and resources
+- **Playwright MCP**: Browser automation for testing frontend components
+- **shadcn/ui MCP**: Direct access to shadcn/ui component library
+- **Build Tools**: Go 1.23 and Node.js 18 for compilation verification
+- **Comprehensive Tools**: Bash, file operations, code editing, and more
 
 ## Expected Outcomes
 
@@ -110,10 +120,31 @@ gh workflow run claude-dev-tasks.yml \
 - No implementation required
 - Workflow logs contain details
 
-### Failure ❌
+### Build Failure ❌
+- Pre-development build verification failed - existing code has issues
+- Post-development build verification failed - changes introduced errors
+- Check workflow logs for specific build errors
+- Review Go compilation errors or npm build failures
+
+### Workflow Failure ❌
 - Check workflow logs for errors
 - Verify branch exists and has proper permissions
 - Ensure `CLAUDE_CODE_OAUTH_TOKEN` secret is configured
+- Verify Go 1.23 and Node.js 18 are available in runner
+
+## Build Verification Process
+
+### Pre-Development Verification
+- **Go Backend**: `go build -o hardware-store-inventory ./cmd/main.go`
+- **Frontend**: `npm run build` (if frontend exists)
+- **Purpose**: Ensure starting point builds successfully
+- **Failure**: Workflow stops if existing code doesn't build
+
+### Post-Development Verification
+- **Go Backend**: Rebuild after Claude's changes
+- **Frontend**: Rebuild with updated dependencies if package files changed
+- **Purpose**: Ensure Claude's changes don't break builds
+- **Failure**: Workflow stops, changes not pushed if builds fail
 
 ## Development Workflow Examples
 
