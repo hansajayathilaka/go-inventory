@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { BarcodeInput } from '@/components/ui/barcode-input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -186,9 +187,9 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
 
             <div className="space-y-2">
               <Label htmlFor="barcode">Barcode</Label>
-              <Input
-                id="barcode"
-                {...register('barcode')}
+              <BarcodeInput
+                value={watchedValues.barcode || ''}
+                onChange={(value) => setValue('barcode', value)}
                 placeholder="Product barcode"
               />
             </div>

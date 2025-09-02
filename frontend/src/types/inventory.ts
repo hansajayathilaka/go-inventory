@@ -248,3 +248,11 @@ export interface SupplierFormData {
   payment_terms?: string;
   is_active: boolean;
 }
+
+export interface StockAdjustmentFormData {
+  product_id: number;
+  adjustment_type: 'increase' | 'decrease' | 'set';
+  quantity: number;
+  reason: 'damaged' | 'expired' | 'lost' | 'found' | 'recount' | 'correction' | 'other';
+  notes?: string;
+}

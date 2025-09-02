@@ -15,4 +15,7 @@ export {
   usePurchaseReceipts,
   usePurchaseReceipt,
   useDashboardStats,
+  useLowStockProducts,
+  useStockAdjustment,
+  useCategoryHierarchy,
 } from './useInventoryQueries';

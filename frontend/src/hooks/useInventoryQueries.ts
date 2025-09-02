@@ -11,7 +11,8 @@ import type {
   ProductFormData,
   CategoryFormData,
   BrandFormData,
-  SupplierFormData 
+  SupplierFormData,
+  StockAdjustmentFormData 
 } from '../types/inventory';
 import type { PaginatedResponse, DashboardStats } from '../types/api';
 
@@ -325,5 +326,45 @@ export function useDashboardStats() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+  });
+}
+
+// Low Stock Products
+export function useLowStockProducts(limit: number = 10) {
+  return useQuery({
+    queryKey: ['products', 'low-stock', limit],
+    queryFn: async (): Promise<Product[]> => {
+      const response = await apiClient.get<Product[]>(`/products/low-stock?limit=${limit}`);
+      return response.data;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
+  });
+}
+
+// Stock Adjustments
+export function useStockAdjustment() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: StockAdjustmentFormData): Promise<void> => {
+      await apiClient.post('/stock-adjustments', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
+      addNotification({
+        type: 'success',
+        title: 'Stock adjusted',
+        message: 'Stock level has been adjusted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to adjust stock',
+        message: error.response?.data?.message || error.message,
+      });
+    },
   });
 }

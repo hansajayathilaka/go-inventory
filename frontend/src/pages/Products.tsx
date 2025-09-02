@@ -7,10 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { BarcodeScanner } from '@/components/ui/barcode-scanner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, Filter, Plus, MoreHorizontal, Package, AlertTriangle, CheckCircle, XCircle, Edit } from 'lucide-react'
+import { Search, Filter, Plus, MoreHorizontal, Package, AlertTriangle, CheckCircle, XCircle, Edit, Scan } from 'lucide-react'
 import { useProducts, useBrands, useCategories, useSuppliers } from '@/hooks/useInventoryQueries'
 import { ProductForm } from '@/components/forms/ProductForm'
+import { StockAdjustmentForm } from '@/components/forms/StockAdjustmentForm'
 import type { Product } from '@/types/inventory'
 
 export function Products() {
@@ -22,6 +24,8 @@ export function Products() {
   const [limit] = useState(20)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false)
+  const [adjustingStockProduct, setAdjustingStockProduct] = useState<Product | null>(null)
 
   // Build query parameters
   const queryParams = useMemo(() => {
@@ -76,6 +80,11 @@ export function Products() {
 
   const hasActiveFilters = search || categoryFilter || brandFilter || supplierFilter
 
+  const handleBarcodeSearch = (barcode: string) => {
+    setSearch(barcode)
+    setShowBarcodeScanner(false)
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -116,13 +125,30 @@ export function Products() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative lg:col-span-2">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search products by name, SKU, or barcode..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products by name, SKU, or barcode..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Dialog open={showBarcodeScanner} onOpenChange={setShowBarcodeScanner}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" title="Scan barcode to search">
+                      <Scan className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <BarcodeScanner
+                      onScan={handleBarcodeSearch}
+                      onError={(error) => console.error('Barcode search error:', error)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             {/* Category Filter */}
@@ -318,7 +344,10 @@ export function Products() {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Product
                             </DropdownMenuItem>
-                            <DropdownMenuItem>Stock Adjustment</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setAdjustingStockProduct(product as Product)}>
+                              <Package className="h-4 w-4 mr-2" />
+                              Stock Adjustment
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive">
                               Delete Product
                             </DropdownMenuItem>
@@ -371,6 +400,21 @@ export function Products() {
                 setEditingProduct(null)
               }}
               onCancel={() => setEditingProduct(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Stock Adjustment Dialog */}
+      <Dialog open={!!adjustingStockProduct} onOpenChange={(open) => !open && setAdjustingStockProduct(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {adjustingStockProduct && (
+            <StockAdjustmentForm
+              product={adjustingStockProduct}
+              onSuccess={() => {
+                setAdjustingStockProduct(null)
+              }}
+              onCancel={() => setAdjustingStockProduct(null)}
             />
           )}
         </DialogContent>
