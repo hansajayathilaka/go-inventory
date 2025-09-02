@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Package, AlertTriangle, Search, RefreshCw, Plus, Eye, Scan, ShoppingCart } from 'lucide-react';
 import { api } from '../services/api';
 import type { 
@@ -33,7 +33,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
   const [showZeroStock, setShowZeroStock] = useState(false);
   const [showPOSReady, setShowPOSReady] = useState(false);
 
-  const loadInventory = async () => {
+  const loadInventory = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -57,7 +57,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   const loadAlerts = async () => {
     try {
@@ -76,7 +76,7 @@ const InventoryList: React.FC<InventoryListProps> = ({
   useEffect(() => {
     loadInventory();
     loadAlerts();
-  }, [currentPage]);
+  }, [loadInventory]);
 
   const getStockStatus = (record: InventoryRecord) => {
     const availableQuantity = record.quantity - record.reserved_quantity;

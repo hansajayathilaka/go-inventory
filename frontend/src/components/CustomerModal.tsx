@@ -173,12 +173,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
 
       onSave();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving customer:', error);
       
-      if (error.response?.data?.errors) {
+      const apiError = error as { response?: { data?: { errors?: Array<{ field?: string; message?: string }>; message?: string } } };
+      if (apiError.response?.data?.errors) {
         const apiErrors: Record<string, string> = {};
-        error.response.data.errors.forEach((err: any) => {
+        apiError.response.data.errors.forEach((err: { field?: string; message?: string }) => {
           if (err.field) {
             apiErrors[err.field] = err.message;
           }
@@ -186,7 +187,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
         setErrors(apiErrors);
       } else {
         setErrors({ 
-          general: error.response?.data?.message || 'Failed to save customer. Please try again.' 
+          general: apiError.response?.data?.message || 'Failed to save customer. Please try again.' 
         });
       }
     } finally {

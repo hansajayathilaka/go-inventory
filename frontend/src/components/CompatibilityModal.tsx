@@ -213,13 +213,14 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
 
       onSave();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving compatibility:', err);
-      if (err.response?.data?.errors) {
-        setErrors(err.response.data.errors);
+      const apiError = err as { response?: { data?: { errors?: Record<string, string>; message?: string } } };
+      if (apiError.response?.data?.errors) {
+        setErrors(apiError.response.data.errors);
       } else {
         setErrors({
-          general: err.response?.data?.message || 'Failed to save compatibility'
+          general: apiError.response?.data?.message || 'Failed to save compatibility'
         });
       }
     } finally {

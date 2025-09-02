@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -83,12 +83,12 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
   };
 
   // Load compatibilities
-  const loadCompatibilities = async () => {
+  const loadCompatibilities = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | number | boolean> = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -125,14 +125,15 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
         setError('Failed to load compatibilities');
         setCompatibilities([]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading compatibilities:', err);
-      setError(err.response?.data?.message || 'Failed to load compatibilities');
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to load compatibilities');
       setCompatibilities([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, statusFilter, verificationFilter, productFilter, vehicleModelFilter, yearFilter, itemsPerPage]);
 
   // Filter compatibilities by search term (client-side)
   const filteredCompatibilities = Array.isArray(compatibilities) ? compatibilities.filter((compatibility) => {
@@ -178,8 +179,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       await api.vehicleCompatibilities.bulkVerify({ ids: selectedCompatibilities });
       setSelectedCompatibilities([]);
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to verify compatibilities');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to verify compatibilities');
     }
   };
 
@@ -190,8 +192,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       await api.vehicleCompatibilities.bulkUnverify({ ids: selectedCompatibilities });
       setSelectedCompatibilities([]);
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to unverify compatibilities');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to unverify compatibilities');
     }
   };
 
@@ -202,8 +205,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       await api.vehicleCompatibilities.bulkActivate({ ids: selectedCompatibilities });
       setSelectedCompatibilities([]);
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to activate compatibilities');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to activate compatibilities');
     }
   };
 
@@ -214,8 +218,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
       await api.vehicleCompatibilities.bulkDeactivate({ ids: selectedCompatibilities });
       setSelectedCompatibilities([]);
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to deactivate compatibilities');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to deactivate compatibilities');
     }
   };
 
@@ -228,8 +233,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
         await api.vehicleCompatibilities.verify(compatibility.id);
       }
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update verification status');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to update verification status');
     }
   };
 
@@ -241,8 +247,9 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
         await api.vehicleCompatibilities.activate(compatibility.id);
       }
       loadCompatibilities();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update status');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -254,14 +261,14 @@ const CompatibilityList: React.FC<CompatibilityListProps> = ({
 
   useEffect(() => {
     loadCompatibilities();
-  }, [currentPage, statusFilter, verificationFilter, productFilter, vehicleModelFilter, yearFilter]);
+  }, [loadCompatibilities]);
 
   // Reset to first page when filters change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [statusFilter, verificationFilter, productFilter, vehicleModelFilter, yearFilter]);
+  }, [currentPage, statusFilter, verificationFilter, productFilter, vehicleModelFilter, yearFilter]);
 
   // Pagination
   const handlePageChange = (page: number) => {

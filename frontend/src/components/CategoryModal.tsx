@@ -55,13 +55,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   }, [category, parentId]);
 
   // Load available parent categories
-  useEffect(() => {
-    if (isOpen) {
-      loadAvailableParents();
-    }
-  }, [isOpen, category]);
-
-  const loadAvailableParents = async () => {
+  const loadAvailableParents = React.useCallback(async () => {
     try {
       setLoadingParents(true);
       // Get all categories for parent selection
@@ -84,7 +78,14 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
     } finally {
       setLoadingParents(false);
     }
-  };
+  }, [category]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadAvailableParents();
+    }
+  }, [isOpen, loadAvailableParents]);
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -129,15 +130,16 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
 
       onSave(response.data);
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving category:', error);
       
       // Handle validation errors from server
-      if (error.response?.status === 400 && error.response.data?.errors) {
-        setErrors(error.response.data.errors);
+      const apiError = error as { response?: { status?: number; data?: { errors?: Record<string, string>; message?: string } } };
+      if (apiError.response?.status === 400 && apiError.response.data?.errors) {
+        setErrors(apiError.response.data.errors);
       } else {
         setErrors({
-          submit: error.response?.data?.message || 'Failed to save category'
+          submit: apiError.response?.data?.message || 'Failed to save category'
         });
       }
     } finally {

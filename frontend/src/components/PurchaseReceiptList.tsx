@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -68,12 +68,12 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
   const itemsPerPage = 12;
 
   // Load purchase receipts
-  const loadPurchaseReceipts = async () => {
+  const loadPurchaseReceipts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | number> = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -90,25 +90,26 @@ const PurchaseReceiptList: React.FC<PurchaseReceiptListProps> = ({
       setPurchaseReceipts(data.data || []);
       setTotalPages(Math.ceil((data.pagination?.total || 0) / itemsPerPage));
       setTotalItems(data.pagination?.total || 0);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load purchase receipts');
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(apiError.response?.data?.message || 'Failed to load purchase receipts');
       console.error('Error loading purchase receipts:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, supplierFilter, startDate, endDate, itemsPerPage]);
 
   // Effect to load purchase receipts when filters change
   useEffect(() => {
     loadPurchaseReceipts();
-  }, [currentPage, searchTerm, statusFilter, supplierFilter, startDate, endDate]);
+  }, [loadPurchaseReceipts]);
 
   // Reset page when filters change
   useEffect(() => {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [searchTerm, statusFilter, supplierFilter, startDate, endDate]);
+  }, [currentPage, searchTerm, statusFilter, supplierFilter, startDate, endDate]);
 
   // Get status badge
   const getStatusBadge = (status: PurchaseReceiptStatus) => {

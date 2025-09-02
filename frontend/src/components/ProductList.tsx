@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Grid, List, Package, Tag, Building2, Eye, Edit, Trash2 } from 'lucide-react';
-import type { Product, Category, Supplier, Brand, ProductFilters } from '../types/api';
+import type { Product, Category, Supplier, Brand, ProductFiltersExtended } from '../types/api';
 import { api, extractListData } from '../services/api';
 
 interface ProductListProps {
@@ -31,10 +31,10 @@ export const ProductList: React.FC<ProductListProps> = ({
   const [totalProducts, setTotalProducts] = useState(0);
   
   // Filters and search
-  const [filters, setFilters] = useState<ProductFilters>({});
+  const [filters, setFilters] = useState<ProductFiltersExtended>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchProducts = useCallback(async (page = 1, search = '', productFilters: ProductFilters = {}) => {
+  const fetchProducts = useCallback(async (page = 1, search = '', productFilters: ProductFiltersExtended = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -45,7 +45,7 @@ export const ProductList: React.FC<ProductListProps> = ({
         ...(search && { search }),
         ...(productFilters.category_id && { category_id: productFilters.category_id }),
         ...(productFilters.supplier_id && { supplier_id: productFilters.supplier_id }),
-        ...((productFilters as any).brand_id && { brand_id: (productFilters as any).brand_id }),
+        ...(productFilters.brand_id && { brand_id: productFilters.brand_id }),
         ...(productFilters.status && { status: productFilters.status }),
         ...(productFilters.min_price && { min_price: productFilters.min_price.toString() }),
         ...(productFilters.max_price && { max_price: productFilters.max_price.toString() })
@@ -523,8 +523,8 @@ export const ProductList: React.FC<ProductListProps> = ({
                 Brand
               </label>
               <select
-                value={(filters as any).brand_id || ''}
-                onChange={(e) => handleFilterChange({ brand_id: e.target.value || undefined } as any)}
+                value={filters.brand_id || ''}
+                onChange={(e) => handleFilterChange({ brand_id: e.target.value || undefined })}
                 className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:ring-2 focus:ring-ring focus:border-transparent"
               >
                 <option value="">All Brands</option>

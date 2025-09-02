@@ -220,7 +220,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         sku: generateSKU(formData.name)
       }));
     }
-  }, [formData.name, product, generateSKU]);
+  }, [formData.name, formData.sku, product, generateSKU]);
 
   // Auto-calculate wholesale price (midpoint between cost and retail)
   useEffect(() => {
@@ -317,12 +317,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       } else {
         setErrors({ submit: response.data.message || 'Failed to save product' });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving product:', err);
-      if (err.response?.data?.message) {
-        setErrors({ submit: err.response.data.message });
-      } else if (err.response?.data?.errors) {
-        setErrors(err.response.data.errors);
+      const apiError = err as { response?: { data?: { message?: string; errors?: Record<string, string> } } };
+      if (apiError.response?.data?.message) {
+        setErrors({ submit: apiError.response.data.message });
+      } else if (apiError.response?.data?.errors) {
+        setErrors(apiError.response.data.errors);
       } else {
         setErrors({ submit: 'Failed to save product. Please try again.' });
       }
