@@ -109,14 +109,15 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
         return value ? '' : 'Product is required';
       case 'vehicle_model_id':
         return value ? '' : 'Vehicle model is required';
-      case 'year_from':
+      case 'year_from': {
         if (!value) return '';
         const yearFrom = parseInt(value, 10);
         if (isNaN(yearFrom) || yearFrom < 1900 || yearFrom > currentYear + 10) {
           return `Year must be between 1900 and ${currentYear + 10}`;
         }
         return '';
-      case 'year_to':
+      }
+      case 'year_to': {
         if (!value) return '';
         const yearTo = parseInt(value, 10);
         const yearFromNum = parseInt(formData.year_from, 10);
@@ -127,6 +128,7 @@ const CompatibilityModal: React.FC<CompatibilityModalProps> = ({
           return 'End year cannot be before start year';
         }
         return '';
+      }
       case 'notes':
         if (value.length > 500) {
           return 'Notes cannot exceed 500 characters';

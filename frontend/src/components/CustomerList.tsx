@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -52,12 +52,12 @@ const CustomerList: React.FC<CustomerListProps> = ({
   const itemsPerPage = 12;
 
   // Load customers
-  const loadCustomers = async () => {
+  const loadCustomers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | number | boolean> = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -91,19 +91,19 @@ const CustomerList: React.FC<CustomerListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage, searchTerm, customerType, statusFilter, cityFilter]);
 
   // Effects
   useEffect(() => {
     loadCustomers();
-  }, [currentPage, searchTerm, customerType, statusFilter, cityFilter]);
+  }, [loadCustomers]);
 
   // Reset to first page when filters change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchTerm, customerType, statusFilter, cityFilter]);
+  }, [currentPage, searchTerm, customerType, statusFilter, cityFilter]);
 
   // Clear filters
   const clearFilters = () => {

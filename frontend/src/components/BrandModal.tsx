@@ -168,20 +168,27 @@ const BrandModal: React.FC<BrandModalProps> = ({
 
       onSave();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving brand:', error);
       
-      if (error.response?.data?.errors) {
-        const apiErrors: Record<string, string> = {};
-        error.response.data.errors.forEach((err: any) => {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const responseError = error as { response?: { data?: { errors?: Array<{ field?: string; message: string }> } } };
+        if (responseError.response?.data?.errors) {
+          const apiErrors: Record<string, string> = {};
+          responseError.response.data.errors.forEach((err) => {
           if (err.field) {
             apiErrors[err.field] = err.message;
           }
         });
         setErrors(apiErrors);
+        } else {
+          setErrors({ 
+            general: responseError.response?.data?.message || 'Failed to save brand. Please try again.' 
+          });
+        }
       } else {
         setErrors({ 
-          general: error.response?.data?.message || 'Failed to save brand. Please try again.' 
+          general: 'Failed to save brand. Please try again.' 
         });
       }
     } finally {

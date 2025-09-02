@@ -87,14 +87,16 @@ const CustomerModal: React.FC<CustomerModalProps> = ({
     switch (field) {
       case 'name':
         return value.trim() ? '' : 'Customer name is required';
-      case 'email':
+      case 'email': {
         if (!value.trim()) return '';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(value) ? '' : 'Invalid email format';
-      case 'credit_limit':
+      }
+      case 'credit_limit': {
         if (!value.trim()) return '';
         const num = parseFloat(value);
         return !isNaN(num) && num >= 0 ? '' : 'Credit limit must be a positive number';
+      }
       default:
         return '';
     }

@@ -95,14 +95,15 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
         return value.trim() ? '' : 'Vehicle model name is required';
       case 'vehicle_brand_id':
         return value ? '' : 'Vehicle brand is required';
-      case 'year_from':
+      case 'year_from': {
         if (!value) return 'Starting year is required';
         const yearFrom = parseInt(value, 10);
         if (isNaN(yearFrom) || yearFrom < 1900 || yearFrom > currentYear + 5) {
           return `Year must be between 1900 and ${currentYear + 5}`;
         }
         return '';
-      case 'year_to':
+      }
+      case 'year_to': {
         if (!value) return '';
         const yearTo = parseInt(value, 10);
         const yearFromNum = parseInt(formData.year_from, 10);
@@ -113,6 +114,7 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
           return 'End year cannot be before start year';
         }
         return '';
+      }
       case 'engine_size':
         if (!value.trim()) return '';
         // Basic validation for engine size format (e.g., "2.0L", "1500cc", "3.5")

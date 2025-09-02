@@ -28,7 +28,7 @@ const POSLookup: React.FC<POSLookupProps> = ({ onProductSelect, className = '' }
       const isBarcode = /^\d+$/.test(term.trim()); // Simple barcode detection
       const isSKU = term.toUpperCase().includes('SKU') || /^[A-Z]+\d+$/i.test(term.trim());
 
-      const searchParams: any = {};
+      const searchParams: Record<string, string> = {};
       if (isBarcode) {
         searchParams.barcode = term.trim();
       } else if (isSKU) {
