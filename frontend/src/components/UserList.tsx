@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -50,7 +50,7 @@ const UserList: React.FC<UserListProps> = ({
   const itemsPerPage = 12;
 
   // Fetch users
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -64,7 +64,7 @@ const UserList: React.FC<UserListProps> = ({
       if (roleFilter !== 'all') params.append('role', roleFilter);
       
       const response = await api.get<UserListResponse>(`/users?${params}`);
-      const data = response.data as any; // The response is wrapped in success/data structure
+      const data = response.data as UserListResponse; // The response is wrapped in success/data structure
       
       if (data.success && data.data) {
         setUsers(Array.isArray(data.data) ? data.data : []);
@@ -83,12 +83,12 @@ const UserList: React.FC<UserListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, roleFilter, itemsPerPage]);
 
   // Effects
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchTerm, roleFilter, refreshTrigger]);
+  }, [currentPage, searchTerm, roleFilter, refreshTrigger, fetchUsers]);
 
   // Handlers
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -32,7 +32,7 @@ type TabId = 'part-brands' | 'vehicle-brands' | 'vehicle-models' | 'compatibilit
 interface Tab {
   id: TabId;
   name: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   description: string;
 }
 

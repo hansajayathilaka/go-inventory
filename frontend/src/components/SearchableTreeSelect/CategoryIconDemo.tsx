@@ -18,8 +18,8 @@ const CategoryIconDemo: React.FC = () => {
     const loadCategories = async () => {
       try {
         setLoading(true);
-        const response = await api.get<any>('/categories');
-        const categoriesData = (response.data as any)?.data || (response.data as Category[]) || [];
+        const response = await api.get<{ success: boolean; data?: Category[]; message?: string }>('/categories');
+        const categoriesData = (response.data as { success: boolean; data?: Category[]; message?: string })?.data || (response.data as Category[]) || [];
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
         setError('');
       } catch (err) {

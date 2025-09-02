@@ -120,7 +120,12 @@ const UserModal: React.FC<UserModalProps> = ({
     setIsLoading(true);
 
     try {
-      const payload: any = {
+      const payload: {
+        username: string;
+        email: string;
+        role: string;
+        password?: string;
+      } = {
         username: formData.username,
         email: formData.email,
         role: formData.role,
@@ -133,7 +138,7 @@ const UserModal: React.FC<UserModalProps> = ({
 
       if (mode === 'create') {
         const response = await api.post('/users', payload);
-        const data = response.data as any;
+        const data = response.data as { success: boolean; data?: UserType; message?: string };
         if (data.success) {
           onSave();
           onClose();
@@ -142,7 +147,7 @@ const UserModal: React.FC<UserModalProps> = ({
         }
       } else if (mode === 'edit' && user) {
         const response = await api.put(`/users/${user.id}`, payload);
-        const data = response.data as any;
+        const data = response.data as { success: boolean; data?: UserType; message?: string };
         if (data.success) {
           onSave();
           onClose();
@@ -150,9 +155,10 @@ const UserModal: React.FC<UserModalProps> = ({
           setErrors({ username: 'Failed to update user. Please try again.' });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving user:', error);
-      if (error.response?.status === 409) {
+      const apiError = error as { response?: { status: number } };
+      if (apiError.response?.status === 409) {
         setErrors({ username: 'Username or email already exists' });
       } else {
         setErrors({ username: 'Failed to save user. Please try again.' });

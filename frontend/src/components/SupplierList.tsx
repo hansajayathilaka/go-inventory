@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -53,7 +53,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
   const itemsPerPage = 12;
 
   // Fetch suppliers
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -67,7 +67,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
       if (statusFilter !== 'all') params.append('is_active', (statusFilter === 'active').toString());
       
       const response = await api.get<SupplierListResponse>(`/suppliers?${params}`);
-      const data = response.data as any;
+      const data = response.data as SupplierListResponse;
       
       if (data.success && data.data) {
         const supplierData = data.data.suppliers || data.data || [];
@@ -87,12 +87,12 @@ const SupplierList: React.FC<SupplierListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, itemsPerPage]);
 
   // Effects
   useEffect(() => {
     fetchSuppliers();
-  }, [currentPage, searchTerm, statusFilter, refreshTrigger]);
+  }, [currentPage, searchTerm, statusFilter, refreshTrigger, fetchSuppliers]);
 
   // Handlers
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

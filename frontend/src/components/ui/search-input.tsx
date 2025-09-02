@@ -39,7 +39,7 @@ export function SearchInput({
     debounce((newValue: string) => {
       onChange(newValue);
     }, debounceMs),
-    [onChange, debounceMs]
+    [debounceMs, onChange]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -237,7 +237,7 @@ export function AdvancedSearchInput({
 }
 
 // Utility function for debouncing
-function debounce<T extends (...args: any[]) => void>(
+function debounce<T extends (...args: never[]) => void>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

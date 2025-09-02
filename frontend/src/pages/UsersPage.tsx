@@ -55,7 +55,7 @@ const UsersPage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await api.delete(`/users/${selectedUser.id}`);
-      const data = response.data as any;
+      const data = response.data as { success: boolean; message?: string };
       if (data.success) {
         setRefreshUsers(prev => prev + 1);
         setShowDeleteModal(false);

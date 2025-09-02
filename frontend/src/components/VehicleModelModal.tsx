@@ -191,10 +191,11 @@ const VehicleModelModal: React.FC<VehicleModelModalProps> = ({
 
       onSave();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving vehicle model:', err);
-      if (err.response?.data?.errors) {
-        setErrors(err.response.data.errors);
+      const apiError = err as { response?: { data?: { errors?: Record<string, string> } } };
+      if (apiError.response?.data?.errors) {
+        setErrors(apiError.response.data.errors);
       }
     } finally {
       setLoading(false);

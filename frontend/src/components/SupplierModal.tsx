@@ -88,7 +88,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
+    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
@@ -122,7 +122,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
       if (mode === 'create') {
         const response = await api.post('/suppliers', payload);
-        const data = response.data as any;
+        const data = response.data as { success: boolean; data?: Supplier; message?: string };
         if (data.success) {
           onSave();
           onClose();
@@ -131,7 +131,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         }
       } else if (mode === 'edit' && supplier) {
         const response = await api.put(`/suppliers/${supplier.id}`, payload);
-        const data = response.data as any;
+        const data = response.data as { success: boolean; data?: Supplier; message?: string };
         if (data.success) {
           onSave();
           onClose();
@@ -139,9 +139,10 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
           setErrors({ name: 'Failed to update supplier. Please try again.' });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving supplier:', error);
-      if (error.response?.status === 409) {
+      const apiError = error as { response?: { status: number } };
+      if (apiError.response?.status === 409) {
         setErrors({ code: 'Supplier code already exists' });
       } else {
         setErrors({ name: 'Failed to save supplier. Please try again.' });

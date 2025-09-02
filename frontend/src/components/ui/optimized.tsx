@@ -248,7 +248,7 @@ export const useMemoizedCalculation = <T,>(
   calculation: () => T,
   dependencies: React.DependencyList
 ): T => {
-  return useMemo(calculation, dependencies);
+  return useMemo(() => calculation(), dependencies);
 };
 
 export { memo, useMemo, useCallback };

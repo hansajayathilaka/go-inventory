@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -46,12 +46,12 @@ const VehicleBrandList: React.FC<VehicleBrandListProps> = ({
   const itemsPerPage = 12;
 
   // Load vehicle brands
-  const loadVehicleBrands = async () => {
+  const loadVehicleBrands = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | number | boolean> = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -81,19 +81,19 @@ const VehicleBrandList: React.FC<VehicleBrandListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, countryFilter, itemsPerPage]);
 
   // Effects
   useEffect(() => {
     loadVehicleBrands();
-  }, [currentPage, searchTerm, statusFilter, countryFilter]);
+  }, [loadVehicleBrands]);
 
   // Reset to first page when filters change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchTerm, statusFilter, countryFilter]);
+  }, [currentPage, searchTerm, statusFilter, countryFilter]);
 
   // Clear filters
   const clearFilters = () => {

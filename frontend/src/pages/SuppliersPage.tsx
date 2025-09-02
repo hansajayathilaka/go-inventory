@@ -55,7 +55,7 @@ const SuppliersPage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await api.delete(`/suppliers/${selectedSupplier.id}`);
-      const data = response.data as any;
+      const data = response.data as { success: boolean; message?: string };
       if (data.success) {
         setRefreshSuppliers(prev => prev + 1);
         setShowDeleteModal(false);

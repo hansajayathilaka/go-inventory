@@ -67,11 +67,12 @@ const CategoriesPage: React.FC = () => {
         title: "Category deleted",
         description: `${selectedCategory.name} has been successfully deleted.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting category:', error);
+      const apiError = error as { response?: { data?: { message?: string } } };
       toast({
         title: "Error",
-        description: error.response?.data?.message || 'Failed to delete category',
+        description: apiError.response?.data?.message || 'Failed to delete category',
         variant: "destructive",
       });
     } finally {

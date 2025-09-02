@@ -55,7 +55,10 @@ const SearchableTreeSelect: React.FC<SearchableTreeSelectProps> = ({
   });
   
   // Merge configurations with defaults
-  const finalSearchConfig = { ...DEFAULT_SEARCH_CONFIG, ...searchConfig };
+  const finalSearchConfig = React.useMemo(
+    () => ({ ...DEFAULT_SEARCH_CONFIG, ...searchConfig }),
+    [searchConfig]
+  );
   const finalIconConfig = DEFAULT_ICON_CONFIG;
   
   // Build tree data from flat categories

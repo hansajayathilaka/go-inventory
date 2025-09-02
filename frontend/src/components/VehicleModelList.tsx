@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Search, 
   Eye, 
@@ -62,12 +62,12 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
   };
 
   // Load vehicle models
-  const loadVehicleModels = async () => {
+  const loadVehicleModels = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
+      const params: Record<string, string | number | boolean> = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -109,7 +109,7 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, brandFilter, fuelTypeFilter, yearFromFilter, yearToFilter, itemsPerPage]);
 
   // Effects
   useEffect(() => {
@@ -118,14 +118,14 @@ const VehicleModelList: React.FC<VehicleModelListProps> = ({
 
   useEffect(() => {
     loadVehicleModels();
-  }, [currentPage, searchTerm, statusFilter, brandFilter, fuelTypeFilter, yearFromFilter, yearToFilter]);
+  }, [loadVehicleModels]);
 
   // Reset to first page when filters change
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchTerm, statusFilter, brandFilter, fuelTypeFilter, yearFromFilter, yearToFilter]);
+  }, [currentPage, searchTerm, statusFilter, brandFilter, fuelTypeFilter, yearFromFilter, yearToFilter]);
 
   // Clear filters
   const clearFilters = () => {

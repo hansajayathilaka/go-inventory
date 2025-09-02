@@ -24,7 +24,7 @@ export function buildCategoryTree(
       ...category,
       children: [],
       isLoaded: true,
-      isExpanded: preserveExpandedState ? (category as any).isExpanded : defaultExpanded,
+      isExpanded: preserveExpandedState ? (category as CategoryWithMeta).isExpanded : defaultExpanded,
       matchesSearch: false
     };
     categoryMap.set(category.id, node);
