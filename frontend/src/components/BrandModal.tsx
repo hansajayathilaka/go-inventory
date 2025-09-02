@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { X, Tag, Save, Loader2, Globe, Image, ExternalLink } from 'lucide-react';
+import { Tag, Save, Loader2, Globe, Image, ExternalLink } from 'lucide-react';
 import type { Brand, CreateBrandRequest, UpdateBrandRequest } from '../types/api';
 import { api } from '../services/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface BrandModalProps {
   isOpen: boolean;
@@ -196,36 +208,19 @@ const BrandModal: React.FC<BrandModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose}></div>
-
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-
-        <div className="inline-block align-bottom bg-card text-card-foreground rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-          {/* Header */}
-          <div className="bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Tag className="h-6 w-6 text-muted-foreground mr-2" />
-                <h3 className="text-lg font-medium text-foreground">
-                  {isEditing ? 'Edit Brand' : 'Add New Brand'}
-                </h3>
-              </div>
-              <button
-                onClick={onClose}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center">
+            <Tag className="h-6 w-6 text-muted-foreground mr-2" />
+            <DialogTitle>
+              {isEditing ? 'Edit Brand' : 'Add New Brand'}
+            </DialogTitle>
           </div>
+        </DialogHeader>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-card px-4 pt-5 pb-4 sm:p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Error */}
             {errors.general && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -239,65 +234,50 @@ const BrandModal: React.FC<BrandModalProps> = ({
                 <h4 className="text-sm font-medium text-foreground mb-3">Basic Information</h4>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Brand Name */}
-                  <div className="sm:col-span-2">
-                    <label htmlFor="name" className="block text-sm font-medium text-foreground">
-                      Brand Name *
-                    </label>
-                    <input
-                      type="text"
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="name">Brand Name *</Label>
+                    <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleFieldChange('name', e.target.value)}
                       onBlur={() => handleFieldBlur('name')}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                        errors.name ? 'border-red-300' : 'border-input'
-                      }`}
                       placeholder="Enter brand name (e.g., Bosch, NGK, Denso)"
+                      className={errors.name ? 'border-red-500' : ''}
                     />
                     {errors.name && (
-                      <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                      <p className="text-sm text-red-600">{errors.name}</p>
                     )}
                   </div>
 
                   {/* Brand Code */}
-                  <div>
-                    <label htmlFor="code" className="block text-sm font-medium text-foreground">
-                      Brand Code
-                    </label>
-                    <input
-                      type="text"
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Brand Code</Label>
+                    <Input
                       id="code"
                       value={formData.code}
                       onChange={(e) => handleFieldChange('code', e.target.value.toUpperCase())}
                       onBlur={() => handleFieldBlur('code')}
                       disabled={isEditing}
-                      className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                        isEditing ? 'bg-muted/50' : 'border-input'
-                      } ${errors.code ? 'border-red-300' : 'border-input'}`}
                       placeholder="Auto-generated if empty"
+                      className={errors.code ? 'border-red-500' : ''}
                     />
                     {errors.code && (
-                      <p className="mt-1 text-sm text-red-600">{errors.code}</p>
+                      <p className="text-sm text-red-600">{errors.code}</p>
                     )}
                   </div>
 
                   {/* Country Code */}
-                  <div>
-                    <label htmlFor="country_code" className="block text-sm font-medium text-foreground">
-                      Country Code
-                    </label>
-                    <div className="mt-1 relative">
-                      <input
-                        type="text"
+                  <div className="space-y-2">
+                    <Label htmlFor="country_code">Country Code</Label>
+                    <div className="relative">
+                      <Input
                         id="country_code"
                         value={formData.country_code}
                         onChange={(e) => handleFieldChange('country_code', e.target.value.toUpperCase())}
                         onBlur={() => handleFieldBlur('country_code')}
-                        className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                          errors.country_code ? 'border-red-300' : 'border-input'
-                        }`}
                         placeholder="US, DE, JP..."
                         maxLength={2}
+                        className={errors.country_code ? 'border-red-500' : ''}
                       />
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         {formData.country_code && formData.country_code.length === 2 && (
@@ -308,24 +288,21 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       </div>
                     </div>
                     {errors.country_code && (
-                      <p className="mt-1 text-sm text-red-600">{errors.country_code}</p>
+                      <p className="text-sm text-red-600">{errors.country_code}</p>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Description */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-foreground">
-                  Description
-                </label>
-                <textarea
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleFieldChange('description', e.target.value)}
                   onBlur={() => handleFieldBlur('description')}
                   rows={3}
-                  className="mt-1 block w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   placeholder="Brief description of the brand..."
                 />
               </div>
@@ -335,24 +312,20 @@ const BrandModal: React.FC<BrandModalProps> = ({
                 <h4 className="text-sm font-medium text-foreground mb-3">Web Presence</h4>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {/* Website */}
-                  <div className="sm:col-span-2">
-                    <label htmlFor="website" className="block text-sm font-medium text-foreground">
-                      Website
-                    </label>
-                    <div className="mt-1 relative">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Globe className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <input
+                      <Input
                         type="url"
                         id="website"
                         value={formData.website}
                         onChange={(e) => handleFieldChange('website', e.target.value)}
                         onBlur={() => handleFieldBlur('website')}
-                        className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                          errors.website ? 'border-red-300' : 'border-input'
-                        }`}
                         placeholder="https://www.brand-website.com"
+                        className={`pl-10 pr-10 ${errors.website ? 'border-red-500' : ''}`}
                       />
                       {formData.website && (
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -368,33 +341,29 @@ const BrandModal: React.FC<BrandModalProps> = ({
                       )}
                     </div>
                     {errors.website && (
-                      <p className="mt-1 text-sm text-red-600">{errors.website}</p>
+                      <p className="text-sm text-red-600">{errors.website}</p>
                     )}
                   </div>
 
                   {/* Logo URL */}
-                  <div className="sm:col-span-2">
-                    <label htmlFor="logo_url" className="block text-sm font-medium text-foreground">
-                      Logo URL
-                    </label>
-                    <div className="mt-1 relative">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label htmlFor="logo_url">Logo URL</Label>
+                    <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Image className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <input
+                      <Input
                         type="url"
                         id="logo_url"
                         value={formData.logo_url}
                         onChange={(e) => handleFieldChange('logo_url', e.target.value)}
                         onBlur={() => handleFieldBlur('logo_url')}
-                        className={`block w-full pl-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent ${
-                          errors.logo_url ? 'border-red-300' : 'border-input'
-                        }`}
                         placeholder="https://example.com/logo.png"
+                        className={`pl-10 ${errors.logo_url ? 'border-red-500' : ''}`}
                       />
                     </div>
                     {errors.logo_url && (
-                      <p className="mt-1 text-sm text-red-600">{errors.logo_url}</p>
+                      <p className="text-sm text-red-600">{errors.logo_url}</p>
                     )}
                   </div>
 
@@ -428,57 +397,52 @@ const BrandModal: React.FC<BrandModalProps> = ({
               {/* Status */}
               <div>
                 <h4 className="text-sm font-medium text-foreground mb-3">Status</h4>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center space-x-2">
+                  <Checkbox
                     id="is_active"
                     checked={formData.is_active}
-                    onChange={(e) => handleFieldChange('is_active', e.target.checked.toString())}
-                    className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
+                    onCheckedChange={(checked) => handleFieldChange('is_active', checked.toString())}
                   />
-                  <label htmlFor="is_active" className="ml-2 block text-sm text-foreground">
+                  <Label htmlFor="is_active" className="text-sm font-normal">
                     Active Brand
-                  </label>
+                  </Label>
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Inactive brands will not appear in product creation forms
                 </p>
               </div>
             </div>
-          </form>
+        </form>
 
-          {/* Footer */}
-          <div className="bg-muted/50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  {isEditing ? 'Update Brand' : 'Create Brand'}
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-input shadow-sm px-4 py-2 bg-card text-base font-medium text-foreground hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                {isEditing ? 'Update Brand' : 'Create Brand'}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
