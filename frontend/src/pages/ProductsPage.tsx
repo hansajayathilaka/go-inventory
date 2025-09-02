@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import type { Product } from '../types/api';
 import ProductList from '../components/ProductList';
-import ProductModal from '../components/ProductModal';
 import { api } from '../services/api';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,36 +18,28 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 const ProductsPage: React.FC = () => {
-  const [showProductModal, setShowProductModal] = useState(false);
+  const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [refreshProducts, setRefreshProducts] = useState(0);
   const { toast } = useToast();
 
   const handleAddProduct = () => {
-    setSelectedProduct(null);
-    setShowProductModal(true);
+    navigate('/products/create');
   };
 
   const handleEditProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setShowProductModal(true);
+    navigate(`/products/edit/${product.id}`);
   };
 
   const handleViewProduct = (product: Product) => {
-    // For now, just open edit modal in view mode
-    // TODO: Implement dedicated product view modal
-    setSelectedProduct(product);
-    setShowProductModal(true);
+    // Navigate to edit page in view mode (edit page handles this well)
+    navigate(`/products/edit/${product.id}`);
   };
 
   const handleDeleteProduct = (product: Product) => {
     setSelectedProduct(product);
     setShowDeleteModal(true);
-  };
-
-  const handleProductSaved = () => {
-    setRefreshProducts(prev => prev + 1);
   };
 
   const confirmDelete = async () => {
@@ -96,16 +88,6 @@ const ProductsPage: React.FC = () => {
         onDeleteProduct={handleDeleteProduct}
       />
 
-      {/* Product Modal */}
-      <ProductModal
-        isOpen={showProductModal}
-        onClose={() => {
-          setShowProductModal(false);
-          setSelectedProduct(null);
-        }}
-        onSave={handleProductSaved}
-        product={selectedProduct}
-      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>

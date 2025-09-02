@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CategoriesPage from './pages/CategoriesPage';
 import ProductsPage from './pages/ProductsPage';
+import ProductCreatePage from './pages/ProductCreatePage';
+import ProductEditPage from './pages/ProductEditPage';
 import InventoryPage from './pages/InventoryPage';
 import SuppliersPage from './pages/SuppliersPage';
 import UsersPage from './pages/UsersPage';
@@ -97,6 +99,28 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ProductsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/products/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProductCreatePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/products/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProductEditPage />
                   </Layout>
                 </ProtectedRoute>
               }
