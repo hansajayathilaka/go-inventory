@@ -1,0 +1,149 @@
+name: Claude Development Tasks
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Development task type'
+        required: true
+        default: 'frontend-next'
+        type: choice
+        options:
+          - frontend-next
+          - backend-pos-next
+      branch:
+        description: 'Target branch (leave empty to use current branch)'
+        required: false
+        type: string
+      custom_prompt:
+        description: 'Optional custom instructions for Claude'
+        required: false
+        type: string
+
+jobs:
+  claude-dev-task:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    
+    steps:
+      - name: Determine target branch
+        id: branch
+        run: |
+          if [ -n "${{ inputs.branch }}" ]; then
+            echo "target_branch=${{ inputs.branch }}" >> $GITHUB_OUTPUT
+          else
+            echo "target_branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.target_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git config --local pull.rebase false
+
+      - name: Run Claude Development Task
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            I need you to execute the development task: **${{ inputs.task_type }}**
+            
+            ## Task Instructions:
+            You are working on the hardware store inventory management system.
+            
+            ### Available Slash Commands:
+            - **frontend-next**: Continue frontend React development (next pending task)
+            - **backend-pos-next**: Continue backend POS system implementation (next pending task)
+            
+            ### Your Task:
+            1. **Execute the slash command**: `/${{ inputs.task_type }}`
+            2. **Follow the progress tracker**: Read the appropriate progress file (FRONTEND_PROGRESS.md or BACKEND_POS_PROGRESS.md)
+            3. **Implement next task**: Work on the next pending task in the current phase
+            4. **Update progress**: Update the progress tracker with completion status
+            5. **Commit changes**: Create a descriptive commit with the work completed
+            
+            ### Important Guidelines:
+            - Follow the existing project architecture and conventions
+            - Use the tech stack defined in the plans (React+TypeScript+Tailwind for frontend, Go for backend)
+            - Update progress files with accurate completion status
+            - Make focused, incremental changes for each task
+            - Test your implementation when possible
+            - Use monospace fonts (`font-mono`) for codes and technical IDs in frontend
+            
+            ### Custom Instructions:
+            ${{ inputs.custom_prompt || 'No additional custom instructions provided.' }}
+            
+            ### Current Branch: 
+            `${{ steps.branch.outputs.target_branch }}`
+            
+            Please execute the task and commit your changes. If you encounter any blockers or need clarification, document them in the progress file and create an issue for follow-up.
+          
+          claude_args: |
+            --allowed-tools "Bash(*),Read(*),Write(*),Edit(*),MultiEdit(*),Glob(*),Grep(*),TodoWrite(*)"
+
+      - name: Push changes
+        id: push
+        run: |
+          # Check if there are any changes to commit
+          if git diff --staged --quiet && git diff --quiet; then
+            echo "No changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected, pushing to ${{ steps.branch.outputs.target_branch }}"
+            git push origin ${{ steps.branch.outputs.target_branch }}
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create summary comment
+        if: steps.push.outputs.has_changes == 'true'
+        run: |
+          # Create a summary of what was accomplished
+          echo "## 🚀 Claude Development Task Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Task Type:** \`${{ inputs.task_type }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ steps.branch.outputs.target_branch }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changes Pushed Successfully ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The development task has been completed and changes have been pushed to the target branch." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Review the progress files (FRONTEND_PROGRESS.md or BACKEND_POS_PROGRESS.md)" >> $GITHUB_STEP_SUMMARY
+          echo "- Test the implemented features locally" >> $GITHUB_STEP_SUMMARY
+          echo "- Run the workflow again to continue with the next task" >> $GITHUB_STEP_SUMMARY
+          echo "- Create a PR when a phase or significant milestone is completed" >> $GITHUB_STEP_SUMMARY
+
+      - name: No changes summary
+        if: steps.push.outputs.has_changes == 'false'
+        run: |
+          echo "## ℹ️ Claude Development Task - No Changes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Task Type:** \`${{ inputs.task_type }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ steps.branch.outputs.target_branch }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### No Changes Required ⚠️" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The Claude task completed but no changes were made. This could mean:" >> $GITHUB_STEP_SUMMARY
+          echo "- All tasks in the current phase are already completed" >> $GITHUB_STEP_SUMMARY
+          echo "- The task encountered an issue and couldn't proceed" >> $GITHUB_STEP_SUMMARY
+          echo "- No implementation was needed for the current task" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Review the workflow logs for details" >> $GITHUB_STEP_SUMMARY
+          echo "- Check the progress files for current status" >> $GITHUB_STEP_SUMMARY
+          echo "- Consider running a different task type if appropriate" >> $GITHUB_STEP_SUMMARY
