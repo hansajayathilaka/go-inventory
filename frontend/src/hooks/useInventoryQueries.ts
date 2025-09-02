@@ -4,6 +4,7 @@ import { useUiStore } from '../stores/uiStore';
 import type { 
   Product, 
   Category, 
+  CategoryHierarchy,
   Brand, 
   Supplier, 
   PurchaseReceipt,
@@ -154,6 +155,17 @@ export function useCategories() {
     queryKey: QUERY_KEYS.categories,
     queryFn: async (): Promise<Category[]> => {
       const response = await apiClient.get<Category[]>('/categories');
+      return response.data;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
+  });
+}
+
+export function useCategoryHierarchy() {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, 'hierarchy'],
+    queryFn: async (): Promise<CategoryHierarchy> => {
+      const response = await apiClient.get<CategoryHierarchy>('/categories/hierarchy');
       return response.data;
     },
     staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often

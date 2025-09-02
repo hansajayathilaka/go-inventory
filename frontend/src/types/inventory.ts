@@ -42,6 +42,16 @@ export interface Category {
   products?: Product[];
 }
 
+export interface CategoryHierarchyNode {
+  category: Category;
+  children: CategoryHierarchyNode[];
+}
+
+export interface CategoryHierarchy {
+  category: Category;
+  children: CategoryHierarchyNode[];
+}
+
 export interface Brand {
   id: number;
   name: string;
