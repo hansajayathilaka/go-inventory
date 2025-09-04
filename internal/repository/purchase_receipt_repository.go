@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -189,12 +188,12 @@ func (r *purchaseReceiptRepository) GetByDateRange(ctx context.Context, startDat
 	return receipts, total, err
 }
 
-// GetByOrderDateRange retrieves purchase receipts by order date range
-func (r *purchaseReceiptRepository) GetByOrderDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+// GetByPurchaseDateRange retrieves purchase receipts by purchase date range
+func (r *purchaseReceiptRepository) GetByPurchaseDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
 	var receipts []*models.PurchaseReceipt
 	var total int64
 	
-	query := r.db.WithContext(ctx).Where("order_date BETWEEN ? AND ?", startDate, endDate)
+	query := r.db.WithContext(ctx).Where("purchase_date BETWEEN ? AND ?", startDate, endDate)
 	
 	// Get total count
 	if err := query.Model(&models.PurchaseReceipt{}).Count(&total).Error; err != nil {
@@ -205,7 +204,7 @@ func (r *purchaseReceiptRepository) GetByOrderDateRange(ctx context.Context, sta
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Order("order_date DESC").
+		Order("purchase_date DESC").
 		Offset(offset).
 		Limit(limit).
 		Find(&receipts).Error
@@ -213,32 +212,9 @@ func (r *purchaseReceiptRepository) GetByOrderDateRange(ctx context.Context, sta
 	return receipts, total, err
 }
 
-// GetByReceivedDateRange retrieves purchase receipts by received date range
-func (r *purchaseReceiptRepository) GetByReceivedDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
-	var receipts []*models.PurchaseReceipt
-	var total int64
-	
-	query := r.db.WithContext(ctx).Where("received_date BETWEEN ? AND ?", startDate, endDate)
-	
-	// Get total count
-	if err := query.Model(&models.PurchaseReceipt{}).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-	
-	// Get receipts with pagination
-	err := query.
-		Preload("Supplier").
-		Preload("CreatedBy").
-		Order("received_date DESC").
-		Offset(offset).
-		Limit(limit).
-		Find(&receipts).Error
-	
-	return receipts, total, err
-}
 
 // Search searches purchase receipts with multiple filters
-func (r *purchaseReceiptRepository) Search(ctx context.Context, receiptNumber, supplierName, reference string, status models.PurchaseReceiptStatus, startDate, endDate *time.Time, createdByID *uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+func (r *purchaseReceiptRepository) Search(ctx context.Context, receiptNumber, supplierName, supplierBillNumber string, status models.PurchaseReceiptStatus, startDate, endDate *time.Time, createdByID *uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
 	var receipts []*models.PurchaseReceipt
 	var total int64
 	
@@ -262,9 +238,9 @@ func (r *purchaseReceiptRepository) Search(ctx context.Context, receiptNumber, s
 		args = append(args, "%"+supplierName+"%")
 	}
 	
-	if reference != "" {
-		conditions = append(conditions, "purchase_receipts.reference LIKE ? COLLATE NOCASE")
-		args = append(args, "%"+reference+"%")
+	if supplierBillNumber != "" {
+		conditions = append(conditions, "purchase_receipts.supplier_bill_number LIKE ? COLLATE NOCASE")
+		args = append(args, "%"+supplierBillNumber+"%")
 	}
 	
 	if status != "" {
@@ -315,30 +291,6 @@ func (r *purchaseReceiptRepository) UpdateStatus(ctx context.Context, id uuid.UU
 		}).Error
 }
 
-// Approve approves a purchase receipt
-func (r *purchaseReceiptRepository) Approve(ctx context.Context, id uuid.UUID, approvedByID uuid.UUID, approvedAt time.Time) error {
-	// Method deprecated - approval workflow removed in simplified model
-	return errors.New("approval workflow no longer supported")
-}
-
-// Send marks a purchase receipt as sent to supplier
-func (r *purchaseReceiptRepository) Send(ctx context.Context, id uuid.UUID) error {
-	// Method deprecated - order status removed in simplified model
-	return errors.New("send order status no longer supported")
-}
-
-// StartReceiving marks a purchase receipt as starting to receive goods
-func (r *purchaseReceiptRepository) StartReceiving(ctx context.Context, id uuid.UUID, receivedByID uuid.UUID, receivedAt time.Time) error {
-	return r.db.WithContext(ctx).
-		Model(&models.PurchaseReceipt{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"status":         models.PurchaseReceiptStatusReceived,
-			"received_by_id": receivedByID,
-			"received_date":  receivedAt,
-			"updated_at":     time.Now(),
-		}).Error
-}
 
 // MarkAsReceived marks a purchase receipt as fully received
 func (r *purchaseReceiptRepository) MarkAsReceived(ctx context.Context, id uuid.UUID) error {
@@ -352,21 +304,14 @@ func (r *purchaseReceiptRepository) MarkAsReceived(ctx context.Context, id uuid.
 }
 
 // MarkAsCompleted marks a purchase receipt as completed
-func (r *purchaseReceiptRepository) MarkAsCompleted(ctx context.Context, id uuid.UUID, verifiedByID *uuid.UUID) error {
-	updates := map[string]interface{}{
-		"status":     models.PurchaseReceiptStatusCompleted,
-		"updated_at": time.Now(),
-	}
-	
-	if verifiedByID != nil {
-		updates["verified_by_id"] = *verifiedByID
-		updates["verified_at"] = time.Now()
-	}
-	
+func (r *purchaseReceiptRepository) MarkAsCompleted(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).
 		Model(&models.PurchaseReceipt{}).
 		Where("id = ?", id).
-		Updates(updates).Error
+		Updates(map[string]interface{}{
+			"status":     models.PurchaseReceiptStatusCompleted,
+			"updated_at": time.Now(),
+		}).Error
 }
 
 // Cancel cancels a purchase receipt
@@ -422,32 +367,16 @@ func (r *purchaseReceiptRepository) DeleteItem(ctx context.Context, itemID uuid.
 	return r.db.WithContext(ctx).Delete(&models.PurchaseReceiptItem{}, "id = ?", itemID).Error
 }
 
-// UpdateItemReceiptQuantities updates receipt quantities for an item
-func (r *purchaseReceiptRepository) UpdateItemReceiptQuantities(ctx context.Context, itemID uuid.UUID, received, accepted, rejected, damaged int) error {
-	return r.db.WithContext(ctx).
-		Model(&models.PurchaseReceiptItem{}).
-		Where("id = ?", itemID).
-		Updates(map[string]interface{}{
-			"received_quantity": received,
-			"accepted_quantity": accepted,
-			"rejected_quantity": rejected,
-			"damaged_quantity":  damaged,
-			"updated_at":       time.Now(),
-		}).Error
-}
 
-// UpdateFinancials updates the financial totals for a purchase receipt
-func (r *purchaseReceiptRepository) UpdateFinancials(ctx context.Context, id uuid.UUID, subTotal, taxAmount, shippingCost, discountAmount, totalAmount float64) error {
+// UpdateDiscounts updates the discount amounts for a purchase receipt
+func (r *purchaseReceiptRepository) UpdateDiscounts(ctx context.Context, id uuid.UUID, billDiscountAmount, billDiscountPercentage float64) error {
 	return r.db.WithContext(ctx).
 		Model(&models.PurchaseReceipt{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{
-			"sub_total":       subTotal,
-			"tax_amount":      taxAmount,
-			"shipping_cost":   shippingCost,
-			"discount_amount": discountAmount,
-			"total_amount":    totalAmount,
-			"updated_at":      time.Now(),
+			"bill_discount_amount":    billDiscountAmount,
+			"bill_discount_percentage": billDiscountPercentage,
+			"updated_at":              time.Now(),
 		}).Error
 }
 
@@ -567,19 +496,6 @@ func (r *purchaseReceiptRepository) GetPendingReceipts(ctx context.Context) ([]*
 	return receipts, err
 }
 
-// GetOverdueReceipts retrieves all overdue purchase receipts
-func (r *purchaseReceiptRepository) GetOverdueReceipts(ctx context.Context) ([]*models.PurchaseReceipt, error) {
-	var receipts []*models.PurchaseReceipt
-	yesterday := time.Now().AddDate(0, 0, -1)
-	
-	err := r.db.WithContext(ctx).
-		Where("status = ? AND purchase_date < ?", models.PurchaseReceiptStatusPending, yesterday).
-		Preload("Supplier").
-		Preload("CreatedBy").
-		Order("expected_date ASC").
-		Find(&receipts).Error
-	return receipts, err
-}
 
 // GenerateReceiptNumber generates a new unique receipt number
 func (r *purchaseReceiptRepository) GenerateReceiptNumber(ctx context.Context) (string, error) {

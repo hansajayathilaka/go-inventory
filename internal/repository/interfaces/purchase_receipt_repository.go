@@ -25,19 +25,15 @@ type PurchaseReceiptRepository interface {
 	
 	// Date-based operations
 	GetByDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
-	GetByOrderDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
-	GetByReceivedDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
+	GetByPurchaseDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
 	
 	// Search operations
-	Search(ctx context.Context, receiptNumber, supplierName, reference string, status models.PurchaseReceiptStatus, startDate, endDate *time.Time, createdByID *uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
+	Search(ctx context.Context, receiptNumber, supplierName, supplierBillNumber string, status models.PurchaseReceiptStatus, startDate, endDate *time.Time, createdByID *uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error)
 	
 	// Status operations
 	UpdateStatus(ctx context.Context, id uuid.UUID, status models.PurchaseReceiptStatus, updatedByID uuid.UUID) error
-	Approve(ctx context.Context, id uuid.UUID, approvedByID uuid.UUID, approvedAt time.Time) error
-	Send(ctx context.Context, id uuid.UUID) error
-	StartReceiving(ctx context.Context, id uuid.UUID, receivedByID uuid.UUID, receivedAt time.Time) error
 	MarkAsReceived(ctx context.Context, id uuid.UUID) error
-	MarkAsCompleted(ctx context.Context, id uuid.UUID, verifiedByID *uuid.UUID) error
+	MarkAsCompleted(ctx context.Context, id uuid.UUID) error
 	Cancel(ctx context.Context, id uuid.UUID) error
 	
 	// Item operations
@@ -46,17 +42,15 @@ type PurchaseReceiptRepository interface {
 	GetItemsByReceipt(ctx context.Context, receiptID uuid.UUID) ([]*models.PurchaseReceiptItem, error)
 	UpdateItem(ctx context.Context, item *models.PurchaseReceiptItem) error
 	DeleteItem(ctx context.Context, itemID uuid.UUID) error
-	UpdateItemReceiptQuantities(ctx context.Context, itemID uuid.UUID, received, accepted, rejected, damaged int) error
 	
 	// Financial operations
-	UpdateFinancials(ctx context.Context, id uuid.UUID, subTotal, taxAmount, shippingCost, discountAmount, totalAmount float64) error
+	UpdateDiscounts(ctx context.Context, id uuid.UUID, billDiscountAmount, billDiscountPercentage float64) error
 	RecalculateTotal(ctx context.Context, id uuid.UUID) error
 	
 	// Reporting operations
 	GetStatsByDateRange(ctx context.Context, startDate, endDate time.Time) (map[string]interface{}, error)
 	GetTopSuppliers(ctx context.Context, limit int, startDate, endDate *time.Time) ([]map[string]interface{}, error)
 	GetPendingReceipts(ctx context.Context) ([]*models.PurchaseReceipt, error)
-	GetOverdueReceipts(ctx context.Context) ([]*models.PurchaseReceipt, error)
 	
 	// Code generation
 	GenerateReceiptNumber(ctx context.Context) (string, error)
