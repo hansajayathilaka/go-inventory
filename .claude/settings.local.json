@@ -83,7 +83,8 @@
       "Bash(git checkout:*)",
       "Bash(git rm:*)",
       "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite TUI_INVENTORY_DATABASE_PATH=./data/inventory.db ./hardware-store-inventory --seed)",
-      "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite ./hardware-store-inventory --seed)"
+      "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite ./hardware-store-inventory --seed)",
+      "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite TUI_INVENTORY_DATABASE_PATH=./data/test.db ./main --seed)"
     ],
     "deny": [],
     "ask": []
