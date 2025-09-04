@@ -41,10 +41,7 @@ type Service interface {
 	CountPurchaseReceipts(ctx context.Context) (int64, error)
 	
 	// Purchase Receipt status operations
-	ApprovePurchaseReceipt(ctx context.Context, id uuid.UUID, approverID uuid.UUID) error
-	SendPurchaseOrder(ctx context.Context, id uuid.UUID) error
-	ReceiveGoods(ctx context.Context, id uuid.UUID, receivedByID uuid.UUID, receivedDate time.Time) error
-	VerifyGoods(ctx context.Context, id uuid.UUID, verifierID uuid.UUID, qualityCheck bool, qualityNotes string) error
+	ReceiveGoods(ctx context.Context, id uuid.UUID) error
 	CompletePurchaseReceipt(ctx context.Context, id uuid.UUID) error
 	CancelPurchaseReceipt(ctx context.Context, id uuid.UUID) error
 	
@@ -118,13 +115,7 @@ func (s *service) CreatePurchaseReceipt(ctx context.Context, pr *models.Purchase
 	
 	// Set defaults
 	if pr.Status == "" {
-		pr.Status = models.PurchaseReceiptStatusDraft
-	}
-	if pr.Currency == "" {
-		pr.Currency = "MYR"
-	}
-	if pr.TaxRate == 0 {
-		pr.TaxRate = 6.0 // Default 6% SST in Malaysia
+		pr.Status = models.PurchaseReceiptStatusPending
 	}
 	
 	// Calculate totals
@@ -239,40 +230,7 @@ func (s *service) CountPurchaseReceipts(ctx context.Context) (int64, error) {
 
 // Purchase Receipt Status Operations
 
-func (s *service) ApprovePurchaseReceipt(ctx context.Context, id uuid.UUID, approverID uuid.UUID) error {
-	pr, err := s.purchaseReceiptRepo.GetByID(ctx, id)
-	if err != nil {
-		return ErrPurchaseReceiptNotFound
-	}
-	
-	if !pr.CanBeApproved() {
-		return ErrCannotApprove
-	}
-	
-	now := time.Now()
-	pr.Status = models.PurchaseReceiptStatusApproved
-	pr.ApprovedByID = &approverID
-	pr.ApprovedAt = &now
-	
-	return s.purchaseReceiptRepo.Update(ctx, pr)
-}
-
-func (s *service) SendPurchaseOrder(ctx context.Context, id uuid.UUID) error {
-	pr, err := s.purchaseReceiptRepo.GetByID(ctx, id)
-	if err != nil {
-		return ErrPurchaseReceiptNotFound
-	}
-	
-	if !pr.CanBeSent() {
-		return ErrCannotSend
-	}
-	
-	pr.Status = models.PurchaseReceiptStatusOrdered
-	
-	return s.purchaseReceiptRepo.Update(ctx, pr)
-}
-
-func (s *service) ReceiveGoods(ctx context.Context, id uuid.UUID, receivedByID uuid.UUID, receivedDate time.Time) error {
+func (s *service) ReceiveGoods(ctx context.Context, id uuid.UUID) error {
 	pr, err := s.purchaseReceiptRepo.GetByID(ctx, id)
 	if err != nil {
 		return ErrPurchaseReceiptNotFound
@@ -283,30 +241,10 @@ func (s *service) ReceiveGoods(ctx context.Context, id uuid.UUID, receivedByID u
 	}
 	
 	pr.Status = models.PurchaseReceiptStatusReceived
-	pr.ReceivedByID = &receivedByID
-	pr.ReceivedDate = &receivedDate
 	
 	return s.purchaseReceiptRepo.Update(ctx, pr)
 }
 
-func (s *service) VerifyGoods(ctx context.Context, id uuid.UUID, verifierID uuid.UUID, qualityCheck bool, qualityNotes string) error {
-	pr, err := s.purchaseReceiptRepo.GetByID(ctx, id)
-	if err != nil {
-		return ErrPurchaseReceiptNotFound
-	}
-	
-	if pr.Status != models.PurchaseReceiptStatusReceived && pr.Status != models.PurchaseReceiptStatusPartial {
-		return ErrInvalidStatus
-	}
-	
-	now := time.Now()
-	pr.VerifiedByID = &verifierID
-	pr.VerifiedAt = &now
-	pr.QualityCheck = qualityCheck
-	pr.QualityNotes = qualityNotes
-	
-	return s.purchaseReceiptRepo.Update(ctx, pr)
-}
 
 func (s *service) CompletePurchaseReceipt(ctx context.Context, id uuid.UUID) error {
 	pr, err := s.purchaseReceiptRepo.GetByID(ctx, id)
@@ -314,7 +252,7 @@ func (s *service) CompletePurchaseReceipt(ctx context.Context, id uuid.UUID) err
 		return ErrPurchaseReceiptNotFound
 	}
 	
-	if pr.Status != models.PurchaseReceiptStatusReceived && pr.Status != models.PurchaseReceiptStatusPartial {
+	if pr.Status != models.PurchaseReceiptStatusReceived {
 		return ErrInvalidStatus
 	}
 	
@@ -342,7 +280,7 @@ func (s *service) CancelPurchaseReceipt(ctx context.Context, id uuid.UUID) error
 
 func (s *service) AddPurchaseReceiptItem(ctx context.Context, item *models.PurchaseReceiptItem) error {
 	// Validate item
-	if item.OrderedQuantity <= 0 {
+	if item.Quantity <= 0 {
 		return ErrInvalidQuantity
 	}
 	
@@ -365,12 +303,12 @@ func (s *service) AddPurchaseReceiptItem(ctx context.Context, item *models.Purch
 		return errors.New("product is inactive")
 	}
 	
-	// Calculate item total
-	item.TotalPrice = float64(item.OrderedQuantity) * item.UnitPrice
-	if item.DiscountAmount > 0 {
-		item.TotalPrice -= item.DiscountAmount
+	// Calculate item totals
+	baseAmount := float64(item.Quantity) * item.UnitCost
+	if item.ItemDiscountPercentage > 0 {
+		item.ItemDiscountAmount = baseAmount * (item.ItemDiscountPercentage / 100)
 	}
-	item.TaxAmount = item.TotalPrice * (pr.TaxRate / 100)
+	item.LineTotal = baseAmount - item.ItemDiscountAmount
 	
 	if err := s.purchaseReceiptRepo.CreateItem(ctx, item); err != nil {
 		return fmt.Errorf("failed to add purchase receipt item: %w", err)
@@ -382,7 +320,7 @@ func (s *service) AddPurchaseReceiptItem(ctx context.Context, item *models.Purch
 }
 
 func (s *service) UpdatePurchaseReceiptItem(ctx context.Context, item *models.PurchaseReceiptItem) error {
-	if item.OrderedQuantity <= 0 {
+	if item.Quantity <= 0 {
 		return ErrInvalidQuantity
 	}
 	
@@ -396,12 +334,12 @@ func (s *service) UpdatePurchaseReceiptItem(ctx context.Context, item *models.Pu
 		return ErrCannotModifyCompleted
 	}
 	
-	// Calculate item total
-	item.TotalPrice = float64(item.OrderedQuantity) * item.UnitPrice
-	if item.DiscountAmount > 0 {
-		item.TotalPrice -= item.DiscountAmount
+	// Calculate item totals
+	baseAmount := float64(item.Quantity) * item.UnitCost
+	if item.ItemDiscountPercentage > 0 {
+		item.ItemDiscountAmount = baseAmount * (item.ItemDiscountPercentage / 100)
 	}
-	item.TaxAmount = item.TotalPrice * (pr.TaxRate / 100)
+	item.LineTotal = baseAmount - item.ItemDiscountAmount
 	
 	if err := s.purchaseReceiptRepo.UpdateItem(ctx, item); err != nil {
 		return fmt.Errorf("failed to update purchase receipt item: %w", err)
@@ -457,21 +395,20 @@ func (s *service) CalculatePurchaseReceiptTotals(ctx context.Context, pr *models
 		}
 	}
 	
-	var subTotal float64 = 0
-	var totalDiscount float64 = 0
+	var itemsTotal float64 = 0
 	
 	for _, item := range pr.Items {
-		itemTotal := float64(item.OrderedQuantity) * item.UnitPrice
-		subTotal += itemTotal
-		totalDiscount += item.DiscountAmount
+		itemsTotal += item.LineTotal
 	}
 	
-	pr.SubTotal = subTotal
-	pr.DiscountAmount = totalDiscount
+	// Apply bill-level discount
+	billDiscountAmount := pr.BillDiscountAmount
+	if pr.BillDiscountPercentage > 0 {
+		billDiscountAmount = itemsTotal * (pr.BillDiscountPercentage / 100)
+		pr.BillDiscountAmount = billDiscountAmount
+	}
 	
-	discountedSubTotal := subTotal - totalDiscount
-	pr.TaxAmount = discountedSubTotal * (pr.TaxRate / 100)
-	pr.TotalAmount = discountedSubTotal + pr.TaxAmount + pr.ShippingCost
+	pr.TotalAmount = itemsTotal - billDiscountAmount
 	
 	return s.purchaseReceiptRepo.Update(ctx, pr)
 }
@@ -505,8 +442,8 @@ func (s *service) ValidatePurchaseReceipt(ctx context.Context, pr *models.Purcha
 		return errors.New("created by ID is required")
 	}
 	
-	if pr.OrderDate.IsZero() {
-		return errors.New("order date is required")
+	if pr.PurchaseDate.IsZero() {
+		return errors.New("purchase date is required")
 	}
 	
 	// Validate field lengths
@@ -514,45 +451,21 @@ func (s *service) ValidatePurchaseReceipt(ctx context.Context, pr *models.Purcha
 		return errors.New("receipt number must be less than 50 characters")
 	}
 	
-	if len(pr.OrderNotes) > 1000 {
-		return errors.New("order notes must be less than 1000 characters")
+	if len(pr.SupplierBillNumber) > 100 {
+		return errors.New("supplier bill number must be less than 100 characters")
 	}
 	
-	if len(pr.ReceiptNotes) > 1000 {
-		return errors.New("receipt notes must be less than 1000 characters")
-	}
-	
-	if len(pr.Terms) > 1000 {
-		return errors.New("terms must be less than 1000 characters")
-	}
-	
-	if len(pr.Reference) > 100 {
-		return errors.New("reference must be less than 100 characters")
-	}
-	
-	if len(pr.Currency) > 3 {
-		return errors.New("currency must be 3 characters")
+	if len(pr.Notes) > 1000 {
+		return errors.New("notes must be less than 1000 characters")
 	}
 	
 	// Validate amounts
-	if pr.SubTotal < 0 {
-		return errors.New("subtotal cannot be negative")
+	if pr.BillDiscountAmount < 0 {
+		return errors.New("bill discount amount cannot be negative")
 	}
 	
-	if pr.TaxAmount < 0 {
-		return errors.New("tax amount cannot be negative")
-	}
-	
-	if pr.TaxRate < 0 || pr.TaxRate > 100 {
-		return errors.New("tax rate must be between 0 and 100")
-	}
-	
-	if pr.ShippingCost < 0 {
-		return errors.New("shipping cost cannot be negative")
-	}
-	
-	if pr.DiscountAmount < 0 {
-		return errors.New("discount amount cannot be negative")
+	if pr.BillDiscountPercentage < 0 || pr.BillDiscountPercentage > 100 {
+		return errors.New("bill discount percentage must be between 0 and 100")
 	}
 	
 	if pr.TotalAmount < 0 {
@@ -614,7 +527,7 @@ func (s *service) GetSupplierPerformance(ctx context.Context, supplierID uuid.UU
 	// Filter by date range
 	filteredReceipts := []*models.PurchaseReceipt{}
 	for _, receipt := range receipts {
-		if receipt.OrderDate.After(startDate) && receipt.OrderDate.Before(endDate) {
+		if receipt.PurchaseDate.After(startDate) && receipt.PurchaseDate.Before(endDate) {
 			filteredReceipts = append(filteredReceipts, receipt)
 		}
 	}
@@ -643,13 +556,9 @@ func (s *service) GetSupplierPerformance(ctx context.Context, supplierID uuid.UU
 			completed++
 		}
 		
-		// Check delivery performance
-		if receipt.DeliveryDate != nil && receipt.ExpectedDate != nil {
-			if receipt.DeliveryDate.Before(*receipt.ExpectedDate) || receipt.DeliveryDate.Equal(*receipt.ExpectedDate) {
-				onTime++
-			} else {
-				late++
-			}
+		// Simplified performance tracking - completed receipts are considered on time
+		if receipt.Status == models.PurchaseReceiptStatusCompleted {
+			onTime++
 		}
 	}
 	

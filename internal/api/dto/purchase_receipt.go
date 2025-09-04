@@ -7,47 +7,27 @@ import (
 	"inventory-api/internal/repository/models"
 )
 
-// PurchaseReceiptResponse represents a purchase receipt in API responses
+// PurchaseReceiptResponse represents a purchase receipt in API responses (simplified)
 type PurchaseReceiptResponse struct {
-	ID             uuid.UUID                          `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ReceiptNumber  string                             `json:"receipt_number" example:"PR-2024-001"`
-	SupplierID     uuid.UUID                          `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
-	Status         models.PurchaseReceiptStatus       `json:"status" example:"draft"`
+	ID                    uuid.UUID                          `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ReceiptNumber         string                             `json:"receipt_number" example:"PR-2024-001"`
+	SupplierID            uuid.UUID                          `json:"supplier_id" example:"550e8400-e29b-41d4-a716-446655440001"`
+	Status                models.PurchaseReceiptStatus       `json:"status" example:"pending"`
 	
-	// Order Information
-	OrderDate      time.Time                          `json:"order_date" example:"2023-01-01T12:00:00Z"`
-	ExpectedDate   *time.Time                         `json:"expected_date,omitempty" example:"2023-01-15T12:00:00Z"`
-	Reference      string                             `json:"reference,omitempty" example:"REF-001"`
-	Terms          string                             `json:"terms,omitempty" example:"Net 30 days"`
-	OrderNotes     string                             `json:"order_notes,omitempty" example:"Urgent order"`
-	
-	// Receipt Information
-	ReceivedDate   *time.Time                         `json:"received_date,omitempty" example:"2023-01-14T12:00:00Z"`
-	DeliveryDate   *time.Time                         `json:"delivery_date,omitempty" example:"2023-01-14T08:00:00Z"`
-	DeliveryNote   string                             `json:"delivery_note,omitempty" example:"DN-001"`
-	InvoiceNumber  string                             `json:"invoice_number,omitempty" example:"INV-001"`
-	InvoiceDate    *time.Time                         `json:"invoice_date,omitempty" example:"2023-01-01T12:00:00Z"`
-	VehicleNumber  string                             `json:"vehicle_number,omitempty" example:"ABC1234"`
-	DriverName     string                             `json:"driver_name,omitempty" example:"John Doe"`
-	QualityCheck   bool                               `json:"quality_check" example:"true"`
-	QualityNotes   string                             `json:"quality_notes,omitempty" example:"All items in good condition"`
-	ReceiptNotes   string                             `json:"receipt_notes,omitempty" example:"All items received in good condition"`
+	// Essential Information
+	PurchaseDate          time.Time                          `json:"purchase_date" example:"2023-01-01T12:00:00Z"`
+	SupplierBillNumber    string                             `json:"supplier_bill_number,omitempty" example:"SUPP-001"`
 	
 	// Financial Information
-	SubTotal       float64                            `json:"sub_total" example:"1000.00"`
-	TaxAmount      float64                            `json:"tax_amount" example:"60.00"`
-	TaxRate        float64                            `json:"tax_rate" example:"6.00"`
-	ShippingCost   float64                            `json:"shipping_cost" example:"50.00"`
-	DiscountAmount float64                            `json:"discount_amount" example:"0.00"`
-	TotalAmount    float64                            `json:"total_amount" example:"1110.00"`
-	Currency       string                             `json:"currency" example:"MYR"`
+	BillDiscountAmount    float64                            `json:"bill_discount_amount" example:"50.00"`
+	BillDiscountPercentage float64                           `json:"bill_discount_percentage" example:"5.00"`
+	TotalAmount           float64                            `json:"total_amount" example:"1110.00"`
+	
+	// Additional Information
+	Notes                 string                             `json:"notes,omitempty" example:"Urgent order"`
 	
 	// User Tracking
-	CreatedByID    uuid.UUID                          `json:"created_by_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	ApprovedByID   *uuid.UUID                         `json:"approved_by_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440003"`
-	ApprovedAt     *time.Time                         `json:"approved_at,omitempty" example:"2023-01-02T12:00:00Z"`
-	ReceivedByID   *uuid.UUID                         `json:"received_by_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440004"`
-	VerifiedByID   *uuid.UUID                         `json:"verified_by_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440005"`
+	CreatedByID           uuid.UUID                          `json:"created_by_id" example:"550e8400-e29b-41d4-a716-446655440002"`
 	VerifiedAt     *time.Time                         `json:"verified_at,omitempty" example:"2023-01-02T15:00:00Z"`
 	
 	// Timestamps
@@ -203,43 +183,22 @@ type SendOrderRequest struct {
 	SendDate time.Time `json:"send_date" binding:"required" example:"2023-01-02T09:00:00Z"`
 }
 
-// ToPurchaseReceiptResponse converts a purchase receipt model to a purchase receipt response DTO
+// ToPurchaseReceiptResponse converts a purchase receipt model to a purchase receipt response DTO (simplified)
 func ToPurchaseReceiptResponse(pr *models.PurchaseReceipt) PurchaseReceiptResponse {
 	response := PurchaseReceiptResponse{
-		ID:             pr.ID,
-		ReceiptNumber:  pr.ReceiptNumber,
-		SupplierID:     pr.SupplierID,
-		Status:         pr.Status,
-		OrderDate:      pr.OrderDate,
-		ExpectedDate:   pr.ExpectedDate,
-		Reference:      pr.Reference,
-		Terms:          pr.Terms,
-		OrderNotes:     pr.OrderNotes,
-		ReceivedDate:   pr.ReceivedDate,
-		DeliveryDate:   pr.DeliveryDate,
-		DeliveryNote:   pr.DeliveryNote,
-		InvoiceNumber:  pr.InvoiceNumber,
-		InvoiceDate:    pr.InvoiceDate,
-		VehicleNumber:  pr.VehicleNumber,
-		DriverName:     pr.DriverName,
-		QualityCheck:   pr.QualityCheck,
-		QualityNotes:   pr.QualityNotes,
-		ReceiptNotes:   pr.ReceiptNotes,
-		SubTotal:       pr.SubTotal,
-		TaxAmount:      pr.TaxAmount,
-		TaxRate:        pr.TaxRate,
-		ShippingCost:   pr.ShippingCost,
-		DiscountAmount: pr.DiscountAmount,
-		TotalAmount:    pr.TotalAmount,
-		Currency:       pr.Currency,
-		CreatedByID:    pr.CreatedByID,
-		ApprovedByID:   pr.ApprovedByID,
-		ApprovedAt:     pr.ApprovedAt,
-		ReceivedByID:   pr.ReceivedByID,
-		VerifiedByID:   pr.VerifiedByID,
-		VerifiedAt:     pr.VerifiedAt,
-		CreatedAt:      pr.CreatedAt,
-		UpdatedAt:      pr.UpdatedAt,
+		ID:                    pr.ID,
+		ReceiptNumber:         pr.ReceiptNumber,
+		SupplierID:            pr.SupplierID,
+		Status:                pr.Status,
+		PurchaseDate:          pr.PurchaseDate,
+		SupplierBillNumber:    pr.SupplierBillNumber,
+		BillDiscountAmount:    pr.BillDiscountAmount,
+		BillDiscountPercentage: pr.BillDiscountPercentage,
+		TotalAmount:           pr.TotalAmount,
+		Notes:                 pr.Notes,
+		CreatedByID:           pr.CreatedByID,
+		CreatedAt:             pr.CreatedAt,
+		UpdatedAt:             pr.UpdatedAt,
 	}
 
 	// Convert items if available

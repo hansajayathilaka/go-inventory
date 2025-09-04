@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -346,26 +347,14 @@ func (r *purchaseReceiptRepository) UpdateStatus(ctx context.Context, id uuid.UU
 
 // Approve approves a purchase receipt
 func (r *purchaseReceiptRepository) Approve(ctx context.Context, id uuid.UUID, approvedByID uuid.UUID, approvedAt time.Time) error {
-	return r.db.WithContext(ctx).
-		Model(&models.PurchaseReceipt{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"status":        models.PurchaseReceiptStatusApproved,
-			"approved_by_id": approvedByID,
-			"approved_at":   approvedAt,
-			"updated_at":    time.Now(),
-		}).Error
+	// Method deprecated - approval workflow removed in simplified model
+	return errors.New("approval workflow no longer supported")
 }
 
 // Send marks a purchase receipt as sent to supplier
 func (r *purchaseReceiptRepository) Send(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).
-		Model(&models.PurchaseReceipt{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"status":     models.PurchaseReceiptStatusOrdered,
-			"updated_at": time.Now(),
-		}).Error
+	// Method deprecated - order status removed in simplified model
+	return errors.New("send order status no longer supported")
 }
 
 // StartReceiving marks a purchase receipt as starting to receive goods
@@ -500,20 +489,30 @@ func (r *purchaseReceiptRepository) RecalculateTotal(ctx context.Context, id uui
 		return err
 	}
 	
-	// Calculate sub total from items
-	var subTotal float64
+	// Calculate total from items
+	var itemsTotal float64
 	for _, item := range receipt.Items {
-		subTotal += item.TotalPrice - item.DiscountAmount
+		itemsTotal += item.LineTotal
 	}
 	
-	// Calculate tax amount
-	taxAmount := subTotal * (receipt.TaxRate / 100)
+	// Apply bill-level discount
+	billDiscountAmount := receipt.BillDiscountAmount
+	if receipt.BillDiscountPercentage > 0 {
+		billDiscountAmount = itemsTotal * (receipt.BillDiscountPercentage / 100)
+	}
 	
 	// Calculate final total
-	totalAmount := subTotal + taxAmount + receipt.ShippingCost - receipt.DiscountAmount
+	totalAmount := itemsTotal - billDiscountAmount
 	
-	// Update the totals
-	return r.UpdateFinancials(ctx, id, subTotal, taxAmount, receipt.ShippingCost, receipt.DiscountAmount, totalAmount)
+	// Update the purchase receipt total
+	return r.db.WithContext(ctx).
+		Model(&models.PurchaseReceipt{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"bill_discount_amount": billDiscountAmount,
+			"total_amount": totalAmount,
+			"updated_at": time.Now(),
+		}).Error
 }
 
 // GetStatsByDateRange retrieves statistics for purchase receipts in a date range
@@ -590,10 +589,7 @@ func (r *purchaseReceiptRepository) GetTopSuppliers(ctx context.Context, limit i
 func (r *purchaseReceiptRepository) GetPendingReceipts(ctx context.Context) ([]*models.PurchaseReceipt, error) {
 	var receipts []*models.PurchaseReceipt
 	err := r.db.WithContext(ctx).
-		Where("status IN (?)", []models.PurchaseReceiptStatus{
-			models.PurchaseReceiptStatusDraft,
-			models.PurchaseReceiptStatusPending,
-		}).
+		Where("status = ?", models.PurchaseReceiptStatusPending).
 		Preload("Supplier").
 		Preload("CreatedBy").
 		Order("created_at ASC").
@@ -607,7 +603,7 @@ func (r *purchaseReceiptRepository) GetOverdueReceipts(ctx context.Context) ([]*
 	yesterday := time.Now().AddDate(0, 0, -1)
 	
 	err := r.db.WithContext(ctx).
-		Where("status = ? AND expected_date < ?", models.PurchaseReceiptStatusOrdered, yesterday).
+		Where("status = ? AND purchase_date < ?", models.PurchaseReceiptStatusPending, yesterday).
 		Preload("Supplier").
 		Preload("CreatedBy").
 		Order("expected_date ASC").
