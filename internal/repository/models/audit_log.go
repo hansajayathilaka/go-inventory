@@ -23,13 +23,13 @@ type AuditLog struct {
 	AuditTable  string          `gorm:"not null;size:50;index" json:"table_name"`
 	RecordID  string          `gorm:"not null;size:100;index" json:"record_id"`
 	Action    AuditAction     `gorm:"not null;type:varchar(20);index" json:"action"`
-	OldValues json.RawMessage `gorm:"type:jsonb" json:"old_values,omitempty"`
-	NewValues json.RawMessage `gorm:"type:jsonb" json:"new_values,omitempty"`
+	OldValues json.RawMessage `gorm:"type:text" json:"old_values,omitempty"`
+	NewValues json.RawMessage `gorm:"type:text" json:"new_values,omitempty"`
 	UserID    uuid.UUID       `gorm:"type:text;not null;index" json:"user_id"`
 	User      User            `gorm:"foreignKey:UserID" json:"user"`
 	IPAddress string          `gorm:"size:45" json:"ip_address"`
 	UserAgent string          `gorm:"size:500" json:"user_agent"`
-	Timestamp time.Time       `gorm:"not null;default:current_timestamp;index" json:"timestamp"`
+	Timestamp time.Time       `gorm:"not null;default:CURRENT_TIMESTAMP;index" json:"timestamp"`
 }
 
 func (AuditLog) TableName() string {

@@ -15,7 +15,7 @@ type Inventory struct {
 	ReservedQuantity int            `gorm:"not null;default:0" json:"reserved_quantity"`
 	ReorderLevel     int            `gorm:"not null;default:0" json:"reorder_level"`
 	MaxLevel         int            `gorm:"not null;default:0" json:"max_level"`
-	LastUpdated      time.Time      `gorm:"not null;default:current_timestamp" json:"last_updated"`
+	LastUpdated      time.Time      `gorm:"not null;default:CURRENT_TIMESTAMP" json:"last_updated"`
 	CreatedAt        time.Time      `json:"created_at"`
 	UpdatedAt        time.Time      `json:"updated_at"`
 	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`

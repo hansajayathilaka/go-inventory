@@ -33,10 +33,11 @@
 - [x] Start Phase 0: SQLite Migration (CRITICAL PRIORITY) ✅ STARTED
 - [x] Task 0.1: SQLite Configuration Setup ✅ COMPLETED
 - [x] Task 0.2: GORM SQLite Migration ✅ COMPLETED
-- [ ] Task 0.3: Update Database Models for SQLite (NEXT)
+- [x] Task 0.3: Update Database Models for SQLite ✅ COMPLETED
+- [ ] Task 0.4: Create SQLite Migration Scripts (NEXT)
 
 ## Phase 0: PostgreSQL to SQLite Migration (Week 1 - CRITICAL PRIORITY)
-**Status**: 🟡 In Progress (Task 0.2 Complete - 40% Done)  
+**Status**: 🟡 In Progress (Task 0.3 Complete - 60% Done)  
 **Target Completion**: End of Week 1
 
 ### Task 0.1: SQLite Configuration Setup ✅ COMPLETED
@@ -51,11 +52,11 @@
 - [x] Update data types for SQLite compatibility
 - [x] Test GORM model relationships
 
-### Task 0.3: Update Database Models for SQLite
-- [ ] Modify all GORM tags for SQLite compatibility
-- [ ] Update primary key generation (remove gen_random_uuid())
-- [ ] Adjust constraints and indexes for SQLite syntax
-- [ ] Test model validation and relationships
+### Task 0.3: Update Database Models for SQLite ✅ COMPLETED
+- [x] Modify all GORM tags for SQLite compatibility
+- [x] Update primary key generation (remove gen_random_uuid())
+- [x] Adjust constraints and indexes for SQLite syntax
+- [x] Test model validation and relationships
 
 ### Task 0.4: Create SQLite Migration Scripts
 - [ ] Generate SQLite schema from existing models
