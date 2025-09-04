@@ -16,3 +16,9 @@ main
 *.log
 .env
 .env.local
+
+# Database files
+data/
+*.db
+*.sqlite
+*.sqlite3
