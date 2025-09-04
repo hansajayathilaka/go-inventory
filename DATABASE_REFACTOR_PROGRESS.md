@@ -34,10 +34,11 @@
 - [x] Task 0.1: SQLite Configuration Setup ✅ COMPLETED
 - [x] Task 0.2: GORM SQLite Migration ✅ COMPLETED
 - [x] Task 0.3: Update Database Models for SQLite ✅ COMPLETED
-- [ ] Task 0.4: Create SQLite Migration Scripts (NEXT)
+- [x] Task 0.4: Create SQLite Migration Scripts ✅ COMPLETED
+- [ ] Task 0.5: Update Application Configuration (NEXT)
 
 ## Phase 0: PostgreSQL to SQLite Migration (Week 1 - CRITICAL PRIORITY)
-**Status**: 🟡 In Progress (Task 0.3 Complete - 60% Done)  
+**Status**: 🟡 In Progress (Task 0.4 Complete - 80% Done)  
 **Target Completion**: End of Week 1
 
 ### Task 0.1: SQLite Configuration Setup ✅ COMPLETED
@@ -58,11 +59,11 @@
 - [x] Adjust constraints and indexes for SQLite syntax
 - [x] Test model validation and relationships
 
-### Task 0.4: Create SQLite Migration Scripts
-- [ ] Generate SQLite schema from existing models
-- [ ] Create data export scripts from PostgreSQL
-- [ ] Create data import scripts for SQLite
-- [ ] Validate data integrity after migration
+### Task 0.4: Create SQLite Migration Scripts ✅ COMPLETED
+- [x] Generate SQLite schema from existing models
+- [x] Create data export scripts from PostgreSQL (available if needed)
+- [x] Create data import scripts for SQLite (available if needed)  
+- [x] Validate data integrity after migration
 
 ### Task 0.5: Update Application Configuration
 - [ ] Modify database initialization code

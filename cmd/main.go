@@ -39,10 +39,19 @@ func main() {
 
 	fmt.Println("Inventory Management API")
 	fmt.Println("=======================")
-	fmt.Printf("Database: Connected to %s:%d/%s\n",
-		appCtx.Config.Database.Host,
-		appCtx.Config.Database.Port,
-		appCtx.Config.Database.DBName)
+	
+	// Display database connection info based on type
+	switch appCtx.Config.Database.Type {
+	case "sqlite", "":
+		fmt.Printf("Database: Connected to SQLite (%s)\n", appCtx.Config.Database.Path)
+	case "postgres":
+		fmt.Printf("Database: Connected to %s:%d/%s\n",
+			appCtx.Config.Database.Host,
+			appCtx.Config.Database.Port,
+			appCtx.Config.Database.DBName)
+	default:
+		fmt.Printf("Database: Connected to %s\n", appCtx.Config.Database.Type)
+	}
 
 	// Check for seed flag
 	if len(os.Args) > 1 && os.Args[1] == "--seed" {
