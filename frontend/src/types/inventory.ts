@@ -160,49 +160,6 @@ export type StockMovementType =
   | 'transfer'
   | 'return';
 
-// Vehicle-related types
-export interface VehicleBrand {
-  id: number;
-  name: string;
-  country?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  
-  // Relationships
-  models?: VehicleModel[];
-}
-
-export interface VehicleModel {
-  id: number;
-  name: string;
-  vehicle_brand_id: number;
-  year_from?: number;
-  year_to?: number;
-  engine_types?: string[];
-  fuel_types?: string[];
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  
-  // Relationships
-  vehicle_brand: VehicleBrand;
-  compatibilities?: VehicleCompatibility[];
-}
-
-export interface VehicleCompatibility {
-  id: number;
-  product_id: number;
-  vehicle_model_id: number;
-  notes?: string;
-  verified: boolean;
-  created_at: string;
-  updated_at: string;
-  
-  // Relationships
-  product: Product;
-  vehicle_model: VehicleModel;
-}
 
 // Form types
 export interface ProductFormData {

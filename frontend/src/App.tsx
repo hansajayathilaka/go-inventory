@@ -6,7 +6,6 @@ import { Products } from './pages/Products';
 import { PurchaseReceipts } from './pages/PurchaseReceipts';
 import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
-import { Vehicles } from './pages/Vehicles';
 import { Users } from './pages/Users';
 import { Login } from './pages/Login';
 import { QueryProvider } from './providers/QueryProvider';
@@ -29,7 +28,6 @@ function AuthenticatedApp() {
           <Route path="/purchase-receipts" element={<PurchaseReceipts />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/customers" element={<Customers />} />
-          <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/users" element={<Users />} />
         </Route>
         <Route path="/login" element={<Login />} />

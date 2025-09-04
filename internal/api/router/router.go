@@ -69,9 +69,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		)
 		customerHandler := handlers.NewCustomerHandler(appCtx.CustomerService)
 		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)
-		vehicleBrandHandler := handlers.NewVehicleBrandHandler(appCtx.VehicleService)
-		vehicleModelHandler := handlers.NewVehicleModelHandler(appCtx.VehicleService)
-		vehicleCompatibilityHandler := handlers.NewVehicleCompatibilityHandler(appCtx.CompatibilityService)
 		// Legacy handlers removed - replaced by unified PurchaseReceiptHandler
 		purchaseReceiptHandler := handlers.NewPurchaseReceiptHandler(appCtx.PurchaseReceiptService)
 
@@ -139,79 +136,6 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			brands.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), brandHandler.DeactivateBrand)
 		}
 
-		// Vehicle Brand management routes (protected)
-		vehicleBrands := v1.Group("/vehicle-brands")
-		vehicleBrands.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			vehicleBrands.GET("", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.GetVehicleBrands)
-			vehicleBrands.POST("", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.CreateVehicleBrand)
-			vehicleBrands.GET("/active", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.GetActiveVehicleBrands)
-			vehicleBrands.GET("/with-models", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.ListVehicleBrandsWithModels)
-			vehicleBrands.GET("/generate-code", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.GenerateVehicleBrandCode)
-			vehicleBrands.GET("/code/:code", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.GetVehicleBrandByCode)
-			vehicleBrands.GET("/:id", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.GetVehicleBrand)
-			vehicleBrands.GET("/:id/with-models", middleware.RequireMinimumRole("viewer"), vehicleBrandHandler.GetVehicleBrandWithModels)
-			vehicleBrands.PUT("/:id", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.UpdateVehicleBrand)
-			vehicleBrands.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleBrandHandler.DeleteVehicleBrand)
-			vehicleBrands.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.ActivateVehicleBrand)
-			vehicleBrands.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleBrandHandler.DeactivateVehicleBrand)
-		}
-
-		// Vehicle Model management routes (protected)
-		vehicleModels := v1.Group("/vehicle-models")
-		vehicleModels.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			vehicleModels.GET("", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModels)
-			vehicleModels.POST("", middleware.RequireMinimumRole("staff"), vehicleModelHandler.CreateVehicleModel)
-			vehicleModels.GET("/active", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetActiveVehicleModels)
-			vehicleModels.GET("/generate-code", middleware.RequireMinimumRole("staff"), vehicleModelHandler.GenerateVehicleModelCode)
-			vehicleModels.GET("/code/:code", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModelByCode)
-			vehicleModels.GET("/brand/:brand_id", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModelsByBrand)
-			vehicleModels.GET("/:id", middleware.RequireMinimumRole("viewer"), vehicleModelHandler.GetVehicleModel)
-			vehicleModels.PUT("/:id", middleware.RequireMinimumRole("staff"), vehicleModelHandler.UpdateVehicleModel)
-			vehicleModels.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleModelHandler.DeleteVehicleModel)
-			vehicleModels.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.ActivateVehicleModel)
-			vehicleModels.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleModelHandler.DeactivateVehicleModel)
-		}
-
-		// Vehicle Compatibility management routes (protected)
-		vehicleCompatibilities := v1.Group("/vehicle-compatibilities")
-		vehicleCompatibilities.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			// Basic CRUD operations
-			vehicleCompatibilities.GET("", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibilities)
-			vehicleCompatibilities.POST("", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.CreateCompatibility)
-			vehicleCompatibilities.GET("/:id", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibility)
-			vehicleCompatibilities.PUT("/:id", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.UpdateCompatibility)
-			vehicleCompatibilities.DELETE("/:id", middleware.RequireMinimumRole("manager"), vehicleCompatibilityHandler.DeleteCompatibility)
-			
-			// Verification management
-			vehicleCompatibilities.POST("/:id/verify", middleware.RequireMinimumRole("manager"), vehicleCompatibilityHandler.VerifyCompatibility)
-			vehicleCompatibilities.POST("/:id/unverify", middleware.RequireMinimumRole("manager"), vehicleCompatibilityHandler.UnverifyCompatibility)
-			
-			// Status management
-			vehicleCompatibilities.POST("/:id/activate", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.ActivateCompatibility)
-			vehicleCompatibilities.POST("/:id/deactivate", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.DeactivateCompatibility)
-			
-			// Listing by status
-			vehicleCompatibilities.GET("/active", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetActiveCompatibilities)
-			vehicleCompatibilities.GET("/verified", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetVerifiedCompatibilities)
-			vehicleCompatibilities.GET("/unverified", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetUnverifiedCompatibilities)
-			
-			// Advanced search operations
-			vehicleCompatibilities.GET("/compatible-products", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibleProducts)
-			vehicleCompatibilities.GET("/compatible-vehicles", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibleVehicles)
-			
-			// Bulk operations
-			vehicleCompatibilities.POST("/bulk", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.BulkCreateCompatibilities)
-			vehicleCompatibilities.POST("/bulk/verify", middleware.RequireMinimumRole("manager"), vehicleCompatibilityHandler.BulkVerifyCompatibilities)
-			vehicleCompatibilities.POST("/bulk/unverify", middleware.RequireMinimumRole("manager"), vehicleCompatibilityHandler.BulkUnverifyCompatibilities)
-			vehicleCompatibilities.POST("/bulk/activate", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.BulkActivateCompatibilities)
-			vehicleCompatibilities.POST("/bulk/deactivate", middleware.RequireMinimumRole("staff"), vehicleCompatibilityHandler.BulkDeactivateCompatibilities)
-			
-			// Statistics
-			vehicleCompatibilities.GET("/stats", middleware.RequireMinimumRole("viewer"), vehicleCompatibilityHandler.GetCompatibilityStats)
-		}
 
 		// Legacy Purchase Order and GRN routes removed
 		// Replaced by unified Purchase Receipt system (/purchase-receipts)

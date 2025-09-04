@@ -40,20 +40,8 @@ func (ctx *Context) SeedDatabase() error {
 		return fmt.Errorf("failed to seed brands: %w", err)
 	}
 	
-	if err := ctx.seedVehicleBrands(context); err != nil {
-		return fmt.Errorf("failed to seed vehicle brands: %w", err)
-	}
-	
-	if err := ctx.seedVehicleModels(context); err != nil {
-		return fmt.Errorf("failed to seed vehicle models: %w", err)
-	}
-	
 	if err := ctx.seedCustomers(context); err != nil {
 		return fmt.Errorf("failed to seed customers: %w", err)
-	}
-	
-	if err := ctx.seedVehicleCompatibility(context); err != nil {
-		return fmt.Errorf("failed to seed vehicle compatibility: %w", err)
 	}
 	
 	if err := ctx.seedPurchaseReceipts(context); err != nil {
@@ -263,106 +251,6 @@ func (ctx *Context) seedBrands(ctxBg context.Context) error {
 	return nil
 }
 
-func (ctx *Context) seedVehicleBrands(ctxBg context.Context) error {
-	// Check if vehicle brands already exist
-	if count, _ := ctx.VehicleBrandRepo.Count(ctxBg); count > 0 {
-		log.Println("Vehicle brands already exist, skipping vehicle brand seeding")
-		return nil
-	}
-	
-	vehicleBrands := []models.VehicleBrand{
-		{Name: "Toyota", Code: "TOY", CountryCode: "JP", Description: "Japanese automotive manufacturer founded 1937"},
-		{Name: "Honda", Code: "HON", CountryCode: "JP", Description: "Japanese automotive manufacturer founded 1948"},
-		{Name: "Nissan", Code: "NIS", CountryCode: "JP", Description: "Japanese automotive manufacturer founded 1933"},
-		{Name: "Mazda", Code: "MAZ", CountryCode: "JP", Description: "Japanese automotive manufacturer founded 1920"},
-		{Name: "Subaru", Code: "SUB", CountryCode: "JP", Description: "Japanese automotive manufacturer founded 1953"},
-		{Name: "Ford", Code: "FOR", CountryCode: "US", Description: "American automotive manufacturer founded 1903"},
-		{Name: "Chevrolet", Code: "CHV", CountryCode: "US", Description: "American automotive manufacturer founded 1911"},
-		{Name: "BMW", Code: "BMW", CountryCode: "DE", Description: "German automotive manufacturer founded 1916"},
-		{Name: "Mercedes-Benz", Code: "MBZ", CountryCode: "DE", Description: "German automotive manufacturer founded 1926"},
-		{Name: "Audi", Code: "AUD", CountryCode: "DE", Description: "German automotive manufacturer founded 1909"},
-		{Name: "Volkswagen", Code: "VWG", CountryCode: "DE", Description: "German automotive manufacturer founded 1937"},
-		{Name: "Hyundai", Code: "HYU", CountryCode: "KR", Description: "South Korean automotive manufacturer founded 1967"},
-		{Name: "Kia", Code: "KIA", CountryCode: "KR", Description: "South Korean automotive manufacturer founded 1944"},
-	}
-	
-	for _, vehicleBrand := range vehicleBrands {
-		if err := ctx.VehicleBrandRepo.Create(ctxBg, &vehicleBrand); err != nil {
-			return fmt.Errorf("failed to create vehicle brand %s: %w", vehicleBrand.Name, err)
-		}
-		log.Printf("Created vehicle brand: %s (%s)", vehicleBrand.Name, vehicleBrand.CountryCode)
-	}
-	
-	return nil
-}
-
-func (ctx *Context) seedVehicleModels(ctxBg context.Context) error {
-	// Check if vehicle models already exist
-	if count, _ := ctx.VehicleModelRepo.Count(ctxBg); count > 0 {
-		log.Println("Vehicle models already exist, skipping vehicle model seeding")
-		return nil
-	}
-	
-	// Get vehicle brands for models
-	toyota, err := ctx.VehicleBrandRepo.GetByName(ctxBg, "Toyota")
-	if err != nil {
-		return fmt.Errorf("failed to get Toyota brand: %w", err)
-	}
-	
-	honda, err := ctx.VehicleBrandRepo.GetByName(ctxBg, "Honda")
-	if err != nil {
-		return fmt.Errorf("failed to get Honda brand: %w", err)
-	}
-	
-	nissan, err := ctx.VehicleBrandRepo.GetByName(ctxBg, "Nissan")
-	if err != nil {
-		return fmt.Errorf("failed to get Nissan brand: %w", err)
-	}
-	
-	ford, err := ctx.VehicleBrandRepo.GetByName(ctxBg, "Ford")
-	if err != nil {
-		return fmt.Errorf("failed to get Ford brand: %w", err)
-	}
-	
-	vehicleModels := []models.VehicleModel{
-		// Toyota models
-		{Name: "Camry", Code: "TOY-CAM", VehicleBrandID: toyota.ID, Description: "Mid-size sedan", YearFrom: 1982, YearTo: 0, EngineSize: "2.5L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Corolla", Code: "TOY-COR", VehicleBrandID: toyota.ID, Description: "Compact car", YearFrom: 1966, YearTo: 0, EngineSize: "1.8L", FuelType: "Gasoline", Transmission: "Manual/Auto"},
-		{Name: "RAV4", Code: "TOY-RAV", VehicleBrandID: toyota.ID, Description: "Compact SUV", YearFrom: 1994, YearTo: 0, EngineSize: "2.5L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Prius", Code: "TOY-PRI", VehicleBrandID: toyota.ID, Description: "Hybrid sedan", YearFrom: 1997, YearTo: 0, EngineSize: "1.8L", FuelType: "Hybrid", Transmission: "CVT"},
-		{Name: "Highlander", Code: "TOY-HIG", VehicleBrandID: toyota.ID, Description: "Mid-size SUV", YearFrom: 2001, YearTo: 0, EngineSize: "3.5L", FuelType: "Gasoline", Transmission: "Automatic"},
-		
-		// Honda models
-		{Name: "Civic", Code: "HON-CIV", VehicleBrandID: honda.ID, Description: "Compact car", YearFrom: 1972, YearTo: 0, EngineSize: "1.5L", FuelType: "Gasoline", Transmission: "Manual/Auto"},
-		{Name: "Accord", Code: "HON-ACC", VehicleBrandID: honda.ID, Description: "Mid-size sedan", YearFrom: 1976, YearTo: 0, EngineSize: "2.0L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "CR-V", Code: "HON-CRV", VehicleBrandID: honda.ID, Description: "Compact SUV", YearFrom: 1995, YearTo: 0, EngineSize: "1.5L", FuelType: "Gasoline", Transmission: "CVT"},
-		{Name: "Pilot", Code: "HON-PIL", VehicleBrandID: honda.ID, Description: "Mid-size SUV", YearFrom: 2002, YearTo: 0, EngineSize: "3.5L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Fit", Code: "HON-FIT", VehicleBrandID: honda.ID, Description: "Subcompact car", YearFrom: 2001, YearTo: 2020, EngineSize: "1.5L", FuelType: "Gasoline", Transmission: "Manual/CVT"},
-		
-		// Nissan models
-		{Name: "Altima", Code: "NIS-ALT", VehicleBrandID: nissan.ID, Description: "Mid-size sedan", YearFrom: 1992, YearTo: 0, EngineSize: "2.5L", FuelType: "Gasoline", Transmission: "CVT"},
-		{Name: "Sentra", Code: "NIS-SEN", VehicleBrandID: nissan.ID, Description: "Compact sedan", YearFrom: 1982, YearTo: 0, EngineSize: "1.6L", FuelType: "Gasoline", Transmission: "Manual/CVT"},
-		{Name: "Rogue", Code: "NIS-ROG", VehicleBrandID: nissan.ID, Description: "Compact SUV", YearFrom: 2007, YearTo: 0, EngineSize: "2.5L", FuelType: "Gasoline", Transmission: "CVT"},
-		{Name: "Pathfinder", Code: "NIS-PAT", VehicleBrandID: nissan.ID, Description: "Mid-size SUV", YearFrom: 1985, YearTo: 0, EngineSize: "3.5L", FuelType: "Gasoline", Transmission: "CVT"},
-		{Name: "370Z", Code: "NIS-370", VehicleBrandID: nissan.ID, Description: "Sports car", YearFrom: 2009, YearTo: 2020, EngineSize: "3.7L", FuelType: "Gasoline", Transmission: "Manual/Auto"},
-		
-		// Ford models
-		{Name: "F-150", Code: "FOR-F15", VehicleBrandID: ford.ID, Description: "Full-size pickup truck", YearFrom: 1948, YearTo: 0, EngineSize: "5.0L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Mustang", Code: "FOR-MUS", VehicleBrandID: ford.ID, Description: "Sports car", YearFrom: 1964, YearTo: 0, EngineSize: "5.0L", FuelType: "Gasoline", Transmission: "Manual/Auto"},
-		{Name: "Explorer", Code: "FOR-EXP", VehicleBrandID: ford.ID, Description: "Mid-size SUV", YearFrom: 1990, YearTo: 0, EngineSize: "3.0L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Fusion", Code: "FOR-FUS", VehicleBrandID: ford.ID, Description: "Mid-size sedan", YearFrom: 2005, YearTo: 2020, EngineSize: "2.5L", FuelType: "Gasoline", Transmission: "Automatic"},
-		{Name: "Escape", Code: "FOR-ESC", VehicleBrandID: ford.ID, Description: "Compact SUV", YearFrom: 2000, YearTo: 0, EngineSize: "2.0L", FuelType: "Gasoline", Transmission: "Automatic"},
-	}
-	
-	for _, vehicleModel := range vehicleModels {
-		if err := ctx.VehicleModelRepo.Create(ctxBg, &vehicleModel); err != nil {
-			return fmt.Errorf("failed to create vehicle model %s: %w", vehicleModel.Name, err)
-		}
-		log.Printf("Created vehicle model: %s (%s)", vehicleModel.Name, vehicleModel.Description)
-	}
-	
-	return nil
-}
 
 func (ctx *Context) seedCustomers(ctxBg context.Context) error {
 	// Check if customers already exist
@@ -446,94 +334,6 @@ func (ctx *Context) seedCustomers(ctxBg context.Context) error {
 	return nil
 }
 
-func (ctx *Context) seedVehicleCompatibility(ctxBg context.Context) error {
-	// Check if vehicle compatibility already exists
-	if count, _ := ctx.VehicleCompatibilityRepo.Count(ctxBg); count > 0 {
-		log.Println("Vehicle compatibility already exists, skipping vehicle compatibility seeding")
-		return nil
-	}
-	
-	// Get some products and vehicle models for compatibility mapping
-	products, err := ctx.ProductRepo.List(ctxBg, 10, 0)
-	if err != nil {
-		return fmt.Errorf("failed to get products: %w", err)
-	}
-	
-	vehicleModels, err := ctx.VehicleModelRepo.List(ctxBg, 10, 0)
-	if err != nil {
-		return fmt.Errorf("failed to get vehicle models: %w", err)
-	}
-	
-	if len(products) == 0 || len(vehicleModels) == 0 {
-		log.Println("No products or vehicle models found, skipping vehicle compatibility seeding")
-		return nil
-	}
-	
-	// Create sample compatibility mappings based on available data
-	// In a real system, this would be much more comprehensive
-	var compatibilities []models.VehicleCompatibility
-	
-	// Only create compatibilities if we have enough products and vehicle models
-	if len(products) >= 1 && len(vehicleModels) >= 1 {
-		compatibilities = append(compatibilities, models.VehicleCompatibility{
-			ProductID:      products[0].ID,
-			VehicleModelID: vehicleModels[0].ID,
-			YearFrom:       2018,
-			YearTo:         0, // Current (0 means no end year)
-			Notes:          "Direct fit replacement part",
-		})
-	}
-	
-	// Add more compatibilities if we have enough data
-	if len(products) >= 1 && len(vehicleModels) >= 2 {
-		compatibilities = append(compatibilities, models.VehicleCompatibility{
-			ProductID:      products[0].ID,
-			VehicleModelID: vehicleModels[1].ID,
-			YearFrom:       2016,
-			YearTo:         0,
-			Notes:          "Compatible with standard trim",
-		})
-	}
-	
-	if len(products) >= 1 && len(vehicleModels) >= 3 {
-		compatibilities = append(compatibilities, models.VehicleCompatibility{
-			ProductID:      products[0].ID,
-			VehicleModelID: vehicleModels[2].ID,
-			YearFrom:       2015,
-			YearTo:         2022,
-			Notes:          "Compatible with specific engine configurations",
-		})
-	}
-	
-	if len(products) >= 2 && len(vehicleModels) >= 4 {
-		compatibilities = append(compatibilities, models.VehicleCompatibility{
-			ProductID:      products[1].ID,
-			VehicleModelID: vehicleModels[3].ID,
-			YearFrom:       2019,
-			YearTo:         0,
-			Notes:          "OEM specification part",
-		})
-	}
-	
-	if len(products) >= 2 && len(vehicleModels) >= 5 {
-		compatibilities = append(compatibilities, models.VehicleCompatibility{
-			ProductID:      products[1].ID,
-			VehicleModelID: vehicleModels[4].ID,
-			YearFrom:       2017,
-			YearTo:         0,
-			Notes:          "Performance upgrade option",
-		})
-	}
-	
-	for _, compatibility := range compatibilities {
-		if err := ctx.VehicleCompatibilityRepo.Create(ctxBg, &compatibility); err != nil {
-			return fmt.Errorf("failed to create vehicle compatibility: %w", err)
-		}
-		log.Printf("Created vehicle compatibility mapping for product ID %s", compatibility.ProductID.String())
-	}
-	
-	return nil
-}
 
 func (ctx *Context) seedPurchaseReceipts(ctxBg context.Context) error {
 	// Check if purchase receipts already exist by trying to list some

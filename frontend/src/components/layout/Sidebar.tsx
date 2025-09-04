@@ -8,7 +8,6 @@ import {
   ShoppingCart, 
   Users, 
   Building2, 
-  Car,
   UserCog,
   LogOut,
   User
@@ -43,11 +42,6 @@ const navigation = [
     name: 'Customers',
     href: '/customers',
     icon: Users,
-  },
-  {
-    name: 'Vehicles',
-    href: '/vehicles',
-    icon: Car,
   },
   {
     name: 'Users',

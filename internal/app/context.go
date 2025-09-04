@@ -5,7 +5,6 @@ import (
 
 	"inventory-api/internal/business/audit"
 	"inventory-api/internal/business/brand"
-	"inventory-api/internal/business/compatibility"
 	"inventory-api/internal/business/customer"
 	"inventory-api/internal/business/hierarchy"
 	"inventory-api/internal/business/inventory"
@@ -13,7 +12,6 @@ import (
 	"inventory-api/internal/business/purchase_receipt"
 	"inventory-api/internal/business/supplier"
 	"inventory-api/internal/business/user"
-	"inventory-api/internal/business/vehicle"
 	"inventory-api/internal/config"
 	"inventory-api/internal/repository"
 	"inventory-api/internal/repository/interfaces"
@@ -33,23 +31,18 @@ type Context struct {
 	AuditLogRepo              interfaces.AuditLogRepository
 	CustomerRepo              interfaces.CustomerRepository
 	BrandRepo                 interfaces.BrandRepository
-	VehicleBrandRepo          interfaces.VehicleBrandRepository
-	VehicleModelRepo          interfaces.VehicleModelRepository
 	PurchaseReceiptRepo       interfaces.PurchaseReceiptRepository
-	VehicleCompatibilityRepo  interfaces.VehicleCompatibilityRepository
 
 	// Services
 	UserService           user.Service
 	SupplierService       supplier.Service
 	CustomerService       customer.Service
 	BrandService          brand.Service
-	VehicleService        vehicle.Service
 	PurchaseReceiptService purchase_receipt.Service
 	ProductService        product.Service
 	HierarchyService      hierarchy.Service
 	InventoryService      inventory.Service
 	AuditService          audit.Service
-	CompatibilityService  compatibility.Service
 }
 
 func NewContext() (*Context, error) {
@@ -96,10 +89,7 @@ func (ctx *Context) initRepositories() {
 	ctx.AuditLogRepo = repository.NewAuditLogRepository(ctx.Database.DB)
 	ctx.CustomerRepo = repository.NewCustomerRepository(ctx.Database.DB)
 	ctx.BrandRepo = repository.NewBrandRepository(ctx.Database.DB)
-	ctx.VehicleBrandRepo = repository.NewVehicleBrandRepository(ctx.Database.DB)
-	ctx.VehicleModelRepo = repository.NewVehicleModelRepository(ctx.Database.DB)
 	ctx.PurchaseReceiptRepo = repository.NewPurchaseReceiptRepository(ctx.Database.DB)
-	ctx.VehicleCompatibilityRepo = repository.NewVehicleCompatibilityRepository(ctx.Database.DB)
 }
 
 func (ctx *Context) initServices() {
@@ -107,7 +97,6 @@ func (ctx *Context) initServices() {
 	ctx.SupplierService = supplier.NewService(ctx.SupplierRepo)
 	ctx.CustomerService = customer.NewService(ctx.CustomerRepo)
 	ctx.BrandService = brand.NewService(ctx.BrandRepo)
-	ctx.VehicleService = vehicle.NewService(ctx.VehicleBrandRepo, ctx.VehicleModelRepo)
 	ctx.PurchaseReceiptService = purchase_receipt.NewService(
 		ctx.PurchaseReceiptRepo,
 		ctx.SupplierRepo,
@@ -127,11 +116,6 @@ func (ctx *Context) initServices() {
 		ctx.ProductRepo,
 	)
 	ctx.AuditService = audit.NewService(ctx.AuditLogRepo, ctx.UserRepo)
-	ctx.CompatibilityService = compatibility.NewService(
-		ctx.VehicleCompatibilityRepo,
-		ctx.ProductRepo,
-		ctx.VehicleModelRepo,
-	)
 }
 
 func (ctx *Context) Close() error {

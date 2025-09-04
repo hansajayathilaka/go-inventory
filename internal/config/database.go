@@ -86,11 +86,8 @@ func (db *Database) AutoMigrate() error {
 		&models.AuditLog{},
 		&models.Customer{},
 		&models.Brand{},
-		&models.VehicleBrand{},
-		&models.VehicleModel{},
 		&models.PurchaseReceipt{},
 		&models.PurchaseReceiptItem{},
-		&models.VehicleCompatibility{},
 	)
 	if err != nil {
 		return err
