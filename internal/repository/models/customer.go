@@ -8,7 +8,7 @@ import (
 )
 
 type Customer struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Name        string         `gorm:"not null;size:100" json:"name"`
 	Code        string         `gorm:"uniqueIndex;not null;size:20" json:"code"`
 	Email       string         `gorm:"size:100" json:"email"`
@@ -19,7 +19,7 @@ type Customer struct {
 	PostalCode  string         `gorm:"size:20" json:"postal_code"`
 	Country     string         `gorm:"size:100;default:'Malaysia'" json:"country"`
 	TaxNumber   string         `gorm:"size:50" json:"tax_number"`
-	CreditLimit float64        `gorm:"type:decimal(15,2);default:0.00" json:"credit_limit"`
+	CreditLimit float64        `gorm:"type:real;default:0.00" json:"credit_limit"`
 	Notes       string         `gorm:"size:1000" json:"notes"`
 	IsActive    bool           `gorm:"not null;default:true" json:"is_active"`
 	CreatedAt   time.Time      `json:"created_at"`
@@ -29,4 +29,11 @@ type Customer struct {
 
 func (Customer) TableName() string {
 	return "customers"
+}
+
+func (c *Customer) BeforeCreate(tx *gorm.DB) error {
+	if c.ID == uuid.Nil {
+		c.ID = uuid.New()
+	}
+	return nil
 }

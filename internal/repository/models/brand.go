@@ -8,7 +8,7 @@ import (
 )
 
 type Brand struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Name        string         `gorm:"not null;size:100" json:"name"`
 	Code        string         `gorm:"uniqueIndex;not null;size:20" json:"code"`
 	Description string         `gorm:"size:500" json:"description"`
@@ -23,4 +23,11 @@ type Brand struct {
 
 func (Brand) TableName() string {
 	return "brands"
+}
+
+func (b *Brand) BeforeCreate(tx *gorm.DB) error {
+	if b.ID == uuid.Nil {
+		b.ID = uuid.New()
+	}
+	return nil
 }

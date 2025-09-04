@@ -8,9 +8,9 @@ import (
 )
 
 type VehicleCompatibility struct {
-	ID             uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	ProductID      uuid.UUID      `gorm:"type:uuid;not null;index" json:"product_id"`
-	VehicleModelID uuid.UUID      `gorm:"type:uuid;not null;index" json:"vehicle_model_id"`
+	ID             uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
+	ProductID      uuid.UUID      `gorm:"type:text;not null;index" json:"product_id"`
+	VehicleModelID uuid.UUID      `gorm:"type:text;not null;index" json:"vehicle_model_id"`
 	YearFrom       int            `json:"year_from"`
 	YearTo         int            `json:"year_to"`
 	Notes          string         `gorm:"size:500" json:"notes"`
@@ -27,4 +27,11 @@ type VehicleCompatibility struct {
 
 func (VehicleCompatibility) TableName() string {
 	return "vehicle_compatibilities"
+}
+
+func (vc *VehicleCompatibility) BeforeCreate(tx *gorm.DB) error {
+	if vc.ID == uuid.Nil {
+		vc.ID = uuid.New()
+	}
+	return nil
 }

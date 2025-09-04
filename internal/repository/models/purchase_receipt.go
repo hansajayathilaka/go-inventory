@@ -28,9 +28,9 @@ const (
 // PurchaseReceipt combines purchase order and goods receipt functionality
 // into a single unified model for simplified purchase workflow
 type PurchaseReceipt struct {
-	ID                uuid.UUID              `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID                uuid.UUID              `gorm:"type:text;primaryKey" json:"id"`
 	ReceiptNumber     string                 `gorm:"uniqueIndex;not null;size:50" json:"receipt_number"`
-	SupplierID        uuid.UUID              `gorm:"type:uuid;not null;index" json:"supplier_id"`
+	SupplierID        uuid.UUID              `gorm:"type:text;not null;index" json:"supplier_id"`
 	Supplier          Supplier               `gorm:"foreignKey:SupplierID" json:"supplier"`
 	Status            PurchaseReceiptStatus  `gorm:"type:varchar(20);not null;default:'draft'" json:"status"`
 	
@@ -54,23 +54,23 @@ type PurchaseReceipt struct {
 	ReceiptNotes      string                 `gorm:"size:1000" json:"receipt_notes"`
 	
 	// Financial Information
-	SubTotal          float64                `gorm:"type:decimal(15,2);not null;default:0.00" json:"sub_total"`
-	TaxAmount         float64                `gorm:"type:decimal(15,2);not null;default:0.00" json:"tax_amount"`
-	TaxRate           float64                `gorm:"type:decimal(5,2);not null;default:0.00" json:"tax_rate"`
-	ShippingCost      float64                `gorm:"type:decimal(10,2);not null;default:0.00" json:"shipping_cost"`
-	DiscountAmount    float64                `gorm:"type:decimal(10,2);not null;default:0.00" json:"discount_amount"`
-	TotalAmount       float64                `gorm:"type:decimal(15,2);not null;default:0.00" json:"total_amount"`
+	SubTotal          float64                `gorm:"type:real;not null;default:0.00" json:"sub_total"`
+	TaxAmount         float64                `gorm:"type:real;not null;default:0.00" json:"tax_amount"`
+	TaxRate           float64                `gorm:"type:real;not null;default:0.00" json:"tax_rate"`
+	ShippingCost      float64                `gorm:"type:real;not null;default:0.00" json:"shipping_cost"`
+	DiscountAmount    float64                `gorm:"type:real;not null;default:0.00" json:"discount_amount"`
+	TotalAmount       float64                `gorm:"type:real;not null;default:0.00" json:"total_amount"`
 	Currency          string                 `gorm:"size:3;not null;default:'MYR'" json:"currency"`
 	
 	// User Tracking
-	CreatedByID       uuid.UUID              `gorm:"type:uuid;not null;index" json:"created_by_id"`
+	CreatedByID       uuid.UUID              `gorm:"type:text;not null;index" json:"created_by_id"`
 	CreatedBy         User                   `gorm:"foreignKey:CreatedByID" json:"created_by"`
-	ApprovedByID      *uuid.UUID             `gorm:"type:uuid;index" json:"approved_by_id,omitempty"`
+	ApprovedByID      *uuid.UUID             `gorm:"type:text;index" json:"approved_by_id,omitempty"`
 	ApprovedBy        *User                  `gorm:"foreignKey:ApprovedByID" json:"approved_by,omitempty"`
 	ApprovedAt        *time.Time             `json:"approved_at,omitempty"`
-	ReceivedByID      *uuid.UUID             `gorm:"type:uuid;index" json:"received_by_id,omitempty"`
+	ReceivedByID      *uuid.UUID             `gorm:"type:text;index" json:"received_by_id,omitempty"`
 	ReceivedBy        *User                  `gorm:"foreignKey:ReceivedByID" json:"received_by,omitempty"`
-	VerifiedByID      *uuid.UUID             `gorm:"type:uuid;index" json:"verified_by_id,omitempty"`
+	VerifiedByID      *uuid.UUID             `gorm:"type:text;index" json:"verified_by_id,omitempty"` 
 	VerifiedBy        *User                  `gorm:"foreignKey:VerifiedByID" json:"verified_by,omitempty"`
 	VerifiedAt        *time.Time             `json:"verified_at,omitempty"`
 	
@@ -87,20 +87,27 @@ func (PurchaseReceipt) TableName() string {
 	return "purchase_receipts"
 }
 
+func (pr *PurchaseReceipt) BeforeCreate(tx *gorm.DB) error {
+	if pr.ID == uuid.Nil {
+		pr.ID = uuid.New()
+	}
+	return nil
+}
+
 // PurchaseReceiptItem combines purchase order item and GRN item functionality
 type PurchaseReceiptItem struct {
-	ID                  uuid.UUID        `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	PurchaseReceiptID   uuid.UUID        `gorm:"type:uuid;not null;index" json:"purchase_receipt_id"`
+	ID                  uuid.UUID        `gorm:"type:text;primaryKey" json:"id"`
+	PurchaseReceiptID   uuid.UUID        `gorm:"type:text;not null;index" json:"purchase_receipt_id"`
 	PurchaseReceipt     PurchaseReceipt  `gorm:"foreignKey:PurchaseReceiptID" json:"-"`
-	ProductID           uuid.UUID        `gorm:"type:uuid;not null;index" json:"product_id"`
+	ProductID           uuid.UUID        `gorm:"type:text;not null;index" json:"product_id"`
 	Product             Product          `gorm:"foreignKey:ProductID" json:"product"`
 	
 	// Order Information
 	OrderedQuantity     int              `gorm:"not null;default:0" json:"ordered_quantity"`
-	UnitPrice           float64          `gorm:"type:decimal(10,2);not null;default:0.00" json:"unit_price"`
-	TotalPrice          float64          `gorm:"type:decimal(15,2);not null;default:0.00" json:"total_price"`
-	DiscountAmount      float64          `gorm:"type:decimal(10,2);not null;default:0.00" json:"discount_amount"`
-	TaxAmount           float64          `gorm:"type:decimal(10,2);not null;default:0.00" json:"tax_amount"`
+	UnitPrice           float64          `gorm:"type:real;not null;default:0.00" json:"unit_price"`
+	TotalPrice          float64          `gorm:"type:real;not null;default:0.00" json:"total_price"`
+	DiscountAmount      float64          `gorm:"type:real;not null;default:0.00" json:"discount_amount"`
+	TaxAmount           float64          `gorm:"type:real;not null;default:0.00" json:"tax_amount"`
 	OrderNotes          string           `gorm:"size:500" json:"order_notes"`
 	
 	// Receipt Information (populated during goods receipt)
@@ -124,6 +131,13 @@ type PurchaseReceiptItem struct {
 
 func (PurchaseReceiptItem) TableName() string {
 	return "purchase_receipt_items"
+}
+
+func (pri *PurchaseReceiptItem) BeforeCreate(tx *gorm.DB) error {
+	if pri.ID == uuid.Nil {
+		pri.ID = uuid.New()
+	}
+	return nil
 }
 
 // IsInOrderPhase returns true if the purchase receipt is in the order phase

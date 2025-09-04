@@ -8,7 +8,7 @@ import (
 )
 
 type Supplier struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Name        string         `gorm:"not null;size:100" json:"name"`
 	Code        string         `gorm:"uniqueIndex;not null;size:20" json:"code"`
 	Email       string         `gorm:"size:100" json:"email"`
@@ -26,4 +26,11 @@ type Supplier struct {
 
 func (Supplier) TableName() string {
 	return "suppliers"
+}
+
+func (s *Supplier) BeforeCreate(tx *gorm.DB) error {
+	if s.ID == uuid.Nil {
+		s.ID = uuid.New()
+	}
+	return nil
 }

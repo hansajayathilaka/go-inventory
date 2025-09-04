@@ -101,7 +101,7 @@ func (r *categoryRepository) Search(ctx context.Context, query string) ([]*model
 	var categories []*models.Category
 	searchTerm := "%" + query + "%"
 	err := r.db.WithContext(ctx).
-		Where("name ILIKE ? OR description ILIKE ?", searchTerm, searchTerm).
+		Where("name LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE", searchTerm, searchTerm).
 		Order("name ASC").
 		Find(&categories).Error
 	return categories, err

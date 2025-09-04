@@ -50,7 +50,7 @@ func (r *productRepository) GetByBarcode(ctx context.Context, barcode string) (*
 
 func (r *productRepository) GetByName(ctx context.Context, name string) ([]*models.Product, error) {
 	var products []*models.Product
-	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("name ILIKE ?", "%"+name+"%").Find(&products).Error
+	err := r.db.WithContext(ctx).Preload("Category").Preload("Supplier").Preload("Brand").Where("name LIKE ? COLLATE NOCASE", "%"+name+"%").Find(&products).Error
 	return products, err
 }
 
@@ -99,7 +99,7 @@ func (r *productRepository) Search(ctx context.Context, query string, limit, off
 		Preload("Category").
 		Preload("Supplier").
 		Preload("Brand").
-		Where("name ILIKE ? OR sku ILIKE ? OR barcode ILIKE ? OR description ILIKE ?", 
+		Where("name LIKE ? COLLATE NOCASE OR sku LIKE ? COLLATE NOCASE OR barcode LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE", 
 			searchQuery, searchQuery, searchQuery, searchQuery).
 		Limit(limit).
 		Offset(offset).

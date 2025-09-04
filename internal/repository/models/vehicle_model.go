@@ -8,10 +8,10 @@ import (
 )
 
 type VehicleModel struct {
-	ID             uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID             uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Name           string         `gorm:"not null;size:100" json:"name"`
 	Code           string         `gorm:"uniqueIndex;not null;size:30" json:"code"`
-	VehicleBrandID uuid.UUID      `gorm:"type:uuid;not null" json:"vehicle_brand_id"`
+	VehicleBrandID uuid.UUID      `gorm:"type:text;not null" json:"vehicle_brand_id"`
 	Description    string         `gorm:"size:500" json:"description"`
 	YearFrom       int            `gorm:"not null" json:"year_from"`
 	YearTo         int            `json:"year_to"`
@@ -29,4 +29,11 @@ type VehicleModel struct {
 
 func (VehicleModel) TableName() string {
 	return "vehicle_models"
+}
+
+func (vm *VehicleModel) BeforeCreate(tx *gorm.DB) error {
+	if vm.ID == uuid.Nil {
+		vm.ID = uuid.New()
+	}
+	return nil
 }

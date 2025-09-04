@@ -279,17 +279,17 @@ func (r *purchaseReceiptRepository) Search(ctx context.Context, receiptNumber, s
 	var args []interface{}
 	
 	if receiptNumber != "" {
-		conditions = append(conditions, "purchase_receipts.receipt_number ILIKE ?")
+		conditions = append(conditions, "purchase_receipts.receipt_number LIKE ? COLLATE NOCASE")
 		args = append(args, "%"+receiptNumber+"%")
 	}
 	
 	if supplierName != "" {
-		conditions = append(conditions, "suppliers.name ILIKE ?")
+		conditions = append(conditions, "suppliers.name LIKE ? COLLATE NOCASE")
 		args = append(args, "%"+supplierName+"%")
 	}
 	
 	if reference != "" {
-		conditions = append(conditions, "purchase_receipts.reference ILIKE ?")
+		conditions = append(conditions, "purchase_receipts.reference LIKE ? COLLATE NOCASE")
 		args = append(args, "%"+reference+"%")
 	}
 	
@@ -623,7 +623,7 @@ func (r *purchaseReceiptRepository) GenerateReceiptNumber(ctx context.Context) (
 	var count int64
 	err := r.db.WithContext(ctx).
 		Model(&models.PurchaseReceipt{}).
-		Where("receipt_number LIKE ?", prefix+"%").
+		Where("receipt_number LIKE ? COLLATE NOCASE", prefix+"%").
 		Count(&count).Error
 	if err != nil {
 		return "", err

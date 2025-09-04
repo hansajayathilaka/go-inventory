@@ -17,7 +17,7 @@ const (
 )
 
 type User struct {
-	ID           uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID           uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Username     string         `gorm:"uniqueIndex;not null;size:50" json:"username"`
 	Email        string         `gorm:"uniqueIndex;not null;size:100" json:"email"`
 	PasswordHash string         `gorm:"not null;size:255" json:"-"`
@@ -30,4 +30,11 @@ type User struct {
 
 func (User) TableName() string {
 	return "users"
+}
+
+func (u *User) BeforeCreate(tx *gorm.DB) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	return nil
 }

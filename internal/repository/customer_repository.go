@@ -41,7 +41,7 @@ func (r *customerRepository) GetByCode(ctx context.Context, code string) (*model
 
 func (r *customerRepository) GetByName(ctx context.Context, name string) (*models.Customer, error) {
 	var customer models.Customer
-	err := r.db.WithContext(ctx).Where("name ILIKE ?", "%"+name+"%").First(&customer).Error
+	err := r.db.WithContext(ctx).Where("name LIKE ? COLLATE NOCASE", "%"+name+"%").First(&customer).Error
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (r *customerRepository) Search(ctx context.Context, query string, limit, of
 	var customers []*models.Customer
 	searchPattern := "%" + query + "%"
 	err := r.db.WithContext(ctx).
-		Where("name ILIKE ? OR email ILIKE ? OR phone ILIKE ? OR code ILIKE ?", 
+		Where("name LIKE ? COLLATE NOCASE OR email LIKE ? COLLATE NOCASE OR phone LIKE ? COLLATE NOCASE OR code LIKE ? COLLATE NOCASE", 
 			searchPattern, searchPattern, searchPattern, searchPattern).
 		Limit(limit).Offset(offset).
 		Find(&customers).Error

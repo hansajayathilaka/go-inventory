@@ -41,7 +41,7 @@ func (r *supplierRepository) GetByCode(ctx context.Context, code string) (*model
 
 func (r *supplierRepository) GetByName(ctx context.Context, name string) (*models.Supplier, error) {
 	var supplier models.Supplier
-	err := r.db.WithContext(ctx).Where("name ILIKE ?", "%"+name+"%").First(&supplier).Error
+	err := r.db.WithContext(ctx).Where("name LIKE ? COLLATE NOCASE", "%"+name+"%").First(&supplier).Error
 	if err != nil {
 		return nil, err
 	}

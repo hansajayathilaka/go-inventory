@@ -8,10 +8,10 @@ import (
 )
 
 type Category struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID      `gorm:"type:text;primaryKey" json:"id"`
 	Name        string         `gorm:"not null;size:100" json:"name"`
 	Description string         `gorm:"size:500" json:"description"`
-	ParentID    *uuid.UUID     `gorm:"type:uuid;index" json:"parent_id,omitempty"`
+	ParentID    *uuid.UUID     `gorm:"type:text;index" json:"parent_id,omitempty"`
 	Parent      *Category      `gorm:"foreignKey:ParentID" json:"parent,omitempty"`
 	Children    []Category     `gorm:"foreignKey:ParentID" json:"children,omitempty"`
 	Level       int            `gorm:"not null;default:0" json:"level"`
@@ -25,6 +25,13 @@ type Category struct {
 
 func (Category) TableName() string {
 	return "categories"
+}
+
+func (c *Category) BeforeCreate(tx *gorm.DB) error {
+	if c.ID == uuid.Nil {
+		c.ID = uuid.New()
+	}
+	return nil
 }
 
 func (c *Category) BeforeSave(tx *gorm.DB) error {

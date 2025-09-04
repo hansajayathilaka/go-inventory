@@ -41,7 +41,7 @@ func (r *vehicleModelRepository) GetByCode(ctx context.Context, code string) (*m
 
 func (r *vehicleModelRepository) GetByName(ctx context.Context, name string) (*models.VehicleModel, error) {
 	var vehicleModel models.VehicleModel
-	err := r.db.WithContext(ctx).Where("name ILIKE ?", "%"+name+"%").First(&vehicleModel).Error
+	err := r.db.WithContext(ctx).Where("name LIKE ? COLLATE NOCASE", "%"+name+"%").First(&vehicleModel).Error
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (r *vehicleModelRepository) Search(ctx context.Context, query string, limit
 	var vehicleModels []*models.VehicleModel
 	searchPattern := "%" + query + "%"
 	err := r.db.WithContext(ctx).
-		Where("name ILIKE ? OR code ILIKE ? OR description ILIKE ? OR engine_size ILIKE ?", 
+		Where("name LIKE ? COLLATE NOCASE OR code LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE OR engine_size LIKE ? COLLATE NOCASE", 
 			searchPattern, searchPattern, searchPattern, searchPattern).
 		Limit(limit).Offset(offset).
 		Find(&vehicleModels).Error
@@ -125,7 +125,7 @@ func (r *vehicleModelRepository) SearchByBrand(ctx context.Context, brandID uuid
 	var vehicleModels []*models.VehicleModel
 	searchPattern := "%" + query + "%"
 	err := r.db.WithContext(ctx).
-		Where("vehicle_brand_id = ? AND (name ILIKE ? OR code ILIKE ? OR description ILIKE ? OR engine_size ILIKE ?)", 
+		Where("vehicle_brand_id = ? AND (name LIKE ? COLLATE NOCASE OR code LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE OR engine_size LIKE ? COLLATE NOCASE)", 
 			brandID, searchPattern, searchPattern, searchPattern, searchPattern).
 		Limit(limit).Offset(offset).
 		Find(&vehicleModels).Error

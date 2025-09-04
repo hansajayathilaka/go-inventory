@@ -41,7 +41,7 @@ func (r *vehicleBrandRepository) GetByCode(ctx context.Context, code string) (*m
 
 func (r *vehicleBrandRepository) GetByName(ctx context.Context, name string) (*models.VehicleBrand, error) {
 	var vehicleBrand models.VehicleBrand
-	err := r.db.WithContext(ctx).Where("name ILIKE ?", "%"+name+"%").First(&vehicleBrand).Error
+	err := r.db.WithContext(ctx).Where("name LIKE ? COLLATE NOCASE", "%"+name+"%").First(&vehicleBrand).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (r *vehicleBrandRepository) Search(ctx context.Context, query string, limit
 	var vehicleBrands []*models.VehicleBrand
 	searchPattern := "%" + query + "%"
 	err := r.db.WithContext(ctx).
-		Where("name ILIKE ? OR code ILIKE ? OR description ILIKE ?", 
+		Where("name LIKE ? COLLATE NOCASE OR code LIKE ? COLLATE NOCASE OR description LIKE ? COLLATE NOCASE", 
 			searchPattern, searchPattern, searchPattern).
 		Limit(limit).Offset(offset).
 		Find(&vehicleBrands).Error
