@@ -63,11 +63,7 @@ erDiagram
         string name
         string description
         uuid category_id FK
-        uuid supplier_id FK
         uuid brand_id FK
-        decimal cost_price
-        decimal retail_price
-        decimal wholesale_price
         string barcode
         decimal weight
         string dimensions
@@ -77,15 +73,38 @@ erDiagram
         timestamp deleted_at
     }
 
-    %% Inventory Management
+
+    %% Advanced Inventory Management
     INVENTORY {
         uuid id PK
         uuid product_id UK,FK
-        int quantity
+        int total_quantity
+        int available_quantity
         int reserved_quantity
         int reorder_level
         int max_level
+        decimal average_cost
         timestamp last_updated
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    %% Stock Batch/Lot Tracking
+    STOCK_BATCHES {
+        uuid id PK
+        uuid product_id FK
+        string batch_number
+        string lot_number
+        uuid supplier_id FK
+        int quantity
+        int available_quantity
+        decimal cost_price
+        timestamp manufacture_date
+        timestamp expiry_date
+        timestamp received_date
+        string notes
+        boolean is_active
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
@@ -94,9 +113,11 @@ erDiagram
     STOCK_MOVEMENTS {
         uuid id PK
         uuid product_id FK
-        enum movement_type "IN,OUT,ADJUSTMENT,SALE,RETURN,DAMAGE"
+        uuid batch_id FK
+        enum movement_type "IN,OUT,ADJUSTMENT,SALE,RETURN,DAMAGE,TRANSFER"
         int quantity
         string reference_id
+        string reference_type
         uuid user_id FK
         string notes
         decimal unit_cost
@@ -140,83 +161,20 @@ erDiagram
         timestamp deleted_at
     }
 
-    %% Vehicle Spare Parts Extension
-    VEHICLE_BRANDS {
-        uuid id PK
-        string name
-        string code UK
-        string description
-        string country_code
-        string logo_url
-        boolean is_active
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
 
-    VEHICLE_MODELS {
-        uuid id PK
-        string name
-        string code UK
-        uuid vehicle_brand_id FK
-        string description
-        int year_from
-        int year_to
-        string engine_size
-        string fuel_type
-        string transmission
-        boolean is_active
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    VEHICLE_COMPATIBILITIES {
-        uuid id PK
-        uuid product_id FK
-        uuid vehicle_model_id FK
-        int year_from
-        int year_to
-        string notes
-        boolean is_verified
-        boolean is_active
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    %% Simplified Purchase Management
+    %% Minimal Purchase Management
     PURCHASE_RECEIPTS {
         uuid id PK
         string receipt_number UK
         uuid supplier_id FK
-        enum status "draft,ordered,received,completed,cancelled"
-        timestamp order_date
-        timestamp expected_date
-        timestamp received_date
-        string delivery_note
-        string invoice_number
-        timestamp invoice_date
-        string vehicle_number
-        string driver_name
-        boolean quality_check
-        string quality_notes
-        decimal sub_total
-        decimal tax_amount
-        decimal tax_rate
-        decimal shipping_cost
-        decimal discount_amount
+        timestamp purchase_date
+        string supplier_bill_number
+        enum status "pending,received,completed,cancelled"
+        decimal bill_discount_amount
+        decimal bill_discount_percentage
         decimal total_amount
-        string currency
         string notes
-        string terms
-        string reference
         uuid created_by_id FK
-        uuid approved_by_id FK
-        timestamp approved_at
-        uuid received_by_id FK
-        uuid verified_by_id FK
-        timestamp verified_at
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
@@ -226,26 +184,59 @@ erDiagram
         uuid id PK
         uuid purchase_receipt_id FK
         uuid product_id FK
-        int ordered_quantity
-        int received_quantity
-        int accepted_quantity
-        int rejected_quantity
-        int damaged_quantity
-        decimal unit_price
-        decimal total_price
-        decimal discount_amount
-        decimal tax_amount
-        timestamp expiry_date
-        string batch_number
-        string serial_numbers
-        string quality_status
-        string quality_notes
-        boolean stock_updated
+        decimal unit_cost
+        int quantity
+        decimal item_discount_amount
+        decimal item_discount_percentage
+        decimal line_total
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    %% Minimal Point of Sale System
+    SALES {
+        uuid id PK
+        string bill_number UK
+        uuid customer_id FK
+        uuid cashier_id FK
+        timestamp sale_date
+        decimal bill_discount_amount
+        decimal bill_discount_percentage
+        decimal total_amount
         string notes
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
     }
+
+    SALE_ITEMS {
+        uuid id PK
+        uuid sale_id FK
+        uuid product_id FK
+        decimal unit_price
+        decimal unit_cost
+        int quantity
+        decimal item_discount_amount
+        decimal item_discount_percentage
+        decimal line_total
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    PAYMENTS {
+        uuid id PK
+        uuid sale_id FK
+        enum method "cash,card,bank_transfer,ewallet,check"
+        decimal amount
+        string reference
+        string notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
 
     %% Relationships
     
@@ -254,27 +245,29 @@ erDiagram
     
     %% Product Relationships
     CATEGORIES ||--o{ PRODUCTS : "categorizes"
-    SUPPLIERS ||--o{ PRODUCTS : "supplies"
     BRANDS ||--o{ PRODUCTS : "manufactures"
     
-    %% Inventory Relationships
+    %% Advanced Inventory Relationships
     PRODUCTS ||--|| INVENTORY : "tracks"
+    PRODUCTS ||--o{ STOCK_BATCHES : "batched_in"
+    SUPPLIERS ||--o{ STOCK_BATCHES : "supplied_batches"
+    STOCK_BATCHES ||--o{ STOCK_MOVEMENTS : "batch_movements"
     PRODUCTS ||--o{ STOCK_MOVEMENTS : "moves"
     USERS ||--o{ STOCK_MOVEMENTS : "performs"
     
-    %% Vehicle Compatibility
-    VEHICLE_BRANDS ||--o{ VEHICLE_MODELS : "produces"
-    PRODUCTS ||--o{ VEHICLE_COMPATIBILITIES : "compatible_with"
-    VEHICLE_MODELS ||--o{ VEHICLE_COMPATIBILITIES : "fits"
-    
     %% Simplified Purchase Management
-    SUPPLIERS ||--o{ PURCHASE_RECEIPTS : "receives_orders"
+    SUPPLIERS ||--o{ PURCHASE_RECEIPTS : "supplies_to"
     USERS ||--o{ PURCHASE_RECEIPTS : "creates"
-    USERS ||--o{ PURCHASE_RECEIPTS : "approves"
-    USERS ||--o{ PURCHASE_RECEIPTS : "receives"
-    USERS ||--o{ PURCHASE_RECEIPTS : "verifies"
     PURCHASE_RECEIPTS ||--o{ PURCHASE_RECEIPT_ITEMS : "contains"
     PRODUCTS ||--o{ PURCHASE_RECEIPT_ITEMS : "ordered"
+    
+    %% Enhanced Point of Sale System
+    CUSTOMERS ||--o{ SALES : "purchases"
+    USERS ||--o{ SALES : "processes"
+    SALES ||--o{ SALE_ITEMS : "contains"
+    PRODUCTS ||--o{ SALE_ITEMS : "sold"
+    STOCK_BATCHES ||--o{ SALE_ITEMS : "sold_from_batch"
+    SALES ||--o{ PAYMENTS : "paid_by"
     
     %% Audit Trail
     USERS ||--o{ AUDIT_LOGS : "performs_actions"
@@ -282,26 +275,44 @@ erDiagram
 
 ## Key Relationships Summary
 
-### **Core Product Management**
+### **Simplified Product Management**
 - Categories have hierarchical parent-child relationships
-- Products belong to categories, suppliers, and brands
-- Each product has exactly one inventory record
+- Products belong to categories and brands
+- Each product has exactly one inventory record with average cost tracking
 
-### **Simplified Stock Management** 
-- Single-location inventory tracking per product
-- Stock movements log all inventory changes with user attribution
-- No location management complexity
+### **Batch-Level Stock Management** 
+- **Stock Batches** track individual lots with expiry dates and cost prices
+- **Stock Movements** link to specific batches for granular tracking
+- Inventory maintains totals while batches track individual stock lots
+- FIFO/LIFO cost calculation supported through batch tracking
 
-### **Vehicle Compatibility**
-- Vehicle brands contain multiple models
-- Products can be compatible with multiple vehicle models
-- Compatibility includes year ranges and verification status
+### **Transaction-Based Pricing System**
+- **Purchase Receipt Items** store supplier-specific data (SKU, cost, pricing suggestions)
+- **Sale Items** store all pricing data (retail/wholesale/custom prices) 
+- Historical pricing automatically preserved in transaction records
+- No separate pricing tables - everything in transaction context
 
-### **Unified Purchase Workflow**
-- **Purchase Receipts** combine ordering and receiving in one table
-- Purchase Receipt Items track ordered vs received quantities
-- Quality control and batch tracking at item level
-- Single workflow from order to completion
+### **Minimal Purchase Workflow**
+- **Purchase Receipts** with essential fields only:
+  - Purchase date, supplier, and supplier bill number
+  - Status tracking (pending, received, completed, cancelled)
+  - Bill discount (amount or percentage) for the entire purchase
+  - Total amount and notes
+- **Purchase Receipt Items** with minimal data:
+  - Product, unit cost, quantity
+  - Item-specific discount (amount or percentage)
+  - Line total
+
+### **Minimal Point of Sale System**
+- **Sales** with essential fields only:
+  - Unique bill numbers for easy lookup
+  - Sale date, customer, and cashier
+  - Bill discount (amount or percentage) for the entire sale
+  - Total amount and notes
+- **Sale Items** with minimal data:
+  - Product, unit price, unit cost, quantity
+  - Item-specific discount (amount or percentage)
+  - Line total for immediate profit calculation
 
 ### **Audit & Security**
 - All user actions are logged in audit_logs
@@ -315,9 +326,31 @@ erDiagram
 - Timestamps for audit trails and soft deletes
 - Boolean flags for active/inactive states
 
-### **Simplified Features**
-- **Removed**: Multiple locations, separate PO/GRN tables, location-based stock tracking
-- **Added**: Unified Purchase Receipts for simplified order-to-receipt workflow
-- **Result**: Cleaner, single-location hardware store inventory system
+### **Core Features Implemented**
+- ✅ **Purchase management** - Date, supplier, supplier bill number, status tracking
+- ✅ **Sale management** - Bill numbers for instant lookup, customer tracking
+- ✅ **Multi-level discounts** - Both item-level and bill-level discounts (amount or percentage)
+- ✅ **Cost tracking** - Unit costs in sale items for immediate profit calculation
+- ✅ **Batch tracking** - Stock batches for separate inventory management
+- ✅ **Simple P&L calculation** - Revenue from sales, costs from purchase/sale data
 
-This ERD represents a simplified hardware store inventory system perfect for single-location operations with vehicle spare parts specialization and streamlined purchase management.
+### **Minimal Design Benefits**
+- **Ultra-simple structure** - Only essential fields, no unnecessary complexity
+- **Flexible discounts** - Both item and bill level, amount or percentage
+- **Instant profit** - Cost vs price visible in every sale item
+- **Easy queries** - Minimal joins, straightforward data access
+- **Quick implementation** - Fewer fields to validate and manage
+
+### **Supported Business Operations**
+- Purchase tracking with supplier bill references
+- Sale tracking with unique bill numbers for instant lookup
+- Flexible discount application (per item or entire bill)
+- Immediate profit calculation (unit_price - unit_cost) × quantity
+- Batch-level inventory management
+- Simple P&L: Sum(sale_line_totals) - Sum(purchase_line_totals)
+
+This ERD represents a **minimal but complete inventory and POS system** that:
+- Contains only the essential fields you actually need
+- Supports flexible discount strategies
+- Provides immediate profit visibility
+- Requires minimal setup and maintenance
