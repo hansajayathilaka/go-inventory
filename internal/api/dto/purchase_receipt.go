@@ -38,60 +38,42 @@ type PurchaseReceiptResponse struct {
 	Items          []PurchaseReceiptItemResponse      `json:"items,omitempty"`
 }
 
-// PurchaseReceiptItemResponse represents a purchase receipt item in API responses
+// PurchaseReceiptItemResponse represents a purchase receipt item in API responses (simplified)
 type PurchaseReceiptItemResponse struct {
-	ID                  uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440004"`
-	PurchaseReceiptID   uuid.UUID        `json:"purchase_receipt_id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ProductID           uuid.UUID        `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440005"`
+	ID                      uuid.UUID        `json:"id" example:"550e8400-e29b-41d4-a716-446655440004"`
+	PurchaseReceiptID       uuid.UUID        `json:"purchase_receipt_id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ProductID               uuid.UUID        `json:"product_id" example:"550e8400-e29b-41d4-a716-446655440005"`
 	
-	// Order Information
-	OrderedQuantity     int              `json:"ordered_quantity" example:"10"`
-	UnitPrice           float64          `json:"unit_price" example:"100.00"`
-	TotalPrice          float64          `json:"total_price" example:"1000.00"`
-	DiscountAmount      float64          `json:"discount_amount" example:"0.00"`
-	TaxAmount           float64          `json:"tax_amount" example:"60.00"`
-	OrderNotes          string           `json:"order_notes,omitempty" example:"High priority item"`
-	
-	// Receipt Information
-	ReceivedQuantity    int              `json:"received_quantity" example:"10"`
-	AcceptedQuantity    int              `json:"accepted_quantity" example:"9"`
-	RejectedQuantity    int              `json:"rejected_quantity" example:"0"`
-	DamagedQuantity     int              `json:"damaged_quantity" example:"1"`
-	ExpiryDate          *time.Time       `json:"expiry_date,omitempty" example:"2025-12-31T23:59:59Z"`
-	BatchNumber         string           `json:"batch_number,omitempty" example:"BATCH001"`
-	SerialNumbers       string           `json:"serial_numbers,omitempty" example:"[\"SN001\",\"SN002\"]"`
-	QualityStatus       string           `json:"quality_status" example:"good"`
-	QualityNotes        string           `json:"quality_notes,omitempty" example:"One unit damaged during transport"`
-	ReceiptNotes        string           `json:"receipt_notes,omitempty" example:"Inspection notes"`
-	StockUpdated        bool             `json:"stock_updated" example:"false"`
+	// Essential Information
+	Quantity                int              `json:"quantity" example:"10"`
+	UnitCost                float64          `json:"unit_cost" example:"100.00"`
+	ItemDiscountAmount      float64          `json:"item_discount_amount" example:"10.00"`
+	ItemDiscountPercentage  float64          `json:"item_discount_percentage" example:"5.00"`
+	LineTotal               float64          `json:"line_total" example:"945.00"`
 	
 	// Timestamps
-	CreatedAt           time.Time        `json:"created_at" example:"2023-01-01T12:00:00Z"`
-	UpdatedAt           time.Time        `json:"updated_at" example:"2023-01-01T12:00:00Z"`
+	CreatedAt               time.Time        `json:"created_at" example:"2023-01-01T12:00:00Z"`
+	UpdatedAt               time.Time        `json:"updated_at" example:"2023-01-01T12:00:00Z"`
 }
 
-// CreatePurchaseReceiptRequest represents a request to create a new purchase receipt
+// CreatePurchaseReceiptRequest represents a request to create a new purchase receipt (simplified)
 type CreatePurchaseReceiptRequest struct {
-	SupplierID     uuid.UUID                             `json:"supplier_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
-	OrderDate      time.Time                             `json:"order_date" binding:"required" example:"2023-01-01T12:00:00Z"`
-	ExpectedDate   *time.Time                            `json:"expected_date,omitempty" example:"2023-01-15T12:00:00Z"`
-	Reference      string                                `json:"reference,omitempty" binding:"omitempty,max=100" example:"REF-001"`
-	Terms          string                                `json:"terms,omitempty" binding:"omitempty,max=1000" example:"Net 30 days"`
-	OrderNotes     string                                `json:"order_notes,omitempty" binding:"omitempty,max=1000" example:"Urgent order"`
-	TaxRate        float64                               `json:"tax_rate,omitempty" binding:"omitempty,min=0,max=100" example:"6.00"`
-	ShippingCost   float64                               `json:"shipping_cost,omitempty" binding:"omitempty,min=0" example:"50.00"`
-	DiscountAmount float64                               `json:"discount_amount,omitempty" binding:"omitempty,min=0" example:"0.00"`
-	Currency       string                                `json:"currency,omitempty" binding:"omitempty,len=3" example:"MYR"`
-	Items          []CreatePurchaseReceiptItemRequest    `json:"items,omitempty"`
+	SupplierID             uuid.UUID                             `json:"supplier_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440001"`
+	PurchaseDate           time.Time                             `json:"purchase_date" binding:"required" example:"2023-01-01T12:00:00Z"`
+	SupplierBillNumber     string                                `json:"supplier_bill_number,omitempty" binding:"omitempty,max=100" example:"SUPP-BILL-001"`
+	BillDiscountAmount     float64                               `json:"bill_discount_amount,omitempty" binding:"omitempty,min=0" example:"50.00"`
+	BillDiscountPercentage float64                               `json:"bill_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
+	Notes                  string                                `json:"notes,omitempty" binding:"omitempty,max=1000" example:"Purchase notes"`
+	Items                  []CreatePurchaseReceiptItemRequest    `json:"items,omitempty"`
 }
 
-// CreatePurchaseReceiptItemRequest represents a request to add a purchase receipt item
+// CreatePurchaseReceiptItemRequest represents a request to add a purchase receipt item (simplified)
 type CreatePurchaseReceiptItemRequest struct {
-	ProductID      uuid.UUID `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440005"`
-	OrderedQuantity int      `json:"ordered_quantity" binding:"required,min=1" example:"10"`
-	UnitPrice      float64   `json:"unit_price" binding:"required,min=0" example:"100.00"`
-	DiscountAmount float64   `json:"discount_amount,omitempty" binding:"omitempty,min=0" example:"0.00"`
-	OrderNotes     string    `json:"order_notes,omitempty" binding:"omitempty,max=500" example:"High priority item"`
+	ProductID               uuid.UUID `json:"product_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440005"`
+	Quantity                int       `json:"quantity" binding:"required,min=1" example:"10"`
+	UnitCost                float64   `json:"unit_cost" binding:"required,min=0" example:"100.00"`
+	ItemDiscountAmount      float64   `json:"item_discount_amount,omitempty" binding:"omitempty,min=0" example:"10.00"`
+	ItemDiscountPercentage  float64   `json:"item_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
 }
 
 // UpdatePurchaseReceiptRequest represents a request to update an existing purchase receipt
@@ -222,31 +204,19 @@ func ToPurchaseReceiptResponseList(prs []*models.PurchaseReceipt) []PurchaseRece
 	return responses
 }
 
-// ToPurchaseReceiptItemResponse converts a purchase receipt item model to a purchase receipt item response DTO
+// ToPurchaseReceiptItemResponse converts a purchase receipt item model to a purchase receipt item response DTO (simplified)
 func ToPurchaseReceiptItemResponse(item *models.PurchaseReceiptItem) PurchaseReceiptItemResponse {
 	return PurchaseReceiptItemResponse{
-		ID:                  item.ID,
-		PurchaseReceiptID:   item.PurchaseReceiptID,
-		ProductID:           item.ProductID,
-		OrderedQuantity:     item.OrderedQuantity,
-		UnitPrice:           item.UnitPrice,
-		TotalPrice:          item.TotalPrice,
-		DiscountAmount:      item.DiscountAmount,
-		TaxAmount:           item.TaxAmount,
-		OrderNotes:          item.OrderNotes,
-		ReceivedQuantity:    item.ReceivedQuantity,
-		AcceptedQuantity:    item.AcceptedQuantity,
-		RejectedQuantity:    item.RejectedQuantity,
-		DamagedQuantity:     item.DamagedQuantity,
-		ExpiryDate:          item.ExpiryDate,
-		BatchNumber:         item.BatchNumber,
-		SerialNumbers:       item.SerialNumbers,
-		QualityStatus:       item.QualityStatus,
-		QualityNotes:        item.QualityNotes,
-		ReceiptNotes:        item.ReceiptNotes,
-		StockUpdated:        item.StockUpdated,
-		CreatedAt:           item.CreatedAt,
-		UpdatedAt:           item.UpdatedAt,
+		ID:                     item.ID,
+		PurchaseReceiptID:      item.PurchaseReceiptID,
+		ProductID:              item.ProductID,
+		Quantity:               item.Quantity,
+		UnitCost:               item.UnitCost,
+		ItemDiscountAmount:     item.ItemDiscountAmount,
+		ItemDiscountPercentage: item.ItemDiscountPercentage,
+		LineTotal:              item.LineTotal,
+		CreatedAt:              item.CreatedAt,
+		UpdatedAt:              item.UpdatedAt,
 	}
 }
 
@@ -259,24 +229,16 @@ func ToPurchaseReceiptItemResponseList(items []*models.PurchaseReceiptItem) []Pu
 	return responses
 }
 
-// ToPurchaseReceiptModel converts CreatePurchaseReceiptRequest to purchase receipt model
+// ToPurchaseReceiptModel converts CreatePurchaseReceiptRequest to purchase receipt model (simplified)
 func (req *CreatePurchaseReceiptRequest) ToPurchaseReceiptModel() *models.PurchaseReceipt {
 	pr := &models.PurchaseReceipt{
-		SupplierID:     req.SupplierID,
-		Status:         models.PurchaseReceiptStatusDraft,
-		OrderDate:      req.OrderDate,
-		ExpectedDate:   req.ExpectedDate,
-		Reference:      req.Reference,
-		Terms:          req.Terms,
-		OrderNotes:     req.OrderNotes,
-		TaxRate:        req.TaxRate,
-		ShippingCost:   req.ShippingCost,
-		DiscountAmount: req.DiscountAmount,
-		Currency:       "MYR", // Default currency
-	}
-
-	if req.Currency != "" {
-		pr.Currency = req.Currency
+		SupplierID:             req.SupplierID,
+		Status:                 models.PurchaseReceiptStatusPending,
+		PurchaseDate:           req.PurchaseDate,
+		SupplierBillNumber:     req.SupplierBillNumber,
+		BillDiscountAmount:     req.BillDiscountAmount,
+		BillDiscountPercentage: req.BillDiscountPercentage,
+		Notes:                  req.Notes,
 	}
 
 	// Convert items if provided
@@ -284,11 +246,11 @@ func (req *CreatePurchaseReceiptRequest) ToPurchaseReceiptModel() *models.Purcha
 		pr.Items = make([]models.PurchaseReceiptItem, len(req.Items))
 		for i, itemReq := range req.Items {
 			pr.Items[i] = models.PurchaseReceiptItem{
-				ProductID:       itemReq.ProductID,
-				OrderedQuantity: itemReq.OrderedQuantity,
-				UnitPrice:       itemReq.UnitPrice,
-				DiscountAmount:  itemReq.DiscountAmount,
-				OrderNotes:      itemReq.OrderNotes,
+				ProductID:              itemReq.ProductID,
+				Quantity:               itemReq.Quantity,
+				UnitCost:               itemReq.UnitCost,
+				ItemDiscountAmount:     itemReq.ItemDiscountAmount,
+				ItemDiscountPercentage: itemReq.ItemDiscountPercentage,
 			}
 		}
 	}
@@ -296,15 +258,15 @@ func (req *CreatePurchaseReceiptRequest) ToPurchaseReceiptModel() *models.Purcha
 	return pr
 }
 
-// ToPurchaseReceiptItemModel converts CreatePurchaseReceiptItemRequest to purchase receipt item model
+// ToPurchaseReceiptItemModel converts CreatePurchaseReceiptItemRequest to purchase receipt item model (simplified)
 func (req *CreatePurchaseReceiptItemRequest) ToPurchaseReceiptItemModel(purchaseReceiptID uuid.UUID) *models.PurchaseReceiptItem {
 	return &models.PurchaseReceiptItem{
-		PurchaseReceiptID: purchaseReceiptID,
-		ProductID:         req.ProductID,
-		OrderedQuantity:   req.OrderedQuantity,
-		UnitPrice:         req.UnitPrice,
-		DiscountAmount:    req.DiscountAmount,
-		OrderNotes:        req.OrderNotes,
+		PurchaseReceiptID:      purchaseReceiptID,
+		ProductID:              req.ProductID,
+		Quantity:               req.Quantity,
+		UnitCost:               req.UnitCost,
+		ItemDiscountAmount:     req.ItemDiscountAmount,
+		ItemDiscountPercentage: req.ItemDiscountPercentage,
 	}
 }
 

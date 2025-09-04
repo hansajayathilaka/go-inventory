@@ -33,9 +33,6 @@ func (r *purchaseReceiptRepository) GetByID(ctx context.Context, id uuid.UUID) (
 	err := r.db.WithContext(ctx).
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Preload("Items").
 		Preload("Items.Product").
 		Preload("Items.Product.Category").
@@ -53,9 +50,6 @@ func (r *purchaseReceiptRepository) GetByReceiptNumber(ctx context.Context, rece
 	err := r.db.WithContext(ctx).
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Preload("Items").
 		Preload("Items.Product").
 		Preload("Items.Product.Category").
@@ -91,9 +85,6 @@ func (r *purchaseReceiptRepository) List(ctx context.Context, offset, limit int)
 	err := r.db.WithContext(ctx).
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -118,9 +109,6 @@ func (r *purchaseReceiptRepository) GetBySupplier(ctx context.Context, supplierI
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -145,9 +133,6 @@ func (r *purchaseReceiptRepository) GetByStatus(ctx context.Context, status mode
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -172,9 +157,6 @@ func (r *purchaseReceiptRepository) GetByUser(ctx context.Context, userID uuid.U
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -199,9 +181,6 @@ func (r *purchaseReceiptRepository) GetByDateRange(ctx context.Context, startDat
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -226,9 +205,6 @@ func (r *purchaseReceiptRepository) GetByOrderDateRange(ctx context.Context, sta
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("order_date DESC").
 		Offset(offset).
 		Limit(limit).
@@ -253,9 +229,6 @@ func (r *purchaseReceiptRepository) GetByReceivedDateRange(ctx context.Context, 
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("received_date DESC").
 		Offset(offset).
 		Limit(limit).
@@ -323,9 +296,6 @@ func (r *purchaseReceiptRepository) Search(ctx context.Context, receiptNumber, s
 	err := query.
 		Preload("Supplier").
 		Preload("CreatedBy").
-		Preload("ApprovedBy").
-		Preload("ReceivedBy").
-		Preload("VerifiedBy").
 		Order("purchase_receipts.created_at DESC").
 		Offset(offset).
 		Limit(limit).

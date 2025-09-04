@@ -8,7 +8,7 @@
 
 ## Progress Summary
 
-### Overall Progress: 30% Complete
+### Overall Progress: 35% Complete
 - **Phase 0**: SQLite Migration - ✅ COMPLETED (CRITICAL PRIORITY)
 - **Phase 1**: Model Refactoring - ⭕ Not Started (NEXT)
 - **Phase 2**: Repository Updates - ⭕ Not Started  
@@ -73,7 +73,7 @@
 - [x] Update backup and maintenance scripts
 
 ## Phase 1: Model Refactoring (Week 2)
-**Status**: 🟡 In Progress - Task 1.1 Complete
+**Status**: 🟡 In Progress - Tasks 1.1 & 1.2 Complete
 **Target Completion**: End of Week 1
 
 ### Task 1.1: Simplify Purchase Receipt Model ✅ COMPLETED
@@ -88,12 +88,14 @@
 - [ ] Update DTO layer (partially complete)
 - [ ] Update seed data
 
-### Task 1.2: Simplify Purchase Receipt Item Model
-- [ ] Remove complex fields (12 fields)
-- [ ] Rename existing fields (2 fields)
-- [ ] Add essential fields (3 new fields)
-- [ ] Create database migration script
-- [ ] Write unit tests
+### Task 1.2: Simplify Purchase Receipt Item Model ✅ COMPLETED
+- [x] Remove complex fields (12 fields) ✅
+- [x] Rename existing fields (2 fields) ✅ 
+- [x] Add essential fields (3 new fields) ✅
+- [x] Create database migration script ✅
+- [x] Write unit tests ✅
+- [x] Update repository layer ✅
+- [x] Update DTO layer (partial - core functions) ✅
 
 ### Task 1.3: Remove Vehicle Models
 - [ ] Delete vehicle_brand.go
