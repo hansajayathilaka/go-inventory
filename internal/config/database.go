@@ -2,9 +2,12 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"inventory-api/internal/repository/models"
@@ -27,9 +30,27 @@ func NewDatabase(config *Config) (*Database, error) {
 		gormLogger = logger.Default.LogMode(logger.Silent)
 	}
 
-	db, err := gorm.Open(postgres.Open(config.GetDSN()), &gorm.Config{
-		Logger: gormLogger,
-	})
+	var db *gorm.DB
+	var err error
+
+	switch config.Database.Type {
+	case "sqlite", "":
+		// Create directory if it doesn't exist
+		if err := ensureDir(config.Database.Path); err != nil {
+			return nil, fmt.Errorf("failed to create database directory: %w", err)
+		}
+
+		db, err = gorm.Open(sqlite.Open(config.GetDSN()), &gorm.Config{
+			Logger: gormLogger,
+		})
+	case "postgres":
+		db, err = gorm.Open(postgres.Open(config.GetDSN()), &gorm.Config{
+			Logger: gormLogger,
+		})
+	default:
+		return nil, fmt.Errorf("unsupported database type: %s", config.Database.Type)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -39,8 +60,15 @@ func NewDatabase(config *Config) (*Database, error) {
 		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
 	}
 
-	sqlDB.SetMaxIdleConns(config.Database.MaxIdleConns)
-	sqlDB.SetMaxOpenConns(config.Database.MaxOpenConns)
+	// Apply connection pool settings (less aggressive for SQLite)
+	if config.Database.Type == "sqlite" {
+		// SQLite doesn't benefit from connection pooling like PostgreSQL
+		sqlDB.SetMaxIdleConns(1)
+		sqlDB.SetMaxOpenConns(1)
+	} else {
+		sqlDB.SetMaxIdleConns(config.Database.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(config.Database.MaxOpenConns)
+	}
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	return &Database{DB: db}, nil
@@ -112,6 +140,15 @@ func (db *Database) cleanupObsoleteStructures() error {
 	}
 
 	return nil
+}
+
+// ensureDir creates the directory for the database file if it doesn't exist
+func ensureDir(dbPath string) error {
+	dir := filepath.Dir(dbPath)
+	if dir == "." {
+		return nil // Current directory already exists
+	}
+	return os.MkdirAll(dir, 0755)
 }
 
 func (db *Database) Close() error {

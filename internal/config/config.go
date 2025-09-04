@@ -15,12 +15,14 @@ type Config struct {
 }
 
 type DatabaseConfig struct {
-	Host         string `mapstructure:"host"`
-	Port         int    `mapstructure:"port"`
-	User         string `mapstructure:"user"`
-	Password     string `mapstructure:"password"`
-	DBName       string `mapstructure:"dbname"`
-	SSLMode      string `mapstructure:"sslmode"`
+	Type         string `mapstructure:"type"`       // "postgres" or "sqlite"
+	Host         string `mapstructure:"host"`       // For PostgreSQL
+	Port         int    `mapstructure:"port"`       // For PostgreSQL
+	User         string `mapstructure:"user"`       // For PostgreSQL
+	Password     string `mapstructure:"password"`   // For PostgreSQL
+	DBName       string `mapstructure:"dbname"`     // For PostgreSQL
+	SSLMode      string `mapstructure:"sslmode"`    // For PostgreSQL
+	Path         string `mapstructure:"path"`       // For SQLite - database file path
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 }
@@ -77,6 +79,9 @@ func Load() (*Config, error) {
 
 func setDefaults() {
 	// Database defaults
+	viper.SetDefault("database.type", "sqlite")
+	viper.SetDefault("database.path", "./data/inventory.db")
+	// PostgreSQL defaults (for backward compatibility)
 	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", 5432)
 	viper.SetDefault("database.user", "inventory_user")
@@ -106,26 +111,44 @@ func setDefaults() {
 }
 
 func (c *Config) GetDSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s client_encoding=UTF8",
-		c.Database.Host,
-		c.Database.Port,
-		c.Database.User,
-		c.Database.Password,
-		c.Database.DBName,
-		c.Database.SSLMode,
-	)
+	switch c.Database.Type {
+	case "sqlite":
+		return c.Database.Path
+	case "postgres":
+		return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s client_encoding=UTF8",
+			c.Database.Host,
+			c.Database.Port,
+			c.Database.User,
+			c.Database.Password,
+			c.Database.DBName,
+			c.Database.SSLMode,
+		)
+	default:
+		// Default to SQLite for new installations
+		return c.Database.Path
+	}
 }
 
 func (c *Config) Validate() error {
-	if c.Database.Host == "" {
-		return fmt.Errorf("database host is required")
+	switch c.Database.Type {
+	case "postgres":
+		if c.Database.Host == "" {
+			return fmt.Errorf("database host is required for PostgreSQL")
+		}
+		if c.Database.User == "" {
+			return fmt.Errorf("database user is required for PostgreSQL")
+		}
+		if c.Database.DBName == "" {
+			return fmt.Errorf("database name is required for PostgreSQL")
+		}
+	case "sqlite", "":
+		if c.Database.Path == "" {
+			return fmt.Errorf("database path is required for SQLite")
+		}
+	default:
+		return fmt.Errorf("unsupported database type: %s. Supported types: postgres, sqlite", c.Database.Type)
 	}
-	if c.Database.User == "" {
-		return fmt.Errorf("database user is required")
-	}
-	if c.Database.DBName == "" {
-		return fmt.Errorf("database name is required")
-	}
+
 	if c.Security.PasswordMinLen < 4 {
 		return fmt.Errorf("password minimum length must be at least 4")
 	}

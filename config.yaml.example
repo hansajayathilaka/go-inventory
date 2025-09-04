@@ -1,10 +1,15 @@
 database:
-  host: "localhost"
-  port: 5432
-  user: "inventory_user"
-  password: "inventory_pass"
-  dbname: "inventory_db"
-  sslmode: "disable"
+  type: "sqlite"                    # Database type: "sqlite" or "postgres"
+  path: "./data/inventory.db"       # SQLite database file path
+  
+  # PostgreSQL configuration (only needed if type is "postgres")
+  # host: "localhost"
+  # port: 5432
+  # user: "inventory_user"
+  # password: "inventory_pass"
+  # dbname: "inventory_db"
+  # sslmode: "disable"
+  
   max_idle_conns: 10
   max_open_conns: 100
 
