@@ -302,13 +302,13 @@ func (h *PurchaseReceiptHandler) ListPurchaseReceipts(c *gin.Context) {
 		return
 	}
 
-	// Filter by phase if specified
+	// Filter by phase if specified (using simplified status)
 	if req.Phase != "" && req.Phase != "all" {
 		filteredPRs := []*models.PurchaseReceipt{}
 		for _, pr := range prs {
-			if req.Phase == "order" && pr.IsInOrderPhase() {
+			if req.Phase == "order" && (pr.Status == models.PurchaseReceiptStatusPending) {
 				filteredPRs = append(filteredPRs, pr)
-			} else if req.Phase == "receipt" && pr.IsInReceiptPhase() {
+			} else if req.Phase == "receipt" && (pr.Status == models.PurchaseReceiptStatusReceived || pr.Status == models.PurchaseReceiptStatusCompleted) {
 				filteredPRs = append(filteredPRs, pr)
 			}
 		}
@@ -363,15 +363,15 @@ func (h *PurchaseReceiptHandler) ApprovePurchaseReceipt(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ApprovePurchaseReceipt(c.Request.Context(), id, req.ApproverID); err != nil {
-		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
-			return
-		}
-		if err == purchase_receipt.ErrCannotApprove {
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Cannot approve purchase receipt in current status"})
-			return
-		}
+	// Approval workflow has been removed in the simplified model
+	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
+		Error:   "Approval workflow not supported",
+		Message: "The approval workflow has been removed in the simplified purchase receipt model",
+	})
+	return
+	
+	// Legacy code - keeping for reference but unreachable
+	if false {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error:   "Failed to approve purchase receipt",
 			Message: err.Error(),
@@ -427,15 +427,15 @@ func (h *PurchaseReceiptHandler) SendOrder(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.SendPurchaseOrder(c.Request.Context(), id); err != nil {
-		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
-			return
-		}
-		if err == purchase_receipt.ErrCannotSend {
-			c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Cannot send purchase receipt in current status"})
-			return
-		}
+	// Send order workflow has been removed in the simplified model
+	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
+		Error:   "Send order workflow not supported",
+		Message: "The send order workflow has been removed in the simplified purchase receipt model",
+	})
+	return
+	
+	// Legacy code - keeping for reference but unreachable
+	if false {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error:   "Failed to send purchase order",
 			Message: err.Error(),
@@ -491,7 +491,7 @@ func (h *PurchaseReceiptHandler) ReceiveGoods(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.ReceiveGoods(c.Request.Context(), id, req.ReceivedByID, req.ReceivedDate); err != nil {
+	if err := h.service.ReceiveGoods(c.Request.Context(), id); err != nil {
 		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
 			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
 			return
@@ -507,25 +507,8 @@ func (h *PurchaseReceiptHandler) ReceiveGoods(c *gin.Context) {
 		return
 	}
 
-	// Update additional receipt information if provided
-	if req.DeliveryDate != nil || req.DeliveryNote != "" || req.InvoiceNumber != "" ||
-		req.InvoiceDate != nil || req.VehicleNumber != "" || req.DriverName != "" || req.ReceiptNotes != "" {
-		
-		pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
-		if err == nil {
-			updateReq := dto.UpdatePurchaseReceiptRequest{
-				DeliveryDate:  req.DeliveryDate,
-				DeliveryNote:  req.DeliveryNote,
-				InvoiceNumber: req.InvoiceNumber,
-				InvoiceDate:   req.InvoiceDate,
-				VehicleNumber: req.VehicleNumber,
-				DriverName:    req.DriverName,
-				ReceiptNotes:  req.ReceiptNotes,
-			}
-			updateReq.ApplyToPurchaseReceiptModel(pr)
-			h.service.UpdatePurchaseReceipt(c.Request.Context(), pr)
-		}
-	}
+	// Additional receipt information update removed in simplified model
+	// The simplified model only tracks essential purchase receipt data
 
 	// Return updated purchase receipt
 	pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
@@ -575,7 +558,15 @@ func (h *PurchaseReceiptHandler) VerifyGoods(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.VerifyGoods(c.Request.Context(), id, req.VerifierID, req.QualityCheck, req.QualityNotes); err != nil {
+	// Goods verification workflow has been removed in the simplified model
+	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
+		Error:   "Goods verification not supported",
+		Message: "Goods verification workflow has been removed in the simplified purchase receipt model",
+	})
+	return
+	
+	// Legacy code - keeping for reference but unreachable
+	if false {
 		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
 			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
 			return

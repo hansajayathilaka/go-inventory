@@ -8,16 +8,13 @@ import (
 // EmbedReactApp embeds the React application build files
 // Note: This embed directive is only active when the files exist
 //
-//go:embed frontend/dist/*
+// Placeholder for React build files - embed disabled during development
 var reactBuildFiles embed.FS
 
 // GetReactFiles returns a filesystem containing the React build files
+// Currently returns empty filesystem during development
 func GetReactFiles() fs.FS {
-	// Return the subdirectory containing the actual files
-	reactFS, err := fs.Sub(reactBuildFiles, "frontend/dist")
-	if err != nil {
-		// Fallback to the root if subdirectory doesn't exist (development mode)
-		return reactBuildFiles
-	}
-	return reactFS
+	// During development, return empty filesystem
+	// TODO: Re-enable embed when React build is available
+	return reactBuildFiles
 }

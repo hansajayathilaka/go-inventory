@@ -76,51 +76,24 @@ type CreatePurchaseReceiptItemRequest struct {
 	ItemDiscountPercentage  float64   `json:"item_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
 }
 
-// UpdatePurchaseReceiptRequest represents a request to update an existing purchase receipt
+// UpdatePurchaseReceiptRequest represents a request to update an existing purchase receipt (simplified)
 type UpdatePurchaseReceiptRequest struct {
-	SupplierID     *uuid.UUID `json:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
-	OrderDate      *time.Time `json:"order_date,omitempty" example:"2023-01-01T12:00:00Z"`
-	ExpectedDate   *time.Time `json:"expected_date,omitempty" example:"2023-01-15T12:00:00Z"`
-	Reference      string     `json:"reference,omitempty" binding:"omitempty,max=100" example:"REF-001"`
-	Terms          string     `json:"terms,omitempty" binding:"omitempty,max=1000" example:"Updated terms"`
-	OrderNotes     string     `json:"order_notes,omitempty" binding:"omitempty,max=1000" example:"Updated notes"`
-	TaxRate        *float64   `json:"tax_rate,omitempty" binding:"omitempty,min=0,max=100" example:"6.00"`
-	ShippingCost   *float64   `json:"shipping_cost,omitempty" binding:"omitempty,min=0" example:"50.00"`
-	DiscountAmount *float64   `json:"discount_amount,omitempty" binding:"omitempty,min=0" example:"0.00"`
-	Currency       string     `json:"currency,omitempty" binding:"omitempty,len=3" example:"MYR"`
-	
-	// Receipt Information (for receipt phase updates)
-	ReceivedDate   *time.Time `json:"received_date,omitempty" example:"2023-01-14T12:00:00Z"`
-	DeliveryDate   *time.Time `json:"delivery_date,omitempty" example:"2023-01-14T08:00:00Z"`
-	DeliveryNote   string     `json:"delivery_note,omitempty" binding:"omitempty,max=100" example:"DN-001"`
-	InvoiceNumber  string     `json:"invoice_number,omitempty" binding:"omitempty,max=100" example:"INV-001"`
-	InvoiceDate    *time.Time `json:"invoice_date,omitempty" example:"2023-01-01T12:00:00Z"`
-	VehicleNumber  string     `json:"vehicle_number,omitempty" binding:"omitempty,max=50" example:"ABC1234"`
-	DriverName     string     `json:"driver_name,omitempty" binding:"omitempty,max=100" example:"John Doe"`
-	QualityCheck   *bool      `json:"quality_check,omitempty" example:"true"`
+	SupplierID             *uuid.UUID `json:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
+	PurchaseDate           *time.Time `json:"purchase_date,omitempty" example:"2023-01-01T12:00:00Z"`
+	SupplierBillNumber     string     `json:"supplier_bill_number,omitempty" binding:"omitempty,max=100" example:"SUPP-BILL-001"`
+	BillDiscountAmount     *float64   `json:"bill_discount_amount,omitempty" binding:"omitempty,min=0" example:"50.00"`
+	BillDiscountPercentage *float64   `json:"bill_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
+	Notes                  string     `json:"notes,omitempty" binding:"omitempty,max=1000" example:"Purchase notes"`
 	QualityNotes   string     `json:"quality_notes,omitempty" binding:"omitempty,max=1000" example:"All items in good condition"`
 	ReceiptNotes   string     `json:"receipt_notes,omitempty" binding:"omitempty,max=1000" example:"All items received in good condition"`
 }
 
-// UpdatePurchaseReceiptItemRequest represents a request to update a purchase receipt item
+// UpdatePurchaseReceiptItemRequest represents a request to update a purchase receipt item (simplified)
 type UpdatePurchaseReceiptItemRequest struct {
-	// Order Information Updates
-	OrderedQuantity *int     `json:"ordered_quantity,omitempty" binding:"omitempty,min=1" example:"15"`
-	UnitPrice       *float64 `json:"unit_price,omitempty" binding:"omitempty,min=0" example:"120.00"`
-	DiscountAmount  *float64 `json:"discount_amount,omitempty" binding:"omitempty,min=0" example:"5.00"`
-	OrderNotes      string   `json:"order_notes,omitempty" binding:"omitempty,max=500" example:"Updated notes"`
-	
-	// Receipt Information Updates
-	ReceivedQuantity *int       `json:"received_quantity,omitempty" binding:"omitempty,min=0" example:"10"`
-	AcceptedQuantity *int       `json:"accepted_quantity,omitempty" binding:"omitempty,min=0" example:"9"`
-	RejectedQuantity *int       `json:"rejected_quantity,omitempty" binding:"omitempty,min=0" example:"0"`
-	DamagedQuantity  *int       `json:"damaged_quantity,omitempty" binding:"omitempty,min=0" example:"1"`
-	ExpiryDate       *time.Time `json:"expiry_date,omitempty" example:"2025-12-31T23:59:59Z"`
-	BatchNumber      string     `json:"batch_number,omitempty" binding:"omitempty,max=100" example:"BATCH001"`
-	SerialNumbers    string     `json:"serial_numbers,omitempty" binding:"omitempty,max=2000" example:"[\"SN001\",\"SN002\"]"`
-	QualityStatus    string     `json:"quality_status,omitempty" binding:"omitempty,max=20" example:"good"`
-	QualityNotes     string     `json:"quality_notes,omitempty" binding:"omitempty,max=500" example:"Updated quality notes"`
-	ReceiptNotes     string     `json:"receipt_notes,omitempty" binding:"omitempty,max=500" example:"Updated receipt notes"`
+	Quantity               *int     `json:"quantity,omitempty" binding:"omitempty,min=1" example:"10"`
+	UnitCost               *float64 `json:"unit_cost,omitempty" binding:"omitempty,min=0" example:"100.00"`
+	ItemDiscountAmount     *float64 `json:"item_discount_amount,omitempty" binding:"omitempty,min=0" example:"10.00"`
+	ItemDiscountPercentage *float64 `json:"item_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
 }
 
 // PurchaseReceiptListRequest represents parameters for listing purchase receipts
@@ -275,112 +248,35 @@ func (req *UpdatePurchaseReceiptRequest) ApplyToPurchaseReceiptModel(pr *models.
 	if req.SupplierID != nil {
 		pr.SupplierID = *req.SupplierID
 	}
-	if req.OrderDate != nil {
-		pr.OrderDate = *req.OrderDate
+	if req.PurchaseDate != nil {
+		pr.PurchaseDate = *req.PurchaseDate
 	}
-	if req.ExpectedDate != nil {
-		pr.ExpectedDate = req.ExpectedDate
+	if req.SupplierBillNumber != "" {
+		pr.SupplierBillNumber = req.SupplierBillNumber
 	}
-	if req.Reference != "" {
-		pr.Reference = req.Reference
+	if req.BillDiscountAmount != nil {
+		pr.BillDiscountAmount = *req.BillDiscountAmount
 	}
-	if req.Terms != "" {
-		pr.Terms = req.Terms
+	if req.BillDiscountPercentage != nil {
+		pr.BillDiscountPercentage = *req.BillDiscountPercentage
 	}
-	if req.OrderNotes != "" {
-		pr.OrderNotes = req.OrderNotes
-	}
-	if req.TaxRate != nil {
-		pr.TaxRate = *req.TaxRate
-	}
-	if req.ShippingCost != nil {
-		pr.ShippingCost = *req.ShippingCost
-	}
-	if req.DiscountAmount != nil {
-		pr.DiscountAmount = *req.DiscountAmount
-	}
-	if req.Currency != "" {
-		pr.Currency = req.Currency
-	}
-	
-	// Receipt information updates
-	if req.ReceivedDate != nil {
-		pr.ReceivedDate = req.ReceivedDate
-	}
-	if req.DeliveryDate != nil {
-		pr.DeliveryDate = req.DeliveryDate
-	}
-	if req.DeliveryNote != "" {
-		pr.DeliveryNote = req.DeliveryNote
-	}
-	if req.InvoiceNumber != "" {
-		pr.InvoiceNumber = req.InvoiceNumber
-	}
-	if req.InvoiceDate != nil {
-		pr.InvoiceDate = req.InvoiceDate
-	}
-	if req.VehicleNumber != "" {
-		pr.VehicleNumber = req.VehicleNumber
-	}
-	if req.DriverName != "" {
-		pr.DriverName = req.DriverName
-	}
-	if req.QualityCheck != nil {
-		pr.QualityCheck = *req.QualityCheck
-	}
-	if req.QualityNotes != "" {
-		pr.QualityNotes = req.QualityNotes
-	}
-	if req.ReceiptNotes != "" {
-		pr.ReceiptNotes = req.ReceiptNotes
+	if req.Notes != "" {
+		pr.Notes = req.Notes
 	}
 }
 
 // ApplyToPurchaseReceiptItemModel applies UpdatePurchaseReceiptItemRequest to existing purchase receipt item model
 func (req *UpdatePurchaseReceiptItemRequest) ApplyToPurchaseReceiptItemModel(item *models.PurchaseReceiptItem) {
-	// Order information updates
-	if req.OrderedQuantity != nil {
-		item.OrderedQuantity = *req.OrderedQuantity
+	if req.Quantity != nil {
+		item.Quantity = *req.Quantity
 	}
-	if req.UnitPrice != nil {
-		item.UnitPrice = *req.UnitPrice
+	if req.UnitCost != nil {
+		item.UnitCost = *req.UnitCost
 	}
-	if req.DiscountAmount != nil {
-		item.DiscountAmount = *req.DiscountAmount
+	if req.ItemDiscountAmount != nil {
+		item.ItemDiscountAmount = *req.ItemDiscountAmount
 	}
-	if req.OrderNotes != "" {
-		item.OrderNotes = req.OrderNotes
-	}
-	
-	// Receipt information updates
-	if req.ReceivedQuantity != nil {
-		item.ReceivedQuantity = *req.ReceivedQuantity
-	}
-	if req.AcceptedQuantity != nil {
-		item.AcceptedQuantity = *req.AcceptedQuantity
-	}
-	if req.RejectedQuantity != nil {
-		item.RejectedQuantity = *req.RejectedQuantity
-	}
-	if req.DamagedQuantity != nil {
-		item.DamagedQuantity = *req.DamagedQuantity
-	}
-	if req.ExpiryDate != nil {
-		item.ExpiryDate = req.ExpiryDate
-	}
-	if req.BatchNumber != "" {
-		item.BatchNumber = req.BatchNumber
-	}
-	if req.SerialNumbers != "" {
-		item.SerialNumbers = req.SerialNumbers
-	}
-	if req.QualityStatus != "" {
-		item.QualityStatus = req.QualityStatus
-	}
-	if req.QualityNotes != "" {
-		item.QualityNotes = req.QualityNotes
-	}
-	if req.ReceiptNotes != "" {
-		item.ReceiptNotes = req.ReceiptNotes
+	if req.ItemDiscountPercentage != nil {
+		item.ItemDiscountPercentage = *req.ItemDiscountPercentage
 	}
 }

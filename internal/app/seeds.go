@@ -367,56 +367,46 @@ func (ctx *Context) seedPurchaseReceipts(ctxBg context.Context) error {
 	
 	// Parse dates
 	orderDate1, _ := time.Parse("2006-01-02", "2024-01-15")
-	expectedDate1, _ := time.Parse("2006-01-02", "2024-01-20")
-	receivedDate1, _ := time.Parse("2006-01-02", "2024-01-19")
-	
 	orderDate2, _ := time.Parse("2006-01-02", "2024-01-20")
-	expectedDate2, _ := time.Parse("2006-01-02", "2024-01-28")
-	
 	orderDate3, _ := time.Parse("2006-01-02", "2024-01-25")
-	expectedDate3, _ := time.Parse("2006-01-02", "2024-02-05")
 	
 	// Create sample purchase receipts showing the unified workflow
 	purchaseReceipts := []models.PurchaseReceipt{
 		{
-			ReceiptNumber:  "PR-2024-001",
-			SupplierID:     suppliers[0].ID,
-			Status:         models.PurchaseReceiptStatusCompleted,
-			OrderDate:      orderDate1,
-			ExpectedDate:   &expectedDate1,
-			ReceivedDate:   &receivedDate1,
-			TotalAmount:    2500.00,
-			TaxRate:        8.5,
-			ShippingCost:   50.00,
-			DiscountAmount: 100.00,
-			Currency:       "USD",
-			OrderNotes:     "First purchase receipt - office equipment",
-			CreatedByID:    adminUser.ID,
+			ReceiptNumber:          "PR-2024-001",
+			SupplierID:             suppliers[0].ID,
+			Status:                 models.PurchaseReceiptStatusCompleted,
+			PurchaseDate:           orderDate1,
+			SupplierBillNumber:     "SUP-001-2024",
+			BillDiscountAmount:     100.00,
+			BillDiscountPercentage: 0.00,
+			TotalAmount:            2500.00,
+			Notes:                  "First purchase receipt - office equipment",
+			CreatedByID:            adminUser.ID,
 		},
 		{
-			ReceiptNumber:  "PR-2024-002", 
-			SupplierID:     suppliers[1].ID,
-			Status:         models.PurchaseReceiptStatusOrdered,
-			OrderDate:      orderDate2,
-			ExpectedDate:   &expectedDate2,
-			TotalAmount:    1800.00,
-			TaxRate:        8.5,
-			Currency:       "USD",
-			OrderNotes:     "Computer peripherals order",
-			CreatedByID:    adminUser.ID,
+			ReceiptNumber:          "PR-2024-002",
+			SupplierID:             suppliers[1].ID,
+			Status:                 models.PurchaseReceiptStatusPending,
+			PurchaseDate:           orderDate2,
+			SupplierBillNumber:     "SUP-002-2024",
+			BillDiscountAmount:     0.00,
+			BillDiscountPercentage: 5.00,
+			TotalAmount:            1800.00,
+			Notes:                  "Computer peripherals order",
+			CreatedByID:            adminUser.ID,
 		},
 		{
-			ReceiptNumber:  "PR-2024-003",
-			SupplierID:     suppliers[0].ID, 
-			Status:         models.PurchaseReceiptStatusDraft,
-			OrderDate:      orderDate3,
-			ExpectedDate:   &expectedDate3,
-			TotalAmount:    3200.00,
-			TaxRate:        8.5,
-			ShippingCost:   75.00,
-			Currency:       "USD",
-			OrderNotes:     "Draft purchase for networking equipment",
-			CreatedByID:    adminUser.ID,
+			ReceiptNumber:          "PR-2024-003",
+			SupplierID:             suppliers[0].ID,
+			Status:                 models.PurchaseReceiptStatusReceived,
+			PurchaseDate:           orderDate3,
+			SupplierBillNumber:     "SUP-003-2024",
+			BillDiscountAmount:     0.00,
+			BillDiscountPercentage: 0.00,
+			TotalAmount:            3200.00,
+			Notes:                  "Draft purchase for networking equipment",
+			CreatedByID:            adminUser.ID,
 		},
 	}
 	
@@ -429,28 +419,26 @@ func (ctx *Context) seedPurchaseReceipts(ctxBg context.Context) error {
 		// Add some items to each purchase receipt
 		items := []models.PurchaseReceiptItem{
 			{
-				PurchaseReceiptID: purchaseReceipt.ID,
-				ProductID:         products[i%len(products)].ID,
-				OrderedQuantity:   10,
-				ReceivedQuantity:  10,
-				AcceptedQuantity:  10,
-				UnitPrice:        100.00,
-				TotalPrice:       1000.00,
+				PurchaseReceiptID:      purchaseReceipt.ID,
+				ProductID:              products[i%len(products)].ID,
+				Quantity:               10,
+				UnitCost:               100.00,
+				ItemDiscountAmount:     0.00,
+				ItemDiscountPercentage: 0.00,
+				LineTotal:              1000.00,
 			},
 		}
 		
 		// Add a second item for variety
 		if i+1 < len(products) {
 			items = append(items, models.PurchaseReceiptItem{
-				PurchaseReceiptID: purchaseReceipt.ID,
-				ProductID:         products[(i+1)%len(products)].ID,
-				OrderedQuantity:   5,
-				ReceivedQuantity:  5,
-				AcceptedQuantity:  4, // Show some quality control
-				RejectedQuantity:  1,
-				UnitPrice:        200.00,
-				TotalPrice:       1000.00,
-				QualityNotes:     "1 unit damaged in shipping",
+				PurchaseReceiptID:      purchaseReceipt.ID,
+				ProductID:              products[(i+1)%len(products)].ID,
+				Quantity:               5,
+				UnitCost:               200.00,
+				ItemDiscountAmount:     50.00,
+				ItemDiscountPercentage: 0.00,
+				LineTotal:              950.00,
 			})
 		}
 		

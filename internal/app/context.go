@@ -28,6 +28,7 @@ type Context struct {
 	ProductRepo               interfaces.ProductRepository
 	InventoryRepo             interfaces.InventoryRepository
 	StockMovementRepo         interfaces.StockMovementRepository
+	StockBatchRepo            interfaces.StockBatchRepository
 	AuditLogRepo              interfaces.AuditLogRepository
 	CustomerRepo              interfaces.CustomerRepository
 	BrandRepo                 interfaces.BrandRepository
@@ -86,6 +87,7 @@ func (ctx *Context) initRepositories() {
 	ctx.ProductRepo = repository.NewProductRepository(ctx.Database.DB)
 	ctx.InventoryRepo = repository.NewInventoryRepository(ctx.Database.DB)
 	ctx.StockMovementRepo = repository.NewStockMovementRepository(ctx.Database.DB)
+	ctx.StockBatchRepo = repository.NewStockBatchRepository(ctx.Database.DB)
 	ctx.AuditLogRepo = repository.NewAuditLogRepository(ctx.Database.DB)
 	ctx.CustomerRepo = repository.NewCustomerRepository(ctx.Database.DB)
 	ctx.BrandRepo = repository.NewBrandRepository(ctx.Database.DB)
@@ -102,6 +104,8 @@ func (ctx *Context) initServices() {
 		ctx.SupplierRepo,
 		ctx.ProductRepo,
 		ctx.InventoryRepo,
+		ctx.StockBatchRepo,
+		ctx.StockMovementRepo,
 	)
 	ctx.ProductService = product.NewService(
 		ctx.ProductRepo,

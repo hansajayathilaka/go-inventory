@@ -18,11 +18,8 @@ var (
 	ErrInvalidStatus             = errors.New("invalid status transition")
 	ErrInsufficientItems         = errors.New("no items in purchase receipt")
 	ErrItemNotFound              = errors.New("item not found")
-	ErrQuantityExceedsOrdered    = errors.New("received quantity exceeds ordered quantity")
 	ErrCannotModifyCompleted     = errors.New("cannot modify completed purchase receipt")
 	ErrInvalidQuantity           = errors.New("invalid quantity")
-	ErrCannotApprove             = errors.New("cannot approve purchase receipt")
-	ErrCannotSend                = errors.New("cannot send purchase receipt")
 	ErrCannotReceive             = errors.New("cannot receive goods for purchase receipt")
 	ErrCannotCancel              = errors.New("cannot cancel purchase receipt")
 )
@@ -44,6 +41,7 @@ type Service interface {
 	ReceiveGoods(ctx context.Context, id uuid.UUID) error
 	CompletePurchaseReceipt(ctx context.Context, id uuid.UUID) error
 	CancelPurchaseReceipt(ctx context.Context, id uuid.UUID) error
+	ProcessStockIntegration(ctx context.Context, pr *models.PurchaseReceipt) error
 	
 	// Purchase Receipt item operations
 	AddPurchaseReceiptItem(ctx context.Context, item *models.PurchaseReceiptItem) error
@@ -53,6 +51,9 @@ type Service interface {
 	
 	// Business logic operations
 	CalculatePurchaseReceiptTotals(ctx context.Context, pr *models.PurchaseReceipt) error
+	CalculateItemDiscount(baseAmount, discountPercentage, discountAmount float64) float64
+	CalculateBillDiscount(itemsTotal, discountPercentage, discountAmount float64) float64
+	ValidateStatusTransition(fromStatus, toStatus models.PurchaseReceiptStatus) error
 	GenerateReceiptNumber(ctx context.Context) (string, error)
 	ValidatePurchaseReceipt(ctx context.Context, pr *models.PurchaseReceipt, isUpdate bool) error
 	
@@ -66,6 +67,8 @@ type service struct {
 	supplierRepo        interfaces.SupplierRepository
 	productRepo         interfaces.ProductRepository
 	inventoryRepo       interfaces.InventoryRepository
+	stockBatchRepo      interfaces.StockBatchRepository
+	stockMovementRepo   interfaces.StockMovementRepository
 }
 
 func NewService(
@@ -73,12 +76,16 @@ func NewService(
 	supplierRepo interfaces.SupplierRepository,
 	productRepo interfaces.ProductRepository,
 	inventoryRepo interfaces.InventoryRepository,
+	stockBatchRepo interfaces.StockBatchRepository,
+	stockMovementRepo interfaces.StockMovementRepository,
 ) Service {
 	return &service{
 		purchaseReceiptRepo: purchaseReceiptRepo,
 		supplierRepo:        supplierRepo,
 		productRepo:         productRepo,
 		inventoryRepo:       inventoryRepo,
+		stockBatchRepo:      stockBatchRepo,
+		stockMovementRepo:   stockMovementRepo,
 	}
 }
 
@@ -236,8 +243,9 @@ func (s *service) ReceiveGoods(ctx context.Context, id uuid.UUID) error {
 		return ErrPurchaseReceiptNotFound
 	}
 	
-	if !pr.CanReceiveGoods() {
-		return ErrCannotReceive
+	// Validate status transition
+	if err := s.ValidateStatusTransition(pr.Status, models.PurchaseReceiptStatusReceived); err != nil {
+		return fmt.Errorf("cannot receive goods: %w", err)
 	}
 	
 	pr.Status = models.PurchaseReceiptStatusReceived
@@ -252,8 +260,14 @@ func (s *service) CompletePurchaseReceipt(ctx context.Context, id uuid.UUID) err
 		return ErrPurchaseReceiptNotFound
 	}
 	
-	if pr.Status != models.PurchaseReceiptStatusReceived {
-		return ErrInvalidStatus
+	// Validate status transition
+	if err := s.ValidateStatusTransition(pr.Status, models.PurchaseReceiptStatusCompleted); err != nil {
+		return fmt.Errorf("cannot complete purchase receipt: %w", err)
+	}
+	
+	// Process stock integration before marking as completed
+	if err := s.ProcessStockIntegration(ctx, pr); err != nil {
+		return fmt.Errorf("stock integration failed: %w", err)
 	}
 	
 	pr.Status = models.PurchaseReceiptStatusCompleted
@@ -267,13 +281,87 @@ func (s *service) CancelPurchaseReceipt(ctx context.Context, id uuid.UUID) error
 		return ErrPurchaseReceiptNotFound
 	}
 	
-	if !pr.CanBeCancelled() {
-		return ErrCannotCancel
+	// Validate status transition
+	if err := s.ValidateStatusTransition(pr.Status, models.PurchaseReceiptStatusCancelled); err != nil {
+		return fmt.Errorf("cannot cancel purchase receipt: %w", err)
 	}
 	
 	pr.Status = models.PurchaseReceiptStatusCancelled
 	
 	return s.purchaseReceiptRepo.Update(ctx, pr)
+}
+
+// ProcessStockIntegration creates stock batches and updates inventory when purchase receipt is completed
+func (s *service) ProcessStockIntegration(ctx context.Context, pr *models.PurchaseReceipt) error {
+	// Get all items for this purchase receipt
+	items, err := s.purchaseReceiptRepo.GetItemsByReceipt(ctx, pr.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get purchase receipt items: %w", err)
+	}
+	
+	for _, item := range items {
+		// Create stock batch for this item
+		stockBatch := &models.StockBatch{
+			ID:                uuid.New(),
+			ProductID:         item.ProductID,
+			SupplierID:        &pr.SupplierID,
+			Quantity:          item.Quantity,
+			AvailableQuantity: item.Quantity,
+			CostPrice:         item.UnitCost,
+			ReceivedDate:      &pr.PurchaseDate,
+			ExpiryDate:        nil, // TODO: Add expiry date if needed
+			BatchNumber:       fmt.Sprintf("%s-%s", pr.ReceiptNumber, item.ID.String()[:8]),
+			Notes:             fmt.Sprintf("From purchase receipt %s", pr.ReceiptNumber),
+			IsActive:          true,
+		}
+		
+		if err := s.stockBatchRepo.Create(ctx, stockBatch); err != nil {
+			return fmt.Errorf("failed to create stock batch for product %s: %w", item.ProductID, err)
+		}
+		
+		// Create stock movement record
+		stockMovement := &models.StockMovement{
+			ID:            uuid.New(),
+			ProductID:     item.ProductID,
+			BatchID:       &stockBatch.ID,
+			MovementType:  models.MovementIN,
+			Quantity:      item.Quantity,
+			UnitCost:      item.UnitCost,
+			TotalCost:     item.LineTotal,
+			ReferenceType: "purchase_receipt",
+			ReferenceID:   pr.ID.String(),
+			Notes:         fmt.Sprintf("Stock received from purchase receipt %s", pr.ReceiptNumber),
+			UserID:        pr.CreatedByID,
+		}
+		
+		if err := s.stockMovementRepo.Create(ctx, stockMovement); err != nil {
+			return fmt.Errorf("failed to create stock movement for product %s: %w", item.ProductID, err)
+		}
+		
+		// Update inventory levels
+		inventory, err := s.inventoryRepo.GetByProduct(ctx, item.ProductID)
+		if err != nil {
+			// Create new inventory record if it doesn't exist
+			inventory = &models.Inventory{
+				ID:           uuid.New(),
+				ProductID:    item.ProductID,
+				Quantity:     item.Quantity,
+				ReorderLevel: 10, // Default reorder level
+				MaxLevel:     100, // Default max level
+			}
+			if err := s.inventoryRepo.Create(ctx, inventory); err != nil {
+				return fmt.Errorf("failed to create inventory record for product %s: %w", item.ProductID, err)
+			}
+		} else {
+			// Update existing inventory
+			inventory.Quantity += item.Quantity
+			if err := s.inventoryRepo.Update(ctx, inventory); err != nil {
+				return fmt.Errorf("failed to update inventory for product %s: %w", item.ProductID, err)
+			}
+		}
+	}
+	
+	return nil
 }
 
 // Purchase Receipt Item Operations
@@ -303,11 +391,9 @@ func (s *service) AddPurchaseReceiptItem(ctx context.Context, item *models.Purch
 		return errors.New("product is inactive")
 	}
 	
-	// Calculate item totals
+	// Calculate item totals with proper discount handling
 	baseAmount := float64(item.Quantity) * item.UnitCost
-	if item.ItemDiscountPercentage > 0 {
-		item.ItemDiscountAmount = baseAmount * (item.ItemDiscountPercentage / 100)
-	}
+	item.ItemDiscountAmount = s.CalculateItemDiscount(baseAmount, item.ItemDiscountPercentage, item.ItemDiscountAmount)
 	item.LineTotal = baseAmount - item.ItemDiscountAmount
 	
 	if err := s.purchaseReceiptRepo.CreateItem(ctx, item); err != nil {
@@ -334,11 +420,9 @@ func (s *service) UpdatePurchaseReceiptItem(ctx context.Context, item *models.Pu
 		return ErrCannotModifyCompleted
 	}
 	
-	// Calculate item totals
+	// Calculate item totals with proper discount handling
 	baseAmount := float64(item.Quantity) * item.UnitCost
-	if item.ItemDiscountPercentage > 0 {
-		item.ItemDiscountAmount = baseAmount * (item.ItemDiscountPercentage / 100)
-	}
+	item.ItemDiscountAmount = s.CalculateItemDiscount(baseAmount, item.ItemDiscountPercentage, item.ItemDiscountAmount)
 	item.LineTotal = baseAmount - item.ItemDiscountAmount
 	
 	if err := s.purchaseReceiptRepo.UpdateItem(ctx, item); err != nil {
@@ -401,16 +485,83 @@ func (s *service) CalculatePurchaseReceiptTotals(ctx context.Context, pr *models
 		itemsTotal += item.LineTotal
 	}
 	
-	// Apply bill-level discount
-	billDiscountAmount := pr.BillDiscountAmount
-	if pr.BillDiscountPercentage > 0 {
-		billDiscountAmount = itemsTotal * (pr.BillDiscountPercentage / 100)
-		pr.BillDiscountAmount = billDiscountAmount
-	}
+	// Apply bill-level discount with proper validation
+	billDiscountAmount := s.CalculateBillDiscount(itemsTotal, pr.BillDiscountPercentage, pr.BillDiscountAmount)
+	pr.BillDiscountAmount = billDiscountAmount
 	
 	pr.TotalAmount = itemsTotal - billDiscountAmount
 	
+	// Ensure total amount is never negative
+	if pr.TotalAmount < 0 {
+		pr.TotalAmount = 0
+	}
+	
 	return s.purchaseReceiptRepo.Update(ctx, pr)
+}
+
+// CalculateItemDiscount calculates discount for individual item
+func (s *service) CalculateItemDiscount(baseAmount, discountPercentage, discountAmount float64) float64 {
+	// Percentage discount takes precedence over fixed amount
+	if discountPercentage > 0 {
+		return baseAmount * (discountPercentage / 100)
+	}
+	
+	// Ensure discount amount doesn't exceed base amount
+	if discountAmount > baseAmount {
+		return baseAmount
+	}
+	
+	return discountAmount
+}
+
+// CalculateBillDiscount calculates discount for entire bill
+func (s *service) CalculateBillDiscount(itemsTotal, discountPercentage, discountAmount float64) float64 {
+	// Percentage discount takes precedence over fixed amount
+	if discountPercentage > 0 {
+		return itemsTotal * (discountPercentage / 100)
+	}
+	
+	// Ensure discount amount doesn't exceed items total
+	if discountAmount > itemsTotal {
+		return itemsTotal
+	}
+	
+	return discountAmount
+}
+
+// ValidateStatusTransition validates if status transition is allowed
+func (s *service) ValidateStatusTransition(fromStatus, toStatus models.PurchaseReceiptStatus) error {
+	// Define valid transitions
+	validTransitions := map[models.PurchaseReceiptStatus][]models.PurchaseReceiptStatus{
+		models.PurchaseReceiptStatusPending: {
+			models.PurchaseReceiptStatusReceived,
+			models.PurchaseReceiptStatusCancelled,
+		},
+		models.PurchaseReceiptStatusReceived: {
+			models.PurchaseReceiptStatusCompleted,
+			models.PurchaseReceiptStatusCancelled,
+			models.PurchaseReceiptStatusPending, // Allow going back to pending if needed
+		},
+		models.PurchaseReceiptStatusCompleted: {
+			// No transitions from completed - it's final
+		},
+		models.PurchaseReceiptStatusCancelled: {
+			// No transitions from cancelled - it's final
+		},
+	}
+	
+	allowedTransitions, exists := validTransitions[fromStatus]
+	if !exists {
+		return fmt.Errorf("invalid current status: %s", fromStatus)
+	}
+	
+	for _, allowedStatus := range allowedTransitions {
+		if allowedStatus == toStatus {
+			return nil
+		}
+	}
+	
+	return fmt.Errorf("invalid status transition from %s to %s", fromStatus, toStatus)
 }
 
 func (s *service) GenerateReceiptNumber(ctx context.Context) (string, error) {
@@ -486,12 +637,8 @@ func (s *service) GetPurchaseReceiptSummary(ctx context.Context, startDate, endD
 	summary := map[string]interface{}{
 		"total_receipts":     len(receipts),
 		"total_value":        0.0,
-		"draft_receipts":     0,
 		"pending_receipts":   0,
-		"approved_receipts":  0,
-		"ordered_receipts":   0,
 		"received_receipts":  0,
-		"partial_receipts":   0,
 		"completed_receipts": 0,
 		"cancelled_receipts": 0,
 	}
@@ -505,12 +652,8 @@ func (s *service) GetPurchaseReceiptSummary(ctx context.Context, startDate, endD
 	}
 	
 	summary["total_value"] = totalValue
-	summary["draft_receipts"] = statusCounts["draft"]
 	summary["pending_receipts"] = statusCounts["pending"]
-	summary["approved_receipts"] = statusCounts["approved"]
-	summary["ordered_receipts"] = statusCounts["ordered"]
 	summary["received_receipts"] = statusCounts["received"]
-	summary["partial_receipts"] = statusCounts["partial"]
 	summary["completed_receipts"] = statusCounts["completed"]
 	summary["cancelled_receipts"] = statusCounts["cancelled"]
 	
