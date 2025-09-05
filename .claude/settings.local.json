@@ -91,6 +91,7 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "shadcn"
+    "shadcn",
+    "playwright"
   ]
 }
