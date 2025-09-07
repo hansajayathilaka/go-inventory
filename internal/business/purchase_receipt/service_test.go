@@ -48,46 +48,101 @@ func (m *MockPurchaseReceiptRepository) Delete(ctx context.Context, id uuid.UUID
 	return args.Error(0)
 }
 
-func (m *MockPurchaseReceiptRepository) List(ctx context.Context, limit, offset int) ([]*models.PurchaseReceipt, error) {
-	args := m.Called(ctx, limit, offset)
+func (m *MockPurchaseReceiptRepository) List(ctx context.Context, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, offset, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	return args.Get(0).([]*models.PurchaseReceipt), args.Error(1)
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockPurchaseReceiptRepository) GetBySupplier(ctx context.Context, supplierID uuid.UUID) ([]*models.PurchaseReceipt, error) {
-	args := m.Called(ctx, supplierID)
+func (m *MockPurchaseReceiptRepository) GetBySupplier(ctx context.Context, supplierID uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, supplierID, offset, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	return args.Get(0).([]*models.PurchaseReceipt), args.Error(1)
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockPurchaseReceiptRepository) GetByStatus(ctx context.Context, status models.PurchaseReceiptStatus) ([]*models.PurchaseReceipt, error) {
-	args := m.Called(ctx, status)
+func (m *MockPurchaseReceiptRepository) GetByStatus(ctx context.Context, status models.PurchaseReceiptStatus, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, status, offset, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	return args.Get(0).([]*models.PurchaseReceipt), args.Error(1)
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockPurchaseReceiptRepository) Search(ctx context.Context, query string, limit, offset int) ([]*models.PurchaseReceipt, error) {
-	args := m.Called(ctx, query, limit, offset)
+func (m *MockPurchaseReceiptRepository) GetByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, userID, offset, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, args.Get(1).(int64), args.Error(2)
 	}
-	return args.Get(0).([]*models.PurchaseReceipt), args.Error(1)
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockPurchaseReceiptRepository) Count(ctx context.Context) (int64, error) {
-	args := m.Called(ctx)
-	return args.Get(0).(int64), args.Error(1)
+func (m *MockPurchaseReceiptRepository) GetByDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, startDate, endDate, offset, limit)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
 }
 
-func (m *MockPurchaseReceiptRepository) AddItem(ctx context.Context, item *models.PurchaseReceiptItem) error {
+func (m *MockPurchaseReceiptRepository) GetByPurchaseDateRange(ctx context.Context, startDate, endDate time.Time, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, startDate, endDate, offset, limit)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockPurchaseReceiptRepository) Search(ctx context.Context, receiptNumber, supplierName, supplierBillNumber string, status models.PurchaseReceiptStatus, startDate, endDate *time.Time, createdByID *uuid.UUID, offset, limit int) ([]*models.PurchaseReceipt, int64, error) {
+	args := m.Called(ctx, receiptNumber, supplierName, supplierBillNumber, status, startDate, endDate, createdByID, offset, limit)
+	if args.Get(0) == nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+	return args.Get(0).([]*models.PurchaseReceipt), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *MockPurchaseReceiptRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status models.PurchaseReceiptStatus, updatedByID uuid.UUID) error {
+	args := m.Called(ctx, id, status, updatedByID)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) MarkAsReceived(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) MarkAsCompleted(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) Cancel(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) CreateItem(ctx context.Context, item *models.PurchaseReceiptItem) error {
 	args := m.Called(ctx, item)
 	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) GetItem(ctx context.Context, itemID uuid.UUID) (*models.PurchaseReceiptItem, error) {
+	args := m.Called(ctx, itemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.PurchaseReceiptItem), args.Error(1)
+}
+
+func (m *MockPurchaseReceiptRepository) GetItemsByReceipt(ctx context.Context, receiptID uuid.UUID) ([]*models.PurchaseReceiptItem, error) {
+	args := m.Called(ctx, receiptID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.PurchaseReceiptItem), args.Error(1)
 }
 
 func (m *MockPurchaseReceiptRepository) UpdateItem(ctx context.Context, item *models.PurchaseReceiptItem) error {
@@ -95,17 +150,48 @@ func (m *MockPurchaseReceiptRepository) UpdateItem(ctx context.Context, item *mo
 	return args.Error(0)
 }
 
-func (m *MockPurchaseReceiptRepository) RemoveItem(ctx context.Context, id uuid.UUID) error {
+func (m *MockPurchaseReceiptRepository) DeleteItem(ctx context.Context, itemID uuid.UUID) error {
+	args := m.Called(ctx, itemID)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) UpdateDiscounts(ctx context.Context, id uuid.UUID, billDiscountAmount, billDiscountPercentage float64) error {
+	args := m.Called(ctx, id, billDiscountAmount, billDiscountPercentage)
+	return args.Error(0)
+}
+
+func (m *MockPurchaseReceiptRepository) RecalculateTotal(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockPurchaseReceiptRepository) GetItems(ctx context.Context, purchaseReceiptID uuid.UUID) ([]*models.PurchaseReceiptItem, error) {
-	args := m.Called(ctx, purchaseReceiptID)
+func (m *MockPurchaseReceiptRepository) GetStatsByDateRange(ctx context.Context, startDate, endDate time.Time) (map[string]interface{}, error) {
+	args := m.Called(ctx, startDate, endDate)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*models.PurchaseReceiptItem), args.Error(1)
+	return args.Get(0).(map[string]interface{}), args.Error(1)
+}
+
+func (m *MockPurchaseReceiptRepository) GetTopSuppliers(ctx context.Context, limit int, startDate, endDate *time.Time) ([]map[string]interface{}, error) {
+	args := m.Called(ctx, limit, startDate, endDate)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]map[string]interface{}), args.Error(1)
+}
+
+func (m *MockPurchaseReceiptRepository) GetPendingReceipts(ctx context.Context) ([]*models.PurchaseReceipt, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*models.PurchaseReceipt), args.Error(1)
+}
+
+func (m *MockPurchaseReceiptRepository) GenerateReceiptNumber(ctx context.Context) (string, error) {
+	args := m.Called(ctx)
+	return args.String(0), args.Error(1)
 }
 
 type MockSupplierRepository struct {
@@ -151,8 +237,16 @@ func (m *MockSupplierRepository) List(ctx context.Context, limit, offset int) ([
 	return args.Get(0).([]*models.Supplier), args.Error(1)
 }
 
-func (m *MockSupplierRepository) Search(ctx context.Context, query string, limit, offset int) ([]*models.Supplier, error) {
-	args := m.Called(ctx, query, limit, offset)
+func (m *MockSupplierRepository) GetByCode(ctx context.Context, code string) (*models.Supplier, error) {
+	args := m.Called(ctx, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Supplier), args.Error(1)
+}
+
+func (m *MockSupplierRepository) GetActive(ctx context.Context) ([]*models.Supplier, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -260,12 +354,25 @@ func (m *MockProductRepository) GetByBrand(ctx context.Context, brandID uuid.UUI
 	return args.Get(0).([]*models.Product), args.Error(1)
 }
 
-func (m *MockProductRepository) GetLowStockProducts(ctx context.Context, threshold int) ([]*models.Product, error) {
-	args := m.Called(ctx, threshold)
+func (m *MockProductRepository) GetActive(ctx context.Context) ([]*models.Product, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*models.Product), args.Error(1)
+}
+
+func (m *MockProductRepository) CountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, categoryID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockProductRepository) CountByCategoriesBulk(ctx context.Context, categoryIDs []uuid.UUID) (map[uuid.UUID]int64, error) {
+	args := m.Called(ctx, categoryIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]int64), args.Error(1)
 }
 
 type MockInventoryRepository struct {
@@ -285,7 +392,7 @@ func (m *MockInventoryRepository) GetByID(ctx context.Context, id uuid.UUID) (*m
 	return args.Get(0).(*models.Inventory), args.Error(1)
 }
 
-func (m *MockInventoryRepository) GetByProductID(ctx context.Context, productID uuid.UUID) (*models.Inventory, error) {
+func (m *MockInventoryRepository) GetByProduct(ctx context.Context, productID uuid.UUID) (*models.Inventory, error) {
 	args := m.Called(ctx, productID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -311,25 +418,40 @@ func (m *MockInventoryRepository) List(ctx context.Context, limit, offset int) (
 	return args.Get(0).([]*models.Inventory), args.Error(1)
 }
 
-func (m *MockInventoryRepository) Search(ctx context.Context, query string, limit, offset int) ([]*models.Inventory, error) {
-	args := m.Called(ctx, query, limit, offset)
+func (m *MockInventoryRepository) GetLowStock(ctx context.Context) ([]*models.Inventory, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*models.Inventory), args.Error(1)
 }
 
-func (m *MockInventoryRepository) GetLowStockItems(ctx context.Context, threshold int) ([]*models.Inventory, error) {
-	args := m.Called(ctx, threshold)
+func (m *MockInventoryRepository) GetZeroStock(ctx context.Context) ([]*models.Inventory, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*models.Inventory), args.Error(1)
 }
 
-func (m *MockInventoryRepository) AdjustQuantity(ctx context.Context, productID uuid.UUID, quantity int, reason string) error {
-	args := m.Called(ctx, productID, quantity, reason)
+func (m *MockInventoryRepository) UpdateQuantity(ctx context.Context, productID uuid.UUID, quantity int) error {
+	args := m.Called(ctx, productID, quantity)
 	return args.Error(0)
+}
+
+func (m *MockInventoryRepository) ReserveStock(ctx context.Context, productID uuid.UUID, quantity int) error {
+	args := m.Called(ctx, productID, quantity)
+	return args.Error(0)
+}
+
+func (m *MockInventoryRepository) ReleaseReservedStock(ctx context.Context, productID uuid.UUID, quantity int) error {
+	args := m.Called(ctx, productID, quantity)
+	return args.Error(0)
+}
+
+func (m *MockInventoryRepository) GetTotalQuantityByProduct(ctx context.Context, productID uuid.UUID) (int, error) {
+	args := m.Called(ctx, productID)
+	return args.Get(0).(int), args.Error(1)
 }
 
 func (m *MockInventoryRepository) Count(ctx context.Context) (int64, error) {
@@ -403,7 +525,7 @@ func TestAddPurchaseReceiptItem_Success(t *testing.T) {
 	// Mock expectations
 	mockProductRepo.On("GetByID", mock.Anything, item.ProductID).Return(product, nil)
 	mockPRRepo.On("GetByID", mock.Anything, item.PurchaseReceiptID).Return(pr, nil)
-	mockPRRepo.On("AddItem", mock.Anything, item).Return(nil)
+	mockPRRepo.On("CreateItem", mock.Anything, item).Return(nil)
 
 	// Execute
 	err := service.AddPurchaseReceiptItem(context.Background(), item)
@@ -443,7 +565,12 @@ func TestAddPurchaseReceiptItem_ProductNotFound(t *testing.T) {
 
 	item := createTestPurchaseReceiptItem()
 
-	// Mock expectations
+	// Mock expectations - need to mock purchase receipt lookup first
+	pr := &models.PurchaseReceipt{
+		ID:     item.PurchaseReceiptID,
+		Status: models.PurchaseReceiptStatusPending,
+	}
+	mockPRRepo.On("GetByID", mock.Anything, item.PurchaseReceiptID).Return(pr, nil)
 	mockProductRepo.On("GetByID", mock.Anything, item.ProductID).Return(nil, errors.New("product not found"))
 
 	// Execute
@@ -452,6 +579,7 @@ func TestAddPurchaseReceiptItem_ProductNotFound(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "product not found")
+	mockPRRepo.AssertExpectations(t)
 	mockProductRepo.AssertExpectations(t)
 }
 
@@ -492,7 +620,9 @@ func TestRemovePurchaseReceiptItem_Success(t *testing.T) {
 	itemID := uuid.New()
 
 	// Mock expectations
-	mockPRRepo.On("RemoveItem", mock.Anything, itemID).Return(nil)
+	mockPRRepo.On("GetItem", mock.Anything, itemID).Return(&models.PurchaseReceiptItem{PurchaseReceiptID: uuid.New()}, nil)
+	mockPRRepo.On("GetByID", mock.Anything, mock.Anything).Return(createTestPurchaseReceipt(), nil)
+	mockPRRepo.On("DeleteItem", mock.Anything, itemID).Return(nil)
 
 	// Execute
 	err := service.RemovePurchaseReceiptItem(context.Background(), itemID)
@@ -517,7 +647,7 @@ func TestGetPurchaseReceiptItems_Success(t *testing.T) {
 	}
 
 	// Mock expectations
-	mockPRRepo.On("GetItems", mock.Anything, prID).Return(expectedItems, nil)
+	mockPRRepo.On("GetItemsByReceipt", mock.Anything, prID).Return(expectedItems, nil)
 
 	// Execute
 	items, err := service.GetPurchaseReceiptItems(context.Background(), prID)

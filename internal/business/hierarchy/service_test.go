@@ -146,6 +146,16 @@ func (r *smartCategoryRepo) Count(ctx context.Context) (int64, error) {
 	return int64(len(r.categories)), nil
 }
 
+func (r *smartCategoryRepo) Search(ctx context.Context, query string) ([]*models.Category, error) {
+	var result []*models.Category
+	for _, category := range r.categories {
+		if category.Name == query {
+			result = append(result, category)
+		}
+	}
+	return result, nil
+}
+
 type minimalProductRepo struct{}
 
 func (r *minimalProductRepo) GetByCategory(ctx context.Context, categoryID uuid.UUID) ([]*models.Product, error) {
@@ -178,6 +188,19 @@ func (r *minimalProductRepo) Search(ctx context.Context, query string, limit, of
 func (r *minimalProductRepo) Count(ctx context.Context) (int64, error) { return 0, nil }
 func (r *minimalProductRepo) GetActive(ctx context.Context) ([]*models.Product, error) {
 	return nil, nil
+}
+func (r *minimalProductRepo) GetByBrand(ctx context.Context, brandID uuid.UUID) ([]*models.Product, error) {
+	return nil, nil
+}
+func (r *minimalProductRepo) CountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	return 0, nil
+}
+func (r *minimalProductRepo) CountByCategoriesBulk(ctx context.Context, categoryIDs []uuid.UUID) (map[uuid.UUID]int64, error) {
+	result := make(map[uuid.UUID]int64)
+	for _, id := range categoryIDs {
+		result[id] = 0
+	}
+	return result, nil
 }
 
 func setupHierarchyService() Service {

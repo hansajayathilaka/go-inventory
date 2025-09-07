@@ -115,6 +115,17 @@ func (m *MockProductRepository) Count(ctx context.Context) (int64, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(int64), args.Error(1)
 }
+func (m *MockProductRepository) CountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, categoryID)
+	return args.Get(0).(int64), args.Error(1)
+}
+func (m *MockProductRepository) CountByCategoriesBulk(ctx context.Context, categoryIDs []uuid.UUID) (map[uuid.UUID]int64, error) {
+	args := m.Called(ctx, categoryIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]int64), args.Error(1)
+}
 
 type MockCategoryRepository struct {
 	mock.Mock
