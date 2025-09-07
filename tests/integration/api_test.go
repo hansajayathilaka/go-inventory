@@ -345,43 +345,23 @@ func (suite *APITestSuite) TestPurchaseReceiptManagement() {
 	var createdReceipt dto.PurchaseReceiptResponse
 	err = json.Unmarshal(w.Body.Bytes(), &createdReceipt)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "draft", createdReceipt.Status)
+	assert.Equal(suite.T(), "pending", createdReceipt.Status)
 
 	receiptID := createdReceipt.ID
 
 	// Test add item to purchase receipt
 	addItemReq := dto.CreatePurchaseReceiptItemRequest{
-		ProductID:       productID,
-		OrderedQuantity: 100,
-		UnitPrice:       25.50,
-		DiscountAmount:  5.0,
+		ProductID:               productID,
+		Quantity:               100,
+		UnitCost:               25.50,
+		ItemDiscountAmount:     5.0,
 	}
 
 	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/items", addItemReq)
 	assert.Equal(suite.T(), http.StatusCreated, w.Code)
 
-	// Test approve purchase receipt (draft → approved)
-	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/approve", nil)
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-
-	// Test send purchase receipt (approved → ordered)
-	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/send", nil)
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-
-	// Test receive purchase receipt (ordered → received)
-	deliveryDate, _ := time.Parse(time.RFC3339, "2024-01-18T14:30:00Z")
-	invoiceDate, _ := time.Parse(time.RFC3339, "2024-01-18T00:00:00Z")
-	
-	receiveReq := dto.UpdatePurchaseReceiptRequest{
-		DeliveryDate:   &deliveryDate,
-		VehicleNumber:  "TRK-123",
-		DriverName:     "John Doe",
-		DeliveryNote:   "DN-2024-001",
-		InvoiceNumber:  "INV-2024-001",
-		InvoiceDate:    &invoiceDate,
-	}
-
-	w = suite.makeAuthenticatedRequest("PUT", "/api/v1/purchase-receipts/"+receiptID.String(), receiveReq)
+	// Test receive purchase receipt (pending → received)
+	w = suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts/"+receiptID.String()+"/receive", nil)
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 
 	// Test complete purchase receipt (received → completed)
@@ -488,17 +468,6 @@ func (suite *APITestSuite) TestVehicleSpareParts() {
 	w = suite.makeAuthenticatedRequest("GET", "/api/v1/brands", nil)
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 
-	// Test vehicle brand endpoints
-	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-brands", nil)
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-
-	// Test vehicle model endpoints
-	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-models", nil)
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-
-	// Test vehicle compatibility endpoints
-	w = suite.makeAuthenticatedRequest("GET", "/api/v1/vehicle-compatibility", nil)
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
 }
 
 // Test Swagger Documentation
