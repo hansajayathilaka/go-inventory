@@ -341,18 +341,15 @@ func BenchmarkPurchaseReceiptCreate(b *testing.B) {
 	b.ReportAllocs()
 	
 	for i := 0; i < b.N; i++ {
-		orderDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
-		expectedDate, _ := time.Parse(time.RFC3339, "2024-01-20T10:00:00Z")
+		purchaseDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
 		
 		createReceiptReq := dto.CreatePurchaseReceiptRequest{
-			SupplierID:   supplierID,
-			OrderDate:    orderDate,
-			ExpectedDate: &expectedDate,
-			TaxRate:      10.0,
-			ShippingCost: 50.0,
-			Currency:     "USD",
-			OrderNotes:   fmt.Sprintf("Benchmark purchase receipt %d", i),
-			Terms:        "Net 30",
+			SupplierID:             supplierID,
+			PurchaseDate:           purchaseDate,
+			SupplierBillNumber:     fmt.Sprintf("PERF-BILL-%d", i),
+			BillDiscountAmount:     25.0,
+			BillDiscountPercentage: 5.0,
+			Notes:                  fmt.Sprintf("Benchmark purchase receipt %d", i),
 		}
 		
 		w := suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts", createReceiptReq)

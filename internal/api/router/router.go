@@ -151,11 +151,9 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			purchaseReceipts.PUT("/:id", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.UpdatePurchaseReceipt)
 			purchaseReceipts.DELETE("/:id", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.DeletePurchaseReceipt)
 			
-			// Status management operations
-			purchaseReceipts.POST("/:id/approve", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.ApprovePurchaseReceipt)
-			purchaseReceipts.POST("/:id/send", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.SendOrder)
+			// Simplified status management operations
+			// Obsolete approval workflow routes removed: /approve, /send, /verify
 			purchaseReceipts.POST("/:id/receive", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.ReceiveGoods)
-			purchaseReceipts.POST("/:id/verify", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.VerifyGoods)
 			purchaseReceipts.POST("/:id/complete", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.CompletePurchaseReceipt)
 			purchaseReceipts.POST("/:id/cancel", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.CancelPurchaseReceipt)
 			
@@ -168,6 +166,9 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			// Analytics and reporting
 			purchaseReceipts.GET("/summary", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.GetPurchaseReceiptSummary)
 			purchaseReceipts.GET("/suppliers/:supplier_id/performance", middleware.RequireMinimumRole("manager"), purchaseReceiptHandler.GetSupplierPerformance)
+			
+			// Discount calculation endpoint
+			purchaseReceipts.POST("/calculate-discount", middleware.RequireMinimumRole("staff"), purchaseReceiptHandler.CalculateDiscount)
 		}
 
 		// Category management routes (protected)

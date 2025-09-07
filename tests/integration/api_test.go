@@ -328,18 +328,15 @@ func (suite *APITestSuite) TestPurchaseReceiptManagement() {
 	productID := products.Products[0].ID
 
 	// Test create purchase receipt (order phase)
-	orderDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
-	expectedDate, _ := time.Parse(time.RFC3339, "2024-01-20T10:00:00Z")
+	purchaseDate, _ := time.Parse(time.RFC3339, "2024-01-15T10:00:00Z")
 	
 	createReceiptReq := dto.CreatePurchaseReceiptRequest{
-		SupplierID:    supplierID,
-		OrderDate:     orderDate,
-		ExpectedDate:  &expectedDate,
-		TaxRate:       10.0,
-		ShippingCost:  50.0,
-		Currency:      "USD",
-		OrderNotes:    "Test purchase receipt",
-		Terms:         "Net 30",
+		SupplierID:             supplierID,
+		PurchaseDate:           purchaseDate,
+		SupplierBillNumber:     "SUPP-BILL-001",
+		BillDiscountAmount:     25.0,
+		BillDiscountPercentage: 5.0,
+		Notes:                  "Test purchase receipt",
 	}
 
 	w := suite.makeAuthenticatedRequest("POST", "/api/v1/purchase-receipts", createReceiptReq)

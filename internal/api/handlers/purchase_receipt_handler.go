@@ -223,7 +223,7 @@ func (h *PurchaseReceiptHandler) DeletePurchaseReceipt(c *gin.Context) {
 // @Param supplier_id query string false "Filter by supplier ID"
 // @Param start_date query string false "Filter by start date (RFC3339 format)"
 // @Param end_date query string false "Filter by end date (RFC3339 format)"
-// @Param phase query string false "Filter by phase: order, receipt, all" default(all)
+// Phase filtering removed in simplified model
 // @Success 200 {object} dto.PaginatedResponse{data=[]dto.PurchaseReceiptResponse}
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
@@ -302,18 +302,7 @@ func (h *PurchaseReceiptHandler) ListPurchaseReceipts(c *gin.Context) {
 		return
 	}
 
-	// Filter by phase if specified (using simplified status)
-	if req.Phase != "" && req.Phase != "all" {
-		filteredPRs := []*models.PurchaseReceipt{}
-		for _, pr := range prs {
-			if req.Phase == "order" && (pr.Status == models.PurchaseReceiptStatusPending) {
-				filteredPRs = append(filteredPRs, pr)
-			} else if req.Phase == "receipt" && (pr.Status == models.PurchaseReceiptStatusReceived || pr.Status == models.PurchaseReceiptStatusCompleted) {
-				filteredPRs = append(filteredPRs, pr)
-			}
-		}
-		prs = filteredPRs
-	}
+	// Phase filtering removed - use status filter instead
 
 	responses := dto.ToPurchaseReceiptResponseList(prs)
 
@@ -329,133 +318,9 @@ func (h *PurchaseReceiptHandler) ListPurchaseReceipts(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// ApprovePurchaseReceipt godoc
-// @Summary Approve purchase receipt
-// @Description Approve a purchase receipt for ordering
-// @Tags purchase-receipts
-// @Security BearerAuth
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Receipt ID"
-// @Param approval body dto.ApproveRequest true "Approval data"
-// @Success 200 {object} dto.PurchaseReceiptResponse
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 401 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /purchase-receipts/{id}/approve [post]
-func (h *PurchaseReceiptHandler) ApprovePurchaseReceipt(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid purchase receipt ID",
-			Message: "Purchase receipt ID must be a valid UUID",
-		})
-		return
-	}
+// ApprovePurchaseReceipt endpoint removed - approval workflow not supported in simplified model
 
-	var req dto.ApproveRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request data",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Approval workflow has been removed in the simplified model
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error:   "Approval workflow not supported",
-		Message: "The approval workflow has been removed in the simplified purchase receipt model",
-	})
-	return
-	
-	// Legacy code - keeping for reference but unreachable
-	if false {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to approve purchase receipt",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Return updated purchase receipt
-	pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to retrieve updated purchase receipt",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	response := dto.ToPurchaseReceiptResponse(pr)
-	c.JSON(http.StatusOK, response)
-}
-
-// SendOrder godoc
-// @Summary Send purchase order to supplier
-// @Description Send approved purchase order to supplier
-// @Tags purchase-receipts
-// @Security BearerAuth
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Receipt ID"
-// @Param send_order body dto.SendOrderRequest true "Send order data"
-// @Success 200 {object} dto.PurchaseReceiptResponse
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 401 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /purchase-receipts/{id}/send [post]
-func (h *PurchaseReceiptHandler) SendOrder(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid purchase receipt ID",
-			Message: "Purchase receipt ID must be a valid UUID",
-		})
-		return
-	}
-
-	var req dto.SendOrderRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request data",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Send order workflow has been removed in the simplified model
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error:   "Send order workflow not supported",
-		Message: "The send order workflow has been removed in the simplified purchase receipt model",
-	})
-	return
-	
-	// Legacy code - keeping for reference but unreachable
-	if false {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to send purchase order",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Return updated purchase receipt
-	pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to retrieve updated purchase receipt",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	response := dto.ToPurchaseReceiptResponse(pr)
-	c.JSON(http.StatusOK, response)
-}
+// SendOrder endpoint removed - send order workflow not supported in simplified model
 
 // ReceiveGoods godoc
 // @Summary Receive goods from supplier
@@ -482,15 +347,7 @@ func (h *PurchaseReceiptHandler) ReceiveGoods(c *gin.Context) {
 		return
 	}
 
-	var req dto.ReceiveGoodsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request data",
-			Message: err.Error(),
-		})
-		return
-	}
-
+	// Simplified goods receipt - no additional data required
 	if err := h.service.ReceiveGoods(c.Request.Context(), id); err != nil {
 		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
 			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
@@ -507,9 +364,6 @@ func (h *PurchaseReceiptHandler) ReceiveGoods(c *gin.Context) {
 		return
 	}
 
-	// Additional receipt information update removed in simplified model
-	// The simplified model only tracks essential purchase receipt data
-
 	// Return updated purchase receipt
 	pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
 	if err != nil {
@@ -524,73 +378,7 @@ func (h *PurchaseReceiptHandler) ReceiveGoods(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// VerifyGoods godoc
-// @Summary Verify received goods
-// @Description Verify quality and condition of received goods
-// @Tags purchase-receipts
-// @Security BearerAuth
-// @Accept json
-// @Produce json
-// @Param id path string true "Purchase Receipt ID"
-// @Param verify_goods body dto.VerifyGoodsRequest true "Verify goods data"
-// @Success 200 {object} dto.PurchaseReceiptResponse
-// @Failure 400 {object} dto.ErrorResponse
-// @Failure 401 {object} dto.ErrorResponse
-// @Failure 404 {object} dto.ErrorResponse
-// @Failure 500 {object} dto.ErrorResponse
-// @Router /purchase-receipts/{id}/verify [post]
-func (h *PurchaseReceiptHandler) VerifyGoods(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid purchase receipt ID",
-			Message: "Purchase receipt ID must be a valid UUID",
-		})
-		return
-	}
-
-	var req dto.VerifyGoodsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "Invalid request data",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Goods verification workflow has been removed in the simplified model
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error:   "Goods verification not supported",
-		Message: "Goods verification workflow has been removed in the simplified purchase receipt model",
-	})
-	return
-	
-	// Legacy code - keeping for reference but unreachable
-	if false {
-		if err == purchase_receipt.ErrPurchaseReceiptNotFound {
-			c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Purchase receipt not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to verify goods",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	// Return updated purchase receipt
-	pr, err := h.service.GetPurchaseReceiptByID(c.Request.Context(), id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Error:   "Failed to retrieve updated purchase receipt",
-			Message: err.Error(),
-		})
-		return
-	}
-
-	response := dto.ToPurchaseReceiptResponse(pr)
-	c.JSON(http.StatusOK, response)
-}
+// VerifyGoods endpoint removed - goods verification workflow not supported in simplified model
 
 // CompletePurchaseReceipt godoc
 // @Summary Complete purchase receipt processing
@@ -1023,4 +811,81 @@ func (h *PurchaseReceiptHandler) GetSupplierPerformance(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, performance)
+}
+
+// CalculateDiscount godoc
+// @Summary Calculate purchase receipt discount
+// @Description Calculate total discount for a purchase receipt with items
+// @Tags purchase-receipts
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param calculation body dto.CreatePurchaseReceiptRequest true "Purchase receipt data for discount calculation"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Router /purchase-receipts/calculate-discount [post]
+func (h *PurchaseReceiptHandler) CalculateDiscount(c *gin.Context) {
+	var req dto.CreatePurchaseReceiptRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "Invalid request data",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// Convert to model for calculation
+	pr := req.ToPurchaseReceiptModel()
+
+	// Calculate item discounts
+	itemDiscounts := make([]map[string]interface{}, len(pr.Items))
+	var subtotal float64
+	
+	for i, item := range pr.Items {
+		lineSubtotal := float64(item.Quantity) * item.UnitCost
+		subtotal += lineSubtotal
+		
+		// Calculate item discount
+		var itemDiscount float64
+		if item.ItemDiscountPercentage > 0 {
+			itemDiscount = lineSubtotal * (item.ItemDiscountPercentage / 100)
+		} else {
+			itemDiscount = item.ItemDiscountAmount
+		}
+		
+		lineTotal := lineSubtotal - itemDiscount
+		
+		itemDiscounts[i] = map[string]interface{}{
+			"line_subtotal":    lineSubtotal,
+			"item_discount":    itemDiscount,
+			"line_total":       lineTotal,
+		}
+	}
+	
+	// Calculate bill discount
+	var billDiscount float64
+	if pr.BillDiscountPercentage > 0 {
+		billDiscount = subtotal * (pr.BillDiscountPercentage / 100)
+	} else {
+		billDiscount = pr.BillDiscountAmount
+	}
+	
+	totalAfterDiscounts := subtotal - billDiscount
+	totalDiscounts := billDiscount
+	
+	for _, item := range itemDiscounts {
+		totalDiscounts += item["item_discount"].(float64)
+	}
+
+	result := map[string]interface{}{
+		"subtotal":           subtotal,
+		"item_discounts":     itemDiscounts,
+		"bill_discount":      billDiscount,
+		"total_discounts":    totalDiscounts,
+		"total_amount":       totalAfterDiscounts,
+	}
+
+	c.JSON(http.StatusOK, result)
 }

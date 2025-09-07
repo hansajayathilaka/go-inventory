@@ -117,6 +117,7 @@ func (ctx *Context) initServices() {
 	ctx.InventoryService = inventory.NewService(
 		ctx.InventoryRepo,
 		ctx.StockMovementRepo,
+		ctx.StockBatchRepo,
 		ctx.ProductRepo,
 	)
 	ctx.AuditService = audit.NewService(ctx.AuditLogRepo, ctx.UserRepo)

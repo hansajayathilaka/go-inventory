@@ -28,7 +28,6 @@ type PurchaseReceiptResponse struct {
 	
 	// User Tracking
 	CreatedByID           uuid.UUID                          `json:"created_by_id" example:"550e8400-e29b-41d4-a716-446655440002"`
-	VerifiedAt     *time.Time                         `json:"verified_at,omitempty" example:"2023-01-02T15:00:00Z"`
 	
 	// Timestamps
 	CreatedAt      time.Time                          `json:"created_at" example:"2023-01-01T12:00:00Z"`
@@ -84,8 +83,6 @@ type UpdatePurchaseReceiptRequest struct {
 	BillDiscountAmount     *float64   `json:"bill_discount_amount,omitempty" binding:"omitempty,min=0" example:"50.00"`
 	BillDiscountPercentage *float64   `json:"bill_discount_percentage,omitempty" binding:"omitempty,min=0,max=100" example:"5.00"`
 	Notes                  string     `json:"notes,omitempty" binding:"omitempty,max=1000" example:"Purchase notes"`
-	QualityNotes   string     `json:"quality_notes,omitempty" binding:"omitempty,max=1000" example:"All items in good condition"`
-	ReceiptNotes   string     `json:"receipt_notes,omitempty" binding:"omitempty,max=1000" example:"All items received in good condition"`
 }
 
 // UpdatePurchaseReceiptItemRequest represents a request to update a purchase receipt item (simplified)
@@ -105,38 +102,10 @@ type PurchaseReceiptListRequest struct {
 	SupplierID *uuid.UUID                       `form:"supplier_id,omitempty" example:"550e8400-e29b-41d4-a716-446655440001"`
 	StartDate  *time.Time                       `form:"start_date,omitempty" example:"2023-01-01T00:00:00Z"`
 	EndDate    *time.Time                       `form:"end_date,omitempty" example:"2023-12-31T23:59:59Z"`
-	Phase      string                           `form:"phase,omitempty" example:"order"` // order, receipt, all
+	// Removed obsolete phase filter - using status instead
 }
 
-// ReceiveGoodsRequest represents a request to receive goods
-type ReceiveGoodsRequest struct {
-	ReceivedByID   uuid.UUID  `json:"received_by_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440004"`
-	ReceivedDate   time.Time  `json:"received_date" binding:"required" example:"2023-01-14T12:00:00Z"`
-	DeliveryDate   *time.Time `json:"delivery_date,omitempty" example:"2023-01-14T08:00:00Z"`
-	DeliveryNote   string     `json:"delivery_note,omitempty" binding:"omitempty,max=100" example:"DN-001"`
-	InvoiceNumber  string     `json:"invoice_number,omitempty" binding:"omitempty,max=100" example:"INV-001"`
-	InvoiceDate    *time.Time `json:"invoice_date,omitempty" example:"2023-01-01T12:00:00Z"`
-	VehicleNumber  string     `json:"vehicle_number,omitempty" binding:"omitempty,max=50" example:"ABC1234"`
-	DriverName     string     `json:"driver_name,omitempty" binding:"omitempty,max=100" example:"John Doe"`
-	ReceiptNotes   string     `json:"receipt_notes,omitempty" binding:"omitempty,max=1000" example:"All items received"`
-}
-
-// VerifyGoodsRequest represents a request to verify received goods
-type VerifyGoodsRequest struct {
-	VerifierID   uuid.UUID `json:"verifier_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440005"`
-	QualityCheck bool      `json:"quality_check" example:"true"`
-	QualityNotes string    `json:"quality_notes,omitempty" binding:"omitempty,max=1000" example:"All items verified"`
-}
-
-// ApproveRequest represents a request to approve a purchase receipt
-type ApproveRequest struct {
-	ApproverID uuid.UUID `json:"approver_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440003"`
-}
-
-// SendOrderRequest represents a request to send order to supplier
-type SendOrderRequest struct {
-	SendDate time.Time `json:"send_date" binding:"required" example:"2023-01-02T09:00:00Z"`
-}
+// Obsolete approval workflow requests removed - not supported in simplified model
 
 // ToPurchaseReceiptResponse converts a purchase receipt model to a purchase receipt response DTO (simplified)
 func ToPurchaseReceiptResponse(pr *models.PurchaseReceipt) PurchaseReceiptResponse {
