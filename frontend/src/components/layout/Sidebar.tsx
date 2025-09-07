@@ -10,7 +10,8 @@ import {
   Building2, 
   UserCog,
   LogOut,
-  User
+  User,
+  Store
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -22,6 +23,11 @@ const navigation = [
     name: 'Dashboard',
     href: '/',
     icon: LayoutDashboard,
+  },
+  {
+    name: 'POS System',
+    href: '/pos',
+    icon: Store,
   },
   {
     name: 'Products',

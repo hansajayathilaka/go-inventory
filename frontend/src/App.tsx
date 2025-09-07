@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
+import { POSLayout } from './components/pos/POSLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Products } from './pages/Products';
 import { PurchaseReceipts } from './pages/PurchaseReceipts';
 import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
 import { Users } from './pages/Users';
+import { POS } from './pages/POS';
 import { Login } from './pages/Login';
 import { QueryProvider } from './providers/QueryProvider';
 import { useAuthStore } from './stores/authStore';
@@ -29,6 +31,10 @@ function AuthenticatedApp() {
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/users" element={<Users />} />
+        </Route>
+        <Route path="/pos" element={<POSLayout />}>
+          <Route index element={<POS />} />
+          <Route path="session/:sessionId" element={<POS />} />
         </Route>
         <Route path="/login" element={<Login />} />
       </Routes>
