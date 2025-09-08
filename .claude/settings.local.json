@@ -85,7 +85,8 @@
       "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite TUI_INVENTORY_DATABASE_PATH=./data/inventory.db ./hardware-store-inventory --seed)",
       "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite ./hardware-store-inventory --seed)",
       "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite TUI_INVENTORY_DATABASE_PATH=./data/test.db ./main --seed)",
-      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m ./tests/integration/)"
+      "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m ./tests/integration/)",
+      "Bash(time curl:*)"
     ],
     "deny": [],
     "ask": []

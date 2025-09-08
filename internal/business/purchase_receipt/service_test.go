@@ -503,9 +503,10 @@ func createTestSupplier() *models.Supplier {
 
 func createTestProduct() *models.Product {
 	return &models.Product{
-		ID:   uuid.New(),
-		Name: "Test Product",
-		SKU:  "TEST-001",
+		ID:       uuid.New(),
+		Name:     "Test Product",
+		SKU:      "TEST-001",
+		IsActive: true,
 	}
 }
 
@@ -526,6 +527,8 @@ func TestAddPurchaseReceiptItem_Success(t *testing.T) {
 	mockProductRepo.On("GetByID", mock.Anything, item.ProductID).Return(product, nil)
 	mockPRRepo.On("GetByID", mock.Anything, item.PurchaseReceiptID).Return(pr, nil)
 	mockPRRepo.On("CreateItem", mock.Anything, item).Return(nil)
+	mockPRRepo.On("GetItemsByReceipt", mock.Anything, mock.Anything).Return([]*models.PurchaseReceiptItem{item}, nil)
+	mockPRRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
 
 	// Execute
 	err := service.AddPurchaseReceiptItem(context.Background(), item)
@@ -592,13 +595,13 @@ func TestUpdatePurchaseReceiptItem_Success(t *testing.T) {
 	service := NewService(mockPRRepo, mockSupplierRepo, mockProductRepo, mockInventoryRepo, nil, nil)
 
 	item := createTestPurchaseReceiptItem()
-	product := createTestProduct()
 	pr := createTestPurchaseReceipt()
 
 	// Mock expectations
-	mockProductRepo.On("GetByID", mock.Anything, item.ProductID).Return(product, nil)
 	mockPRRepo.On("GetByID", mock.Anything, item.PurchaseReceiptID).Return(pr, nil)
 	mockPRRepo.On("UpdateItem", mock.Anything, item).Return(nil)
+	mockPRRepo.On("GetItemsByReceipt", mock.Anything, mock.Anything).Return([]*models.PurchaseReceiptItem{item}, nil)
+	mockPRRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
 
 	// Execute
 	err := service.UpdatePurchaseReceiptItem(context.Background(), item)
@@ -623,6 +626,8 @@ func TestRemovePurchaseReceiptItem_Success(t *testing.T) {
 	mockPRRepo.On("GetItem", mock.Anything, itemID).Return(&models.PurchaseReceiptItem{PurchaseReceiptID: uuid.New()}, nil)
 	mockPRRepo.On("GetByID", mock.Anything, mock.Anything).Return(createTestPurchaseReceipt(), nil)
 	mockPRRepo.On("DeleteItem", mock.Anything, itemID).Return(nil)
+	mockPRRepo.On("GetItemsByReceipt", mock.Anything, mock.Anything).Return([]*models.PurchaseReceiptItem{}, nil)
+	mockPRRepo.On("Update", mock.Anything, mock.Anything).Return(nil)
 
 	// Execute
 	err := service.RemovePurchaseReceiptItem(context.Background(), itemID)
