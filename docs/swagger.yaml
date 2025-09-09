@@ -66,6 +66,9 @@ definitions:
       path:
         example: Electronics/Computers
         type: string
+      product_count:
+        example: 25
+        type: integer
       updated_at:
         example: "2024-01-15T09:30:00Z"
         type: string
@@ -267,14 +270,6 @@ definitions:
       username:
         type: string
     type: object
-  dto.ApproveRequest:
-    properties:
-      approver_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-    required:
-    - approver_id
-    type: object
   dto.AuditLogResponse:
     properties:
       action:
@@ -368,29 +363,6 @@ definitions:
       website:
         example: https://www.bosch.com
         type: string
-    type: object
-  dto.BulkCreateVehicleCompatibilityRequest:
-    properties:
-      compatibilities:
-        items:
-          $ref: '#/definitions/dto.CreateVehicleCompatibilityRequest'
-        minItems: 1
-        type: array
-    required:
-    - compatibilities
-    type: object
-  dto.BulkVehicleCompatibilityRequest:
-    properties:
-      ids:
-        example:
-        - '["550e8400-e29b-41d4-a716-446655440001"'
-        - '"550e8400-e29b-41d4-a716-446655440002"]'
-        items:
-          type: string
-        minItems: 1
-        type: array
-    required:
-    - ids
     type: object
   dto.CategoryStockSummary:
     properties:
@@ -507,75 +479,62 @@ definitions:
     type: object
   dto.CreatePurchaseReceiptItemRequest:
     properties:
-      discount_amount:
-        example: 0
+      item_discount_amount:
+        example: 10
         minimum: 0
         type: number
-      order_notes:
-        example: High priority item
-        maxLength: 500
-        type: string
-      ordered_quantity:
-        example: 10
-        minimum: 1
-        type: integer
+      item_discount_percentage:
+        example: 5
+        maximum: 100
+        minimum: 0
+        type: number
       product_id:
         example: 550e8400-e29b-41d4-a716-446655440005
         type: string
-      unit_price:
+      quantity:
+        example: 10
+        minimum: 1
+        type: integer
+      unit_cost:
         example: 100
         minimum: 0
         type: number
     required:
-    - ordered_quantity
     - product_id
-    - unit_price
+    - quantity
+    - unit_cost
     type: object
   dto.CreatePurchaseReceiptRequest:
     properties:
-      currency:
-        example: MYR
-        type: string
-      discount_amount:
-        example: 0
+      bill_discount_amount:
+        example: 50
         minimum: 0
         type: number
-      expected_date:
-        example: "2023-01-15T12:00:00Z"
-        type: string
+      bill_discount_percentage:
+        example: 5
+        maximum: 100
+        minimum: 0
+        type: number
       items:
         items:
           $ref: '#/definitions/dto.CreatePurchaseReceiptItemRequest'
         type: array
-      order_date:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      order_notes:
-        example: Urgent order
+      notes:
+        example: Purchase notes
         maxLength: 1000
         type: string
-      reference:
-        example: REF-001
+      purchase_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      supplier_bill_number:
+        example: SUPP-BILL-001
         maxLength: 100
         type: string
-      shipping_cost:
-        example: 50
-        minimum: 0
-        type: number
       supplier_id:
         example: 550e8400-e29b-41d4-a716-446655440001
         type: string
-      tax_rate:
-        example: 6
-        maximum: 100
-        minimum: 0
-        type: number
-      terms:
-        example: Net 30 days
-        maxLength: 1000
-        type: string
     required:
-    - order_date
+    - purchase_date
     - supplier_id
     type: object
   dto.CreateUserRequest:
@@ -605,103 +564,6 @@ definitions:
     - password
     - role
     - username
-    type: object
-  dto.CreateVehicleBrandRequest:
-    properties:
-      code:
-        example: TOYT
-        maxLength: 20
-        type: string
-      country_code:
-        example: JP
-        maxLength: 10
-        type: string
-      description:
-        example: Japanese automotive manufacturer
-        maxLength: 500
-        type: string
-      logo_url:
-        example: https://example.com/logos/toyota.png
-        maxLength: 500
-        type: string
-      name:
-        example: Toyota
-        maxLength: 100
-        minLength: 1
-        type: string
-    required:
-    - name
-    type: object
-  dto.CreateVehicleCompatibilityRequest:
-    properties:
-      notes:
-        example: Compatible with all trim levels
-        maxLength: 500
-        type: string
-      product_id:
-        example: 550e8400-e29b-41d4-a716-446655440002
-        type: string
-      vehicle_model_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-      year_from:
-        example: 2018
-        maximum: 2100
-        minimum: 1900
-        type: integer
-      year_to:
-        example: 2023
-        maximum: 2100
-        minimum: 1900
-        type: integer
-    required:
-    - product_id
-    - vehicle_model_id
-    type: object
-  dto.CreateVehicleModelRequest:
-    properties:
-      code:
-        example: TOYT-CAMR01
-        maxLength: 50
-        type: string
-      description:
-        example: Mid-size sedan
-        maxLength: 500
-        type: string
-      engine_size:
-        example: 2.5L
-        maxLength: 20
-        type: string
-      fuel_type:
-        example: PETROL
-        maxLength: 20
-        type: string
-      name:
-        example: Camry
-        maxLength: 100
-        minLength: 1
-        type: string
-      transmission:
-        example: AUTOMATIC
-        maxLength: 20
-        type: string
-      vehicle_brand_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      year_from:
-        example: 2020
-        maximum: 2099
-        minimum: 1900
-        type: integer
-      year_to:
-        example: 2024
-        maximum: 2099
-        minimum: 1900
-        type: integer
-    required:
-    - name
-    - vehicle_brand_id
-    - year_from
     type: object
   dto.CustomerResponse:
     properties:
@@ -1105,70 +967,33 @@ definitions:
     type: object
   dto.PurchaseReceiptItemResponse:
     properties:
-      accepted_quantity:
-        example: 9
-        type: integer
-      batch_number:
-        example: BATCH001
-        type: string
       created_at:
         description: Timestamps
         example: "2023-01-01T12:00:00Z"
         type: string
-      damaged_quantity:
-        example: 1
-        type: integer
-      discount_amount:
-        example: 0
-        type: number
-      expiry_date:
-        example: "2025-12-31T23:59:59Z"
-        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440004
         type: string
-      order_notes:
-        example: High priority item
-        type: string
-      ordered_quantity:
-        description: Order Information
+      item_discount_amount:
         example: 10
-        type: integer
+        type: number
+      item_discount_percentage:
+        example: 5
+        type: number
+      line_total:
+        example: 945
+        type: number
       product_id:
         example: 550e8400-e29b-41d4-a716-446655440005
         type: string
       purchase_receipt_id:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
-      quality_notes:
-        example: One unit damaged during transport
-        type: string
-      quality_status:
-        example: good
-        type: string
-      receipt_notes:
-        example: Inspection notes
-        type: string
-      received_quantity:
-        description: Receipt Information
+      quantity:
+        description: Essential Information
         example: 10
         type: integer
-      rejected_quantity:
-        example: 0
-        type: integer
-      serial_numbers:
-        example: '["SN001","SN002"]'
-        type: string
-      stock_updated:
-        example: false
-        type: boolean
-      tax_amount:
-        example: 60
-        type: number
-      total_price:
-        example: 1000
-        type: number
-      unit_price:
+      unit_cost:
         example: 100
         type: number
       updated_at:
@@ -1177,12 +1002,13 @@ definitions:
     type: object
   dto.PurchaseReceiptResponse:
     properties:
-      approved_at:
-        example: "2023-01-02T12:00:00Z"
-        type: string
-      approved_by_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
+      bill_discount_amount:
+        description: Financial Information
+        example: 50
+        type: number
+      bill_discount_percentage:
+        example: 5
+        type: number
       created_at:
         description: Timestamps
         example: "2023-01-01T12:00:00Z"
@@ -1191,89 +1017,34 @@ definitions:
         description: User Tracking
         example: 550e8400-e29b-41d4-a716-446655440002
         type: string
-      currency:
-        example: MYR
-        type: string
-      delivery_date:
-        example: "2023-01-14T08:00:00Z"
-        type: string
-      delivery_note:
-        example: DN-001
-        type: string
-      discount_amount:
-        example: 0
-        type: number
-      driver_name:
-        example: John Doe
-        type: string
-      expected_date:
-        example: "2023-01-15T12:00:00Z"
-        type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      invoice_date:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      invoice_number:
-        example: INV-001
         type: string
       items:
         description: Items
         items:
           $ref: '#/definitions/dto.PurchaseReceiptItemResponse'
         type: array
-      order_date:
-        description: Order Information
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      order_notes:
+      notes:
+        description: Additional Information
         example: Urgent order
         type: string
-      quality_check:
-        example: true
-        type: boolean
-      quality_notes:
-        example: All items in good condition
-        type: string
-      receipt_notes:
-        example: All items received in good condition
+      purchase_date:
+        description: Essential Information
+        example: "2023-01-01T12:00:00Z"
         type: string
       receipt_number:
         example: PR-2024-001
         type: string
-      received_by_id:
-        example: 550e8400-e29b-41d4-a716-446655440004
-        type: string
-      received_date:
-        description: Receipt Information
-        example: "2023-01-14T12:00:00Z"
-        type: string
-      reference:
-        example: REF-001
-        type: string
-      shipping_cost:
-        example: 50
-        type: number
       status:
         allOf:
         - $ref: '#/definitions/models.PurchaseReceiptStatus'
-        example: draft
-      sub_total:
-        description: Financial Information
-        example: 1000
-        type: number
+        example: pending
+      supplier_bill_number:
+        example: SUPP-001
+        type: string
       supplier_id:
         example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      tax_amount:
-        example: 60
-        type: number
-      tax_rate:
-        example: 6
-        type: number
-      terms:
-        example: Net 30 days
         type: string
       total_amount:
         example: 1110
@@ -1281,53 +1052,6 @@ definitions:
       updated_at:
         example: "2023-01-01T12:00:00Z"
         type: string
-      vehicle_number:
-        example: ABC1234
-        type: string
-      verified_at:
-        example: "2023-01-02T15:00:00Z"
-        type: string
-      verified_by_id:
-        example: 550e8400-e29b-41d4-a716-446655440005
-        type: string
-    type: object
-  dto.ReceiveGoodsRequest:
-    properties:
-      delivery_date:
-        example: "2023-01-14T08:00:00Z"
-        type: string
-      delivery_note:
-        example: DN-001
-        maxLength: 100
-        type: string
-      driver_name:
-        example: John Doe
-        maxLength: 100
-        type: string
-      invoice_date:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      invoice_number:
-        example: INV-001
-        maxLength: 100
-        type: string
-      receipt_notes:
-        example: All items received
-        maxLength: 1000
-        type: string
-      received_by_id:
-        example: 550e8400-e29b-41d4-a716-446655440004
-        type: string
-      received_date:
-        example: "2023-01-14T12:00:00Z"
-        type: string
-      vehicle_number:
-        example: ABC1234
-        maxLength: 50
-        type: string
-    required:
-    - received_by_id
-    - received_date
     type: object
   dto.ReorderLevelUpdate:
     properties:
@@ -1339,14 +1063,6 @@ definitions:
     required:
     - product_id
     - reorder_level
-    type: object
-  dto.SendOrderRequest:
-    properties:
-      send_date:
-        example: "2023-01-02T09:00:00Z"
-        type: string
-    required:
-    - send_date
     type: object
   dto.StockAdjustmentRequest:
     properties:
@@ -1513,139 +1229,48 @@ definitions:
     type: object
   dto.UpdatePurchaseReceiptItemRequest:
     properties:
-      accepted_quantity:
-        example: 9
-        minimum: 0
-        type: integer
-      batch_number:
-        example: BATCH001
-        maxLength: 100
-        type: string
-      damaged_quantity:
-        example: 1
-        minimum: 0
-        type: integer
-      discount_amount:
-        example: 5
-        minimum: 0
-        type: number
-      expiry_date:
-        example: "2025-12-31T23:59:59Z"
-        type: string
-      order_notes:
-        example: Updated notes
-        maxLength: 500
-        type: string
-      ordered_quantity:
-        description: Order Information Updates
-        example: 15
-        minimum: 1
-        type: integer
-      quality_notes:
-        example: Updated quality notes
-        maxLength: 500
-        type: string
-      quality_status:
-        example: good
-        maxLength: 20
-        type: string
-      receipt_notes:
-        example: Updated receipt notes
-        maxLength: 500
-        type: string
-      received_quantity:
-        description: Receipt Information Updates
+      item_discount_amount:
         example: 10
         minimum: 0
-        type: integer
-      rejected_quantity:
-        example: 0
+        type: number
+      item_discount_percentage:
+        example: 5
+        maximum: 100
         minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 1
         type: integer
-      serial_numbers:
-        example: '["SN001","SN002"]'
-        maxLength: 2000
-        type: string
-      unit_price:
-        example: 120
+      unit_cost:
+        example: 100
         minimum: 0
         type: number
     type: object
   dto.UpdatePurchaseReceiptRequest:
     properties:
-      currency:
-        example: MYR
-        type: string
-      delivery_date:
-        example: "2023-01-14T08:00:00Z"
-        type: string
-      delivery_note:
-        example: DN-001
-        maxLength: 100
-        type: string
-      discount_amount:
-        example: 0
-        minimum: 0
-        type: number
-      driver_name:
-        example: John Doe
-        maxLength: 100
-        type: string
-      expected_date:
-        example: "2023-01-15T12:00:00Z"
-        type: string
-      invoice_date:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      invoice_number:
-        example: INV-001
-        maxLength: 100
-        type: string
-      order_date:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      order_notes:
-        example: Updated notes
-        maxLength: 1000
-        type: string
-      quality_check:
-        example: true
-        type: boolean
-      quality_notes:
-        example: All items in good condition
-        maxLength: 1000
-        type: string
-      receipt_notes:
-        example: All items received in good condition
-        maxLength: 1000
-        type: string
-      received_date:
-        description: Receipt Information (for receipt phase updates)
-        example: "2023-01-14T12:00:00Z"
-        type: string
-      reference:
-        example: REF-001
-        maxLength: 100
-        type: string
-      shipping_cost:
+      bill_discount_amount:
         example: 50
         minimum: 0
         type: number
-      supplier_id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      tax_rate:
-        example: 6
+      bill_discount_percentage:
+        example: 5
         maximum: 100
         minimum: 0
         type: number
-      terms:
-        example: Updated terms
+      notes:
+        example: Purchase notes
         maxLength: 1000
         type: string
-      vehicle_number:
-        example: ABC1234
-        maxLength: 50
+      purchase_date:
+        example: "2023-01-01T12:00:00Z"
+        type: string
+      supplier_bill_number:
+        example: SUPP-BILL-001
+        maxLength: 100
+        type: string
+      supplier_id:
+        example: 550e8400-e29b-41d4-a716-446655440001
         type: string
     type: object
   dto.UpdateReorderLevelsRequest:
@@ -1677,106 +1302,6 @@ definitions:
         minLength: 3
         type: string
     type: object
-  dto.UpdateVehicleBrandRequest:
-    properties:
-      code:
-        example: TOYT2
-        maxLength: 20
-        type: string
-      country_code:
-        example: JP
-        maxLength: 10
-        type: string
-      description:
-        example: Updated description
-        maxLength: 500
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      logo_url:
-        example: https://example.com/logos/toyota-new.png
-        maxLength: 500
-        type: string
-      name:
-        example: Toyota Updated
-        maxLength: 100
-        minLength: 1
-        type: string
-    type: object
-  dto.UpdateVehicleCompatibilityRequest:
-    properties:
-      is_active:
-        example: true
-        type: boolean
-      is_verified:
-        example: true
-        type: boolean
-      notes:
-        example: Updated compatibility notes
-        maxLength: 500
-        type: string
-      product_id:
-        example: 550e8400-e29b-41d4-a716-446655440002
-        type: string
-      vehicle_model_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-      year_from:
-        example: 2019
-        maximum: 2100
-        minimum: 1900
-        type: integer
-      year_to:
-        example: 2024
-        maximum: 2100
-        minimum: 1900
-        type: integer
-    type: object
-  dto.UpdateVehicleModelRequest:
-    properties:
-      code:
-        example: TOYT-CAMR02
-        maxLength: 50
-        type: string
-      description:
-        example: Updated description
-        maxLength: 500
-        type: string
-      engine_size:
-        example: 2.0L
-        maxLength: 20
-        type: string
-      fuel_type:
-        example: HYBRID
-        maxLength: 20
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Camry Updated
-        maxLength: 100
-        minLength: 1
-        type: string
-      transmission:
-        example: CVT
-        maxLength: 20
-        type: string
-      vehicle_brand_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      year_from:
-        example: 2021
-        maximum: 2099
-        minimum: 1900
-        type: integer
-      year_to:
-        example: 2025
-        maximum: 2099
-        minimum: 1900
-        type: integer
-    type: object
   dto.UserResponse:
     properties:
       created_at:
@@ -1805,256 +1330,6 @@ definitions:
       username:
         example: john_doe
         type: string
-    type: object
-  dto.VehicleBrandResponse:
-    properties:
-      code:
-        example: TOYT
-        type: string
-      country_code:
-        example: JP
-        type: string
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      description:
-        example: Japanese automotive manufacturer
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      logo_url:
-        example: https://example.com/logos/toyota.png
-        type: string
-      name:
-        example: Toyota
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-    type: object
-  dto.VehicleBrandWithModelsResponse:
-    properties:
-      code:
-        example: TOYT
-        type: string
-      country_code:
-        example: JP
-        type: string
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      description:
-        example: Japanese automotive manufacturer
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      logo_url:
-        example: https://example.com/logos/toyota.png
-        type: string
-      name:
-        example: Toyota
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      vehicle_models:
-        items:
-          $ref: '#/definitions/dto.VehicleModelResponse'
-        type: array
-    type: object
-  dto.VehicleCompatibilityDetailResponse:
-    properties:
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      is_verified:
-        example: true
-        type: boolean
-      notes:
-        example: Compatible with all trim levels
-        type: string
-      product:
-        $ref: '#/definitions/dto.ProductResponse'
-      product_id:
-        example: 550e8400-e29b-41d4-a716-446655440002
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      vehicle_model:
-        $ref: '#/definitions/dto.VehicleModelDetailResponse'
-      vehicle_model_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-      year_from:
-        example: 2018
-        type: integer
-      year_to:
-        example: 2023
-        type: integer
-    type: object
-  dto.VehicleCompatibilityResponse:
-    properties:
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      is_verified:
-        example: true
-        type: boolean
-      notes:
-        example: Compatible with all trim levels
-        type: string
-      product_id:
-        example: 550e8400-e29b-41d4-a716-446655440002
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      vehicle_model_id:
-        example: 550e8400-e29b-41d4-a716-446655440003
-        type: string
-      year_from:
-        example: 2018
-        type: integer
-      year_to:
-        example: 2023
-        type: integer
-    type: object
-  dto.VehicleCompatibilityStatsResponse:
-    properties:
-      active:
-        example: 1450
-        type: integer
-      total:
-        example: 1500
-        type: integer
-      unverified:
-        example: 250
-        type: integer
-      verified:
-        example: 1200
-        type: integer
-    type: object
-  dto.VehicleModelDetailResponse:
-    properties:
-      code:
-        example: TOYT-CAMR01
-        type: string
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      description:
-        example: Mid-size sedan
-        type: string
-      engine_size:
-        example: 2.5L
-        type: string
-      fuel_type:
-        example: PETROL
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Camry
-        type: string
-      transmission:
-        example: AUTOMATIC
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      vehicle_brand:
-        $ref: '#/definitions/dto.VehicleBrandResponse'
-      vehicle_brand_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      year_from:
-        example: 2020
-        type: integer
-      year_to:
-        example: 2024
-        type: integer
-    type: object
-  dto.VehicleModelResponse:
-    properties:
-      code:
-        example: TOYT-CAMR01
-        type: string
-      created_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      description:
-        example: Mid-size sedan
-        type: string
-      engine_size:
-        example: 2.5L
-        type: string
-      fuel_type:
-        example: PETROL
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440001
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Camry
-        type: string
-      transmission:
-        example: AUTOMATIC
-        type: string
-      updated_at:
-        example: "2023-01-01T12:00:00Z"
-        type: string
-      vehicle_brand_id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      year_from:
-        example: 2020
-        type: integer
-      year_to:
-        example: 2024
-        type: integer
-    type: object
-  dto.VerifyGoodsRequest:
-    properties:
-      quality_check:
-        example: true
-        type: boolean
-      quality_notes:
-        example: All items verified
-        maxLength: 1000
-        type: string
-      verifier_id:
-        example: 550e8400-e29b-41d4-a716-446655440005
-        type: string
-    required:
-    - verifier_id
     type: object
   dto.ZeroStockItemResponse:
     properties:
@@ -2108,40 +1383,24 @@ definitions:
     - ActionLogout
   models.PurchaseReceiptStatus:
     enum:
-    - draft
     - pending
-    - approved
-    - ordered
     - received
-    - partial
     - completed
     - cancelled
     type: string
     x-enum-comments:
-      PurchaseReceiptStatusApproved: Approved, ready to send
       PurchaseReceiptStatusCancelled: Order cancelled
       PurchaseReceiptStatusCompleted: Fully received and processed
-      PurchaseReceiptStatusDraft: Initial creation
-      PurchaseReceiptStatusOrdered: Sent to supplier
-      PurchaseReceiptStatusPartial: Partially received/processed
-      PurchaseReceiptStatusPending: Awaiting approval
+      PurchaseReceiptStatusPending: Order created, awaiting processing
       PurchaseReceiptStatusReceived: Goods received, being processed
     x-enum-descriptions:
-    - Initial creation
-    - Awaiting approval
-    - Approved, ready to send
-    - Sent to supplier
+    - Order created, awaiting processing
     - Goods received, being processed
-    - Partially received/processed
     - Fully received and processed
     - Order cancelled
     x-enum-varnames:
-    - PurchaseReceiptStatusDraft
     - PurchaseReceiptStatusPending
-    - PurchaseReceiptStatusApproved
-    - PurchaseReceiptStatusOrdered
     - PurchaseReceiptStatusReceived
-    - PurchaseReceiptStatusPartial
     - PurchaseReceiptStatusCompleted
     - PurchaseReceiptStatusCancelled
   router.HealthResponse:
@@ -4359,11 +3618,6 @@ paths:
         in: query
         name: end_date
         type: string
-      - default: all
-        description: 'Filter by phase: order, receipt, all'
-        in: query
-        name: phase
-        type: string
       produces:
       - application/json
       responses:
@@ -4537,51 +3791,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Update purchase receipt
-      tags:
-      - purchase-receipts
-  /purchase-receipts/{id}/approve:
-    post:
-      consumes:
-      - application/json
-      description: Approve a purchase receipt for ordering
-      parameters:
-      - description: Purchase Receipt ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Approval data
-        in: body
-        name: approval
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ApproveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.PurchaseReceiptResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Approve purchase receipt
       tags:
       - purchase-receipts
   /purchase-receipts/{id}/cancel:
@@ -4835,12 +4044,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: Receive goods data
-        in: body
-        name: receive_goods
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ReceiveGoodsRequest'
       produces:
       - application/json
       responses:
@@ -4869,30 +4072,26 @@ paths:
       summary: Receive goods from supplier
       tags:
       - purchase-receipts
-  /purchase-receipts/{id}/send:
+  /purchase-receipts/calculate-discount:
     post:
       consumes:
       - application/json
-      description: Send approved purchase order to supplier
+      description: Calculate total discount for a purchase receipt with items
       parameters:
-      - description: Purchase Receipt ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Send order data
+      - description: Purchase receipt data for discount calculation
         in: body
-        name: send_order
+        name: calculation
         required: true
         schema:
-          $ref: '#/definitions/dto.SendOrderRequest'
+          $ref: '#/definitions/dto.CreatePurchaseReceiptRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.PurchaseReceiptResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -4901,62 +4100,13 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Send purchase order to supplier
-      tags:
-      - purchase-receipts
-  /purchase-receipts/{id}/verify:
-    post:
-      consumes:
-      - application/json
-      description: Verify quality and condition of received goods
-      parameters:
-      - description: Purchase Receipt ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Verify goods data
-        in: body
-        name: verify_goods
-        required: true
-        schema:
-          $ref: '#/definitions/dto.VerifyGoodsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.PurchaseReceiptResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Verify received goods
+      summary: Calculate purchase receipt discount
       tags:
       - purchase-receipts
   /purchase-receipts/summary:
@@ -5519,1724 +4669,6 @@ paths:
       summary: Update a user
       tags:
       - Users
-  /vehicle-brands:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of vehicle brands with optional filtering
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Search by name or code
-        in: query
-        name: search
-        type: string
-      - description: Filter by active status
-        in: query
-        name: is_active
-        type: boolean
-      - description: Filter by country code
-        in: query
-        name: country_code
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleBrandResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List vehicle brands
-      tags:
-      - Vehicle Brands
-    post:
-      consumes:
-      - application/json
-      description: Create a new vehicle brand with the provided information
-      parameters:
-      - description: Vehicle brand creation request
-        in: body
-        name: vehicle_brand
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateVehicleBrandRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Create a new vehicle brand
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a vehicle brand by their ID (soft delete)
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Delete a vehicle brand
-      tags:
-      - Vehicle Brands
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle brand by their ID
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle brand by ID
-      tags:
-      - Vehicle Brands
-    put:
-      consumes:
-      - application/json
-      description: Update an existing vehicle brand's information
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Vehicle brand update request
-        in: body
-        name: vehicle_brand
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateVehicleBrandRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Update a vehicle brand
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/{id}/activate:
-    post:
-      consumes:
-      - application/json
-      description: Activate a deactivated vehicle brand
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Activate a vehicle brand
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/{id}/deactivate:
-    post:
-      consumes:
-      - application/json
-      description: Deactivate an active vehicle brand
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Deactivate a vehicle brand
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/{id}/with-models:
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle brand by their ID including all associated
-        vehicle models
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandWithModelsResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle brand with models
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/active:
-    get:
-      consumes:
-      - application/json
-      description: Get all active vehicle brands
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleBrandResponse'
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List active vehicle brands
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/code/{code}:
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle brand by their code
-      parameters:
-      - description: Vehicle Brand code
-        example: '"TOYT"'
-        in: path
-        name: code
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleBrandResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle brand by code
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/generate-code:
-    get:
-      consumes:
-      - application/json
-      description: Generate a unique vehicle brand code based on vehicle brand name
-      parameters:
-      - description: Vehicle Brand name
-        example: '"Toyota"'
-        in: query
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Generate vehicle brand code
-      tags:
-      - Vehicle Brands
-  /vehicle-brands/with-models:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of vehicle brands including all associated
-        vehicle models
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleBrandWithModelsResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List vehicle brands with models
-      tags:
-      - Vehicle Brands
-  /vehicle-compatibilities:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of vehicle compatibilities with optional filtering
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by product ID
-        format: uuid
-        in: query
-        name: product_id
-        type: string
-      - description: Filter by vehicle model ID
-        format: uuid
-        in: query
-        name: vehicle_model_id
-        type: string
-      - description: Filter by year
-        in: query
-        name: year
-        type: integer
-      - description: Filter by verification status
-        in: query
-        name: is_verified
-        type: boolean
-      - description: Filter by active status
-        in: query
-        name: is_active
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-    post:
-      consumes:
-      - application/json
-      description: Create a new vehicle compatibility with the provided information
-      parameters:
-      - description: Vehicle compatibility creation request
-        in: body
-        name: compatibility
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Create a new vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a vehicle compatibility by their ID (soft delete)
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Delete a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle compatibility by their ID
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle compatibility by ID
-      tags:
-      - Vehicle Compatibility
-    put:
-      consumes:
-      - application/json
-      description: Update an existing vehicle compatibility's information
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Vehicle compatibility update request
-        in: body
-        name: compatibility
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Update a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/{id}/activate:
-    post:
-      consumes:
-      - application/json
-      description: Activate a deactivated vehicle compatibility
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Activate a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/{id}/deactivate:
-    post:
-      consumes:
-      - application/json
-      description: Deactivate an active vehicle compatibility
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Deactivate a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/{id}/unverify:
-    post:
-      consumes:
-      - application/json
-      description: Mark a vehicle compatibility as unverified
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Unverify a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/{id}/verify:
-    post:
-      consumes:
-      - application/json
-      description: Mark a vehicle compatibility as verified
-      parameters:
-      - description: Vehicle Compatibility ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Verify a vehicle compatibility
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/active:
-    get:
-      consumes:
-      - application/json
-      description: Get all active vehicle compatibilities
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityResponse'
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List active vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/bulk:
-    post:
-      consumes:
-      - application/json
-      description: Create multiple vehicle compatibilities in a single request
-      parameters:
-      - description: Bulk compatibility creation request
-        in: body
-        name: compatibilities
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BulkCreateVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Create multiple vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/bulk/activate:
-    post:
-      consumes:
-      - application/json
-      description: Activate multiple vehicle compatibilities in a single request
-      parameters:
-      - description: Bulk activation request
-        in: body
-        name: ids
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BulkVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Activate multiple vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/bulk/deactivate:
-    post:
-      consumes:
-      - application/json
-      description: Deactivate multiple vehicle compatibilities in a single request
-      parameters:
-      - description: Bulk deactivation request
-        in: body
-        name: ids
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BulkVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Deactivate multiple vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/bulk/unverify:
-    post:
-      consumes:
-      - application/json
-      description: Unverify multiple vehicle compatibilities in a single request
-      parameters:
-      - description: Bulk unverification request
-        in: body
-        name: ids
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BulkVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Unverify multiple vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/bulk/verify:
-    post:
-      consumes:
-      - application/json
-      description: Verify multiple vehicle compatibilities in a single request
-      parameters:
-      - description: Bulk verification request
-        in: body
-        name: ids
-        required: true
-        schema:
-          $ref: '#/definitions/dto.BulkVehicleCompatibilityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Verify multiple vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/compatible-products:
-    get:
-      consumes:
-      - application/json
-      description: Get products that are compatible with a specific vehicle model
-        and year
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: query
-        name: vehicle_model_id
-        required: true
-        type: string
-      - description: Vehicle year
-        in: query
-        name: year
-        type: integer
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get products compatible with a vehicle model
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/compatible-vehicles:
-    get:
-      consumes:
-      - application/json
-      description: Get vehicles that are compatible with a specific product and year
-      parameters:
-      - description: Product ID
-        format: uuid
-        in: query
-        name: product_id
-        required: true
-        type: string
-      - description: Vehicle year
-        in: query
-        name: year
-        type: integer
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityDetailResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicles compatible with a product
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/stats:
-    get:
-      consumes:
-      - application/json
-      description: Get comprehensive statistics about vehicle compatibilities
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleCompatibilityStatsResponse'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle compatibility statistics
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/unverified:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of unverified vehicle compatibilities
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List unverified vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-compatibilities/verified:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of verified vehicle compatibilities
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleCompatibilityResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List verified vehicle compatibilities
-      tags:
-      - Vehicle Compatibility
-  /vehicle-models:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of vehicle models with optional filtering
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Search by name or code
-        in: query
-        name: search
-        type: string
-      - description: Filter by vehicle brand ID
-        format: uuid
-        in: query
-        name: vehicle_brand_id
-        type: string
-      - description: Filter by active status
-        in: query
-        name: is_active
-        type: boolean
-      - description: Filter by year from
-        in: query
-        name: year_from
-        type: integer
-      - description: Filter by year to
-        in: query
-        name: year_to
-        type: integer
-      - description: Filter by fuel type
-        in: query
-        name: fuel_type
-        type: string
-      - description: Filter by transmission
-        in: query
-        name: transmission
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleModelDetailResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List vehicle models
-      tags:
-      - Vehicle Models
-    post:
-      consumes:
-      - application/json
-      description: Create a new vehicle model with the provided information
-      parameters:
-      - description: Vehicle model creation request
-        in: body
-        name: vehicle_model
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateVehicleModelRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Create a new vehicle model
-      tags:
-      - Vehicle Models
-  /vehicle-models/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a vehicle model by their ID (soft delete)
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Delete a vehicle model
-      tags:
-      - Vehicle Models
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle model by their ID
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle model by ID
-      tags:
-      - Vehicle Models
-    put:
-      consumes:
-      - application/json
-      description: Update an existing vehicle model's information
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Vehicle model update request
-        in: body
-        name: vehicle_model
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateVehicleModelRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Update a vehicle model
-      tags:
-      - Vehicle Models
-  /vehicle-models/{id}/activate:
-    post:
-      consumes:
-      - application/json
-      description: Activate a deactivated vehicle model
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Activate a vehicle model
-      tags:
-      - Vehicle Models
-  /vehicle-models/{id}/deactivate:
-    post:
-      consumes:
-      - application/json
-      description: Deactivate an active vehicle model
-      parameters:
-      - description: Vehicle Model ID
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Deactivate a vehicle model
-      tags:
-      - Vehicle Models
-  /vehicle-models/active:
-    get:
-      consumes:
-      - application/json
-      description: Get all active vehicle models
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleModelResponse'
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: List active vehicle models
-      tags:
-      - Vehicle Models
-  /vehicle-models/brand/{brand_id}:
-    get:
-      consumes:
-      - application/json
-      description: Get all vehicle models for a specific vehicle brand
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: path
-        name: brand_id
-        required: true
-        type: string
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/dto.VehicleModelResponse'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle models by brand ID
-      tags:
-      - Vehicle Models
-  /vehicle-models/code/{code}:
-    get:
-      consumes:
-      - application/json
-      description: Get a specific vehicle model by their code
-      parameters:
-      - description: Vehicle Model code
-        example: '"TOYT-CAMR01"'
-        in: path
-        name: code
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.VehicleModelDetailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Get vehicle model by code
-      tags:
-      - Vehicle Models
-  /vehicle-models/generate-code:
-    get:
-      consumes:
-      - application/json
-      description: Generate a unique vehicle model code based on vehicle brand and
-        model name
-      parameters:
-      - description: Vehicle Brand ID
-        format: uuid
-        in: query
-        name: vehicle_brand_id
-        required: true
-        type: string
-      - description: Vehicle Model name
-        example: '"Camry"'
-        in: query
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/dto.BaseResponse'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.BaseResponse'
-      summary: Generate vehicle model code
-      tags:
-      - Vehicle Models
 securityDefinitions:
   ApiKeyAuth:
     description: Type "Bearer" followed by a space and JWT token.

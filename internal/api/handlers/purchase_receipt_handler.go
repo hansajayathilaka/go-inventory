@@ -330,7 +330,6 @@ func (h *PurchaseReceiptHandler) ListPurchaseReceipts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Purchase Receipt ID"
-// @Param receive_goods body dto.ReceiveGoodsRequest true "Receive goods data"
 // @Success 200 {object} dto.PurchaseReceiptResponse
 // @Failure 400 {object} dto.ErrorResponse
 // @Failure 401 {object} dto.ErrorResponse
