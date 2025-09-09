@@ -70,7 +70,7 @@ echo "Press Ctrl+C to stop both servers..."
 echo ""
 
 cd frontend
-npm run dev
+npm run dev -- --host
 
 # This line should never be reached, but just in case
 wait $GO_PID
