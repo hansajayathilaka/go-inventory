@@ -19,3 +19,6 @@ export {
   useStockAdjustment,
   useCategoryHierarchy,
 } from './useInventoryQueries';
+
+// Utility hooks
+export { useDebounce } from './useDebounce';
