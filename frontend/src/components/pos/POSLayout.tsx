@@ -1,6 +1,10 @@
+import { useEffect } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
+import { SessionTabs } from './SessionTabs'
+import { initializePOSSession } from '@/stores/posSessionStore'
+import { initializeCartSessionSync } from '@/stores/posCartStore'
 import { 
   Store,
   LogOut,
@@ -16,6 +20,17 @@ interface POSLayoutProps {
 export function POSLayout({ children }: POSLayoutProps) {
   const location = useLocation()
   const { user, logout } = useAuthStore()
+
+  // Initialize POS session system and cart synchronization
+  useEffect(() => {
+    const cleanupSession = initializePOSSession()
+    const cleanupSync = initializeCartSessionSync()
+    
+    return () => {
+      cleanupSession()
+      cleanupSync()
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -82,6 +97,11 @@ export function POSLayout({ children }: POSLayoutProps) {
           </div>
         </div>
       </header>
+
+      {/* Session Tabs - Only show when on POS pages */}
+      {location.pathname.startsWith('/pos') && (
+        <SessionTabs className="sticky top-12 sm:top-14 z-40" />
+      )}
 
       {/* Main Content Area - Full width, distraction-free */}
       <main className="flex-1 flex flex-col">

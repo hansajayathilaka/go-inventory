@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, subscribeWithSelector } from 'zustand/middleware';
 import type { Product } from '@/types/inventory';
+import { usePOSSessionStore } from './posSessionStore';
 
 // Cart-specific interfaces
 export interface CartItem {
@@ -37,6 +38,9 @@ export interface POSCartState {
   clearCart: () => void;
   validateStock: () => Promise<boolean>;
   calculateTotals: () => void;
+  loadFromSession: (sessionData: any) => void;
+  getCurrentSessionId: () => string | null;
+  clearCurrentSession: () => void;
   
   // Internal methods
   _findItemIndex: (productId: number) => number;
@@ -70,17 +74,18 @@ const calculateItemTotal = (unitPrice: number, quantity: number, discount = 0): 
 };
 
 export const usePOSCartStore = create<POSCartState>()(
-  persist(
-    (set, get) => ({
-      items: [],
-      subtotal: 0,
-      tax: 0,
-      taxRate: 0.10, // 10% default tax rate
-      discount: 0,
-      discountConfig: undefined,
-      total: 0,
-      itemCount: 0,
-      sessionId: generateSessionId(),
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
+        items: [],
+        subtotal: 0,
+        tax: 0,
+        taxRate: 0.10, // 10% default tax rate
+        discount: 0,
+        discountConfig: undefined,
+        total: 0,
+        itemCount: 0,
+        sessionId: generateSessionId(),
 
       // Add item to cart
       addItem: async (product: Product, quantity = 1): Promise<boolean> => {
@@ -265,6 +270,20 @@ export const usePOSCartStore = create<POSCartState>()(
           total,
           itemCount
         });
+
+        // Sync with session store
+        const sessionStore = usePOSSessionStore.getState();
+        const activeSessionId = sessionStore.activeSessionId;
+        if (activeSessionId) {
+          sessionStore.updateSessionCart(
+            activeSessionId,
+            get().items,
+            subtotal,
+            taxAmount,
+            discountAmount,
+            total
+          );
+        }
       },
 
       // Internal method to find item index
@@ -275,6 +294,49 @@ export const usePOSCartStore = create<POSCartState>()(
 
       // Internal method to create session ID
       _createSessionId: generateSessionId,
+
+      // Load cart from session
+      loadFromSession: (sessionData: any) => {
+        if (sessionData) {
+          set({
+            items: sessionData.cartItems || [],
+            subtotal: sessionData.subtotal || 0,
+            tax: sessionData.tax || 0,
+            discount: sessionData.discount || 0,
+            total: sessionData.total || 0,
+            itemCount: sessionData.cartItems?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0,
+            sessionId: sessionData.id || generateSessionId()
+          });
+        }
+      },
+
+      // Get current session ID
+      getCurrentSessionId: () => {
+        const sessionStore = usePOSSessionStore.getState();
+        return sessionStore.activeSessionId || get().sessionId;
+      },
+
+      // Clear cart for current session only
+      clearCurrentSession: () => {
+        const sessionStore = usePOSSessionStore.getState();
+        const activeSessionId = sessionStore.activeSessionId;
+        
+        if (activeSessionId) {
+          // Clear session cart data
+          sessionStore.updateSessionCart(activeSessionId, [], 0, 0, 0, 0);
+          
+          // Clear local cart state
+          set({
+            items: [],
+            subtotal: 0,
+            tax: 0,
+            discount: 0,
+            discountConfig: undefined,
+            total: 0,
+            itemCount: 0
+          });
+        }
+      },
     }),
     {
       name: 'pos-cart-storage', // Storage key
@@ -295,6 +357,7 @@ export const usePOSCartStore = create<POSCartState>()(
         }
       },
     }
+    )
   )
 );
 
@@ -326,4 +389,30 @@ export const useCartActions = () => {
 // Hook for cart items
 export const useCartItems = () => {
   return usePOSCartStore((state) => state.items);
+};
+
+// Session synchronization hook
+export const synchronizeCartWithSession = () => {
+  // Subscribe to session changes
+  const unsubscribe = usePOSSessionStore.subscribe(
+    (state) => state.activeSessionId,
+    (activeSessionId, prevActiveSessionId) => {
+      if (activeSessionId && activeSessionId !== prevActiveSessionId) {
+        const sessionStore = usePOSSessionStore.getState();
+        const activeSession = sessionStore.getActiveSession();
+        const cartStore = usePOSCartStore.getState();
+        
+        if (activeSession) {
+          cartStore.loadFromSession(activeSession);
+        }
+      }
+    }
+  );
+  
+  return unsubscribe;
+};
+
+// Initialize session-cart synchronization
+export const initializeCartSessionSync = () => {
+  return synchronizeCartWithSession();
 };
