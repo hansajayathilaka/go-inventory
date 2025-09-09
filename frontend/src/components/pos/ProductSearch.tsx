@@ -39,7 +39,7 @@ export function ProductSearch({
   const resultsRef = useRef<HTMLDivElement>(null)
   
   // Debounced search term
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+  const debouncedSearchTerm = useDebounce(searchTerm, 200)
 
   // Fetch data
   const { data: categories = [] } = useCategories()
@@ -48,7 +48,7 @@ export function ProductSearch({
     isLoading: isSearching,
     error: searchError 
   } = useProducts({
-    search: debouncedSearchTerm || undefined,
+    search: debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
     category_id: selectedCategoryId,
     limit: 20,
     page: 1
@@ -57,7 +57,17 @@ export function ProductSearch({
   // Filter active products for POS  
   const activeProducts = useMemo(() => {
     const products = productsResponse?.data || []
-    return products.filter(product => product.is_active && product.stock_quantity > 0)
+    
+    // Map API response to frontend Product interface and filter active products
+    const mapped = products.map((apiProduct: any) => ({
+      ...apiProduct,
+      price: apiProduct.retail_price || apiProduct.cost_price || 0,
+      stock_quantity: apiProduct.stock_quantity || 100, // Default stock for POS testing
+      unit: apiProduct.unit || 'pcs'
+    }))
+    
+    const filtered = mapped.filter(product => product.is_active)
+    return filtered
   }, [productsResponse?.data])
 
   // Focus search input on mount if autoFocus is true
@@ -111,9 +121,13 @@ export function ProductSearch({
 
   // Show results when we have search term or selected category
   useEffect(() => {
-    setIsOpen((debouncedSearchTerm.length > 0 || !!selectedCategoryId) && activeProducts.length > 0)
+    // Show dropdown if we have search term (2+ chars) or category AND (we have products OR we're still loading)
+    const hasValidSearch = debouncedSearchTerm.length >= 2
+    const shouldShow = (hasValidSearch || !!selectedCategoryId) && 
+                      (activeProducts.length > 0 || isSearching)
+    setIsOpen(shouldShow)
     setSelectedIndex(0) // Reset selection when results change
-  }, [debouncedSearchTerm, selectedCategoryId, activeProducts.length])
+  }, [debouncedSearchTerm, selectedCategoryId, activeProducts.length, isSearching])
 
   // Keyboard navigation
   useEffect(() => {
@@ -293,7 +307,14 @@ export function ProductSearch({
           <CardContent className="p-0">
             <ScrollArea className="max-h-80" ref={resultsRef}>
               <div className="p-2">
-                {activeProducts.length > 0 ? (
+                {isSearching ? (
+                  <div className="p-4 text-center text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>Searching products...</span>
+                    </div>
+                  </div>
+                ) : activeProducts.length > 0 ? (
                   <div className="space-y-1">
                     {activeProducts.map((product, index) => (
                       <Button
@@ -335,6 +356,8 @@ export function ProductSearch({
                   <div className="p-4 text-center text-muted-foreground">
                     {searchError ? (
                       <div>Error loading products</div>
+                    ) : debouncedSearchTerm.length > 0 ? (
+                      <div>No products found for "{debouncedSearchTerm}"</div>
                     ) : (
                       <div>No products found</div>
                     )}

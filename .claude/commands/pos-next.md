@@ -21,6 +21,7 @@ This is the central command that orchestrates your entire POS development workfl
 5. **Progress Tracking**: Updates progress files as micro-tasks are completed
 6. **Quality Gates**: Ensures comprehensive testing of both API and UI before task completion
 7. **Dependency Management**: Coordinates when frontend needs backend APIs or testing needs both
+8. **Commit Changes**: Commit the relevent changes with proper commit message
 
 ## Team Specialists Available:
 - **`/pos-frontend-dev`**: React/TypeScript specialist for POS UI/UX
@@ -89,4 +90,4 @@ This is the central command that orchestrates your entire POS development workfl
 - **Handoff Coordination**: Manages work transitions between specialists
 - **Blocker Resolution**: Identifies and helps resolve development blockers
 
-This single command replaces multiple management tools and acts as your intelligent development workflow orchestrator, ensuring the right expert handles each task while maintaining quality and progress tracking.
+This single command replaces multiple management tools and acts as your intelligent development workflow orchestrator, ensuring the right expert handles each task while maintaining quality and progress tracking. If there is any missing APIs needed for the frontend, implement those APIs as well. At last frontend and backend should both sync together to give the correct output.
