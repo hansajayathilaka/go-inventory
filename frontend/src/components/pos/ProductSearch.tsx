@@ -67,6 +67,48 @@ export function ProductSearch({
     }
   }, [autoFocus])
 
+  // Handlers
+  const handleProductSelect = useCallback((product: Product) => {
+    onProductSelect(product)
+    setSearchTerm('')
+    setIsOpen(false)
+    setSelectedCategoryId(undefined)
+    if (searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [onProductSelect])
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false)
+    setSearchTerm('')
+    setSelectedCategoryId(undefined)
+    setShowScanner(false)
+    setShowCategories(false)
+  }, [])
+
+  const handleBarcodeScanned = useCallback((barcode: string) => {
+    onBarcodeScanned?.(barcode)
+    setSearchTerm(barcode)
+    setShowScanner(false)
+    
+    // Search for product with this barcode
+    if (barcode) {
+      // Find product by barcode in current results
+      const foundProduct = activeProducts.find(p => p.barcode === barcode)
+      if (foundProduct) {
+        handleProductSelect(foundProduct)
+      }
+    }
+  }, [onBarcodeScanned, activeProducts, handleProductSelect])
+
+  const handleCategorySelect = useCallback((categoryId: number | undefined) => {
+    setSelectedCategoryId(categoryId)
+    setShowCategories(false)
+    if (searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [])
+
   // Show results when we have search term or selected category
   useEffect(() => {
     setIsOpen((debouncedSearchTerm.length > 0 || !!selectedCategoryId) && activeProducts.length > 0)
@@ -110,48 +152,6 @@ export function ProductSearch({
       return () => document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isOpen, activeProducts, selectedIndex, handleProductSelect, handleClose])
-
-  // Handlers
-  const handleProductSelect = useCallback((product: Product) => {
-    onProductSelect(product)
-    setSearchTerm('')
-    setIsOpen(false)
-    setSelectedCategoryId(undefined)
-    if (searchInputRef.current) {
-      searchInputRef.current.focus()
-    }
-  }, [onProductSelect])
-
-  const handleBarcodeScanned = useCallback((barcode: string) => {
-    onBarcodeScanned?.(barcode)
-    setSearchTerm(barcode)
-    setShowScanner(false)
-    
-    // Search for product with this barcode
-    if (barcode) {
-      // Find product by barcode in current results
-      const foundProduct = activeProducts.find(p => p.barcode === barcode)
-      if (foundProduct) {
-        handleProductSelect(foundProduct)
-      }
-    }
-  }, [onBarcodeScanned, activeProducts, handleProductSelect])
-
-  const handleCategorySelect = useCallback((categoryId: number | undefined) => {
-    setSelectedCategoryId(categoryId)
-    setShowCategories(false)
-    if (searchInputRef.current) {
-      searchInputRef.current.focus()
-    }
-  }, [])
-
-  const handleClose = useCallback(() => {
-    setIsOpen(false)
-    setSearchTerm('')
-    setSelectedCategoryId(undefined)
-    setShowScanner(false)
-    setShowCategories(false)
-  }, [])
 
   // Get category name for display
   const getSelectedCategoryName = useCallback(() => {

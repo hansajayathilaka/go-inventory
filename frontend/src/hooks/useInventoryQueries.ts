@@ -51,12 +51,9 @@ export function useProducts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get<any>(`/products${queryString}`);
-      // Map API response to PaginatedResponse format
-      return {
-        data: response.data,
-        pagination: response.pagination
-      };
+      const response = await apiClient.get<PaginatedResponse<Product>>(`/products${queryString}`);
+      // Return the paginated response directly
+      return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -304,25 +301,25 @@ export function usePurchaseReceipts(params?: {
       
       // Fetch purchase receipts and suppliers in parallel
       const [receiptsResponse, suppliersResponse] = await Promise.all([
-        apiClient.get<any>(`/purchase-receipts${queryString}`),
-        apiClient.get<any>('/suppliers?limit=1000') // Get all suppliers for lookup
+        apiClient.get<PaginatedResponse<PurchaseReceipt>>(`/purchase-receipts${queryString}`),
+        apiClient.get<Supplier[]>('/suppliers?limit=1000') // Get all suppliers for lookup
       ]);
       
       // Create supplier lookup map
       const supplierMap = new Map();
-      suppliersResponse.data.forEach((supplier: any) => {
+      suppliersResponse.data.forEach((supplier: Supplier) => {
         supplierMap.set(supplier.id, supplier);
       });
       
       // Join purchase receipts with suppliers
-      const receiptsWithSuppliers = receiptsResponse.data.map((receipt: any) => ({
+      const receiptsWithSuppliers = receiptsResponse.data.data.map((receipt: PurchaseReceipt) => ({
         ...receipt,
         supplier: receipt.supplier_id ? supplierMap.get(receipt.supplier_id) : null
       }));
       
       return {
         data: receiptsWithSuppliers,
-        pagination: receiptsResponse.pagination
+        pagination: receiptsResponse.data.pagination
       };
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - purchase receipts change more frequently
