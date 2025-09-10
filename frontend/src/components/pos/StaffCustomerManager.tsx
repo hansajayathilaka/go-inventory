@@ -7,18 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useUserRole } from './RoleBasedPOSAccess'
 
-// Customer type definition (should match backend)
-interface Customer {
-  id: number
-  code: string
-  name: string
-  email?: string
-  phone?: string
-  address?: string
-  isActive: boolean
-  createdAt: string
-  totalPurchases?: number
-}
+// Import types and services
+import { Customer, customerService } from '@/services/customerService'
 
 interface StaffCustomerManagerProps {
   onCustomerSelect: (customer: Customer | null) => void
@@ -57,56 +47,21 @@ export function StaffCustomerManager({
 
   const { hasRole, isStaff } = useUserRole()
 
-  // Simulated customer search (replace with actual API call)
+  // Real customer search using the API
   const searchCustomers = async (term: string): Promise<Customer[]> => {
-    // This would be replaced with actual API call
-    // For now, return mock data
     if (!term.trim()) return []
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    // Mock customer data
-    const mockCustomers: Customer[] = [
-      {
-        id: 1,
-        code: 'CUST001',
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '(555) 123-4567',
-        address: '123 Main St, City, State 12345',
-        isActive: true,
-        createdAt: '2024-01-01',
-        totalPurchases: 5
-      },
-      {
-        id: 2,
-        code: 'CUST002', 
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        phone: '(555) 987-6543',
-        isActive: true,
-        createdAt: '2024-01-15',
-        totalPurchases: 12
-      },
-      {
-        id: 3,
-        code: 'CUST003',
-        name: 'Bob Wilson',
-        phone: '(555) 456-7890',
-        isActive: true,
-        createdAt: '2024-02-01',
-        totalPurchases: 3
-      }
-    ]
-
-    // Filter by search term
-    return mockCustomers.filter(customer =>
-      customer.name.toLowerCase().includes(term.toLowerCase()) ||
-      customer.code.toLowerCase().includes(term.toLowerCase()) ||
-      (customer.phone && customer.phone.includes(term)) ||
-      (customer.email && customer.email.toLowerCase().includes(term.toLowerCase()))
-    )
+    try {
+      const response = await customerService.searchCustomers({
+        search: term,
+        is_active: true,
+        limit: 10
+      })
+      return response.customers
+    } catch (error) {
+      console.error('Customer search failed:', error)
+      throw new Error('Failed to search customers')
+    }
   }
 
   // Handle search with debounce
@@ -134,7 +89,7 @@ export function StaffCustomerManager({
     return () => clearTimeout(searchTimeout)
   }, [searchTerm])
 
-  // Handle customer creation
+  // Handle customer creation using real API
   const handleCreateCustomer = async () => {
     if (!newCustomerData.name.trim()) {
       setError('Customer name is required')
@@ -145,22 +100,14 @@ export function StaffCustomerManager({
     setError(null)
 
     try {
-      // This would be replaced with actual API call
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Mock new customer creation
-      const newCustomer: Customer = {
-        id: Date.now(), // Mock ID
-        code: `CUST${String(Date.now()).slice(-3).padStart(3, '0')}`,
+      const customerRequest = {
         name: newCustomerData.name.trim(),
         email: newCustomerData.email?.trim() || undefined,
         phone: newCustomerData.phone?.trim() || undefined,
-        address: newCustomerData.address?.trim() || undefined,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        totalPurchases: 0
+        address: newCustomerData.address?.trim() || undefined
       }
+
+      const newCustomer = await customerService.createCustomer(customerRequest)
 
       // Select the new customer and close form
       onCustomerSelect(newCustomer)
@@ -168,7 +115,8 @@ export function StaffCustomerManager({
       setNewCustomerData({ name: '', phone: '', email: '', address: '' })
       
     } catch (err) {
-      setError('Failed to create customer. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create customer'
+      setError(errorMessage)
     } finally {
       setIsCreating(false)
     }
@@ -296,9 +244,9 @@ export function StaffCustomerManager({
                           </div>
                         )}
                       </div>
-                      {!isStaff && customer.totalPurchases !== undefined && (
+                      {!isStaff && customer.total_purchases !== undefined && (
                         <Badge variant="outline" className="text-xs">
-                          {customer.totalPurchases} purchases
+                          {customer.total_purchases} purchases
                         </Badge>
                       )}
                     </div>

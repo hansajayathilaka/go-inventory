@@ -19,15 +19,15 @@ import type { PaginatedResponse, DashboardStats } from '../types/api';
 // Query Keys
 export const QUERY_KEYS = {
   products: ['products'] as const,
-  product: (id: number) => ['products', id] as const,
+  product: (id: string) => ['products', id] as const,
   categories: ['categories'] as const,
-  category: (id: number) => ['categories', id] as const,
+  category: (id: string) => ['categories', id] as const,
   brands: ['brands'] as const,
-  brand: (id: number) => ['brands', id] as const,
+  brand: (id: string) => ['brands', id] as const,
   suppliers: ['suppliers'] as const,
-  supplier: (id: number) => ['suppliers', id] as const,
+  supplier: (id: string) => ['suppliers', id] as const,
   purchaseReceipts: ['purchase-receipts'] as const,
-  purchaseReceipt: (id: number) => ['purchase-receipts', id] as const,
+  purchaseReceipt: (id: string) => ['purchase-receipts', id] as const,
 } as const;
 
 // Products
@@ -35,9 +35,9 @@ export function useProducts(params?: {
   search?: string; 
   page?: number; 
   limit?: number;
-  category_id?: number;
-  brand_id?: number;
-  supplier_id?: number;
+  category_id?: string;
+  brand_id?: string;
+  supplier_id?: string;
 }) {
   return useQuery({
     queryKey: [...QUERY_KEYS.products, params],
@@ -51,15 +51,44 @@ export function useProducts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get<PaginatedResponse<Product>>(`/products${queryString}`);
-      // Return the paginated response directly
-      return response.data;
+      const response = await apiClient.get(`/products${queryString}`);
+      // API returns: { success: true, data: Product[], pagination: {...} }
+      // Transform the products to match frontend interface
+      const transformedProducts = (response.data as any[]).map((product: any) => ({
+        ...product,
+        // Map API fields to frontend interface
+        price: product.retail_price || 0,
+        stock_quantity: 0, // Default since API doesn't return inventory data
+        unit: 'pcs', // Default unit
+        min_stock_level: 10, // Default min stock level
+        max_stock_level: 100, // Default max stock level
+        // Keep API fields that match
+        id: product.id, // UUID string from API
+        name: product.name,
+        description: product.description,
+        sku: product.sku,
+        barcode: product.barcode,
+        cost_price: product.cost_price,
+        category_id: product.category_id,
+        supplier_id: product.supplier_id,
+        is_active: product.is_active,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+        // Include related data
+        category: product.category,
+        supplier: product.supplier,
+      }));
+      
+      return {
+        data: transformedProducts,
+        pagination: (response as any).pagination
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
-export function useProduct(id: number) {
+export function useProduct(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.product(id),
     queryFn: async (): Promise<Product> => {
@@ -102,7 +131,7 @@ export function useUpdateProduct() {
   const { addNotification } = useUiStore();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: ProductFormData }): Promise<Product> => {
+    mutationFn: async ({ id, data }: { id: string; data: ProductFormData }): Promise<Product> => {
       const response = await apiClient.put<Product>(`/products/${id}`, data);
       return response.data;
     },
@@ -130,7 +159,7 @@ export function useDeleteProduct() {
   const { addNotification } = useUiStore();
 
   return useMutation({
-    mutationFn: async (id: number): Promise<void> => {
+    mutationFn: async (id: string): Promise<void> => {
       await apiClient.delete(`/products/${id}`);
     },
     onSuccess: () => {
@@ -285,7 +314,7 @@ export function usePurchaseReceipts(params?: {
   page?: number;
   limit?: number;
   status?: string;
-  supplier_id?: number;
+  supplier_id?: string;
 }) {
   return useQuery({
     queryKey: [...QUERY_KEYS.purchaseReceipts, params],
@@ -326,7 +355,7 @@ export function usePurchaseReceipts(params?: {
   });
 }
 
-export function usePurchaseReceipt(id: number) {
+export function usePurchaseReceipt(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.purchaseReceipt(id),
     queryFn: async (): Promise<PurchaseReceipt> => {
@@ -353,9 +382,9 @@ export function useDashboardStats() {
 // Low Stock Products
 export function useLowStockProducts(limit: number = 10) {
   return useQuery({
-    queryKey: ['products', 'low-stock', limit],
+    queryKey: ['inventory', 'low-stock', limit],
     queryFn: async (): Promise<Product[]> => {
-      const response = await apiClient.get<Product[]>(`/products/low-stock?limit=${limit}`);
+      const response = await apiClient.get<Product[]>(`/inventory/low-stock?limit=${limit}`);
       return response.data;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -370,7 +399,23 @@ export function useStockAdjustment() {
 
   return useMutation({
     mutationFn: async (data: StockAdjustmentFormData): Promise<void> => {
-      await apiClient.post('/stock-adjustments', data);
+      // Transform frontend data to backend format
+      const backendData = {
+        product_id: data.product_id,
+        quantity: data.quantity,
+        movement_type: data.adjustment_type === 'increase' ? 'IN' : 
+                      data.adjustment_type === 'decrease' ? 'OUT' : 'ADJUSTMENT',
+        reason: data.reason === 'damaged' ? 'damage' :
+                data.reason === 'expired' ? 'corrections' :
+                data.reason === 'lost' ? 'corrections' :
+                data.reason === 'found' ? 'corrections' :
+                data.reason === 'recount' ? 'inventory_count' :
+                data.reason === 'correction' ? 'correction' :
+                'other',
+        notes: data.notes || null
+      };
+      
+      await apiClient.post('/inventory/adjust', backendData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });

@@ -1,7 +1,7 @@
 // Base types for inventory management
 
 export interface Product {
-  id: number;
+  id: string; // UUID from API
   name: string;
   description?: string;
   sku?: string;
@@ -12,9 +12,9 @@ export interface Product {
   min_stock_level?: number;
   max_stock_level?: number;
   unit: string;
-  category_id?: number;
-  brand_id?: number;
-  supplier_id?: number;
+  category_id?: string;
+  brand_id?: string;
+  supplier_id?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -26,10 +26,10 @@ export interface Product {
 }
 
 export interface Category {
-  id: number;
+  id: string; // UUID from API
   name: string;
   description?: string;
-  parent_id?: number;
+  parent_id?: string;
   level: number;
   path: string;
   is_active: boolean;
@@ -53,7 +53,7 @@ export interface CategoryHierarchy {
 }
 
 export interface Brand {
-  id: number;
+  id: string; // UUID from API
   name: string;
   description?: string;
   logo_url?: string;
@@ -67,7 +67,7 @@ export interface Brand {
 }
 
 export interface Supplier {
-  id: number;
+  id: string; // UUID from API
   name: string;
   contact_person?: string;
   email?: string;
@@ -86,7 +86,7 @@ export interface Supplier {
 }
 
 export interface Customer {
-  id: number;
+  id: string; // UUID from API
   name: string;
   email?: string;
   phone?: string;
@@ -100,9 +100,9 @@ export interface Customer {
 }
 
 export interface PurchaseReceipt {
-  id: number;
+  id: string; // UUID from API
   receipt_number: string;
-  supplier_id?: number;
+  supplier_id?: string;
   status: PurchaseReceiptStatus;
   order_date: string;
   expected_date?: string;
@@ -118,9 +118,9 @@ export interface PurchaseReceipt {
 }
 
 export interface PurchaseReceiptItem {
-  id: number;
-  purchase_receipt_id: number;
-  product_id: number;
+  id: string; // UUID from API
+  purchase_receipt_id: string;
+  product_id: string;
   quantity_ordered: number;
   quantity_received: number;
   unit_cost: number;
@@ -140,8 +140,8 @@ export type PurchaseReceiptStatus =
   | 'cancelled';
 
 export interface StockMovement {
-  id: number;
-  product_id: number;
+  id: string; // UUID from API
+  product_id: string;
   movement_type: StockMovementType;
   quantity: number;
   reference_id?: number;
@@ -173,16 +173,16 @@ export interface ProductFormData {
   min_stock_level?: number;
   max_stock_level?: number;
   unit: string;
-  category_id?: number;
-  brand_id?: number;
-  supplier_id?: number;
+  category_id?: string;
+  brand_id?: string;
+  supplier_id?: string;
   is_active: boolean;
 }
 
 export interface CategoryFormData {
   name: string;
   description?: string;
-  parent_id?: number;
+  parent_id?: string;
   is_active: boolean;
 }
 
@@ -208,7 +208,7 @@ export interface SupplierFormData {
 }
 
 export interface StockAdjustmentFormData {
-  product_id: number;
+  product_id: string;
   adjustment_type: 'increase' | 'decrease' | 'set';
   quantity: number;
   reason: 'damaged' | 'expired' | 'lost' | 'found' | 'recount' | 'correction' | 'other';

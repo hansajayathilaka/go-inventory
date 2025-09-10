@@ -21,9 +21,9 @@ type JWTClaims struct {
 // AuthMiddleware creates JWT authentication middleware
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Skip auth for health check and auth endpoints
+		// Skip auth for health check, docs, and only the login endpoint
 		if strings.HasPrefix(c.Request.URL.Path, "/api/v1/health") ||
-			strings.HasPrefix(c.Request.URL.Path, "/api/v1/auth") ||
+			c.Request.URL.Path == "/api/v1/auth/login" ||
 			strings.HasPrefix(c.Request.URL.Path, "/docs") {
 			c.Next()
 			return

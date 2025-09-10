@@ -1,22 +1,21 @@
 import { useState, useCallback } from 'react'
 import { ProductSearch } from '@/components/pos/ProductSearch'
-import { ShoppingCart } from '@/components/pos/ShoppingCart'
-import { PaymentForm } from '@/components/pos/PaymentForm'
-import { useCartActions } from '@/stores/posCartStore'
+import { SimpleShoppingCart } from '@/components/pos/SimpleShoppingCart'
+import { useSimpleAddItem } from '@/stores/simplePOSStore'
 import type { Product } from '@/types/inventory'
 
 interface POSProps {
   sessionId?: string
 }
 
-export function POS(_props: POSProps) {
+export function POSWorking(_props: POSProps) {
   const [showPayment, setShowPayment] = useState(false)
-  const { addItem } = useCartActions()
+  const addItem = useSimpleAddItem()
 
   const handleProductSelect = useCallback(async (product: Product) => {
     console.log('Product selected:', product)
     try {
-      await addItem(product, 1)
+      addItem(product, 1)
     } catch (error) {
       console.error('Failed to add item to cart:', error)
     }
@@ -40,10 +39,26 @@ export function POS(_props: POSProps) {
     return (
       <div className="h-full p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
-          <PaymentForm 
-            onComplete={handlePaymentComplete}
-            onCancel={() => setShowPayment(false)}
-          />
+          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">💳 Payment Processing</h2>
+            <p className="text-gray-600 mb-6">
+              Payment integration will be implemented here.
+            </p>
+            <div className="space-x-4">
+              <button 
+                onClick={handlePaymentComplete}
+                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Complete Sale
+              </button>
+              <button 
+                onClick={() => setShowPayment(false)}
+                className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Back to POS
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -71,7 +86,7 @@ export function POS(_props: POSProps) {
           
           {/* Shopping Cart Area */}
           <div className="flex flex-col h-full">
-            <ShoppingCart 
+            <SimpleShoppingCart 
               onCheckout={handleCheckout}
               showCheckoutButton={true}
             />

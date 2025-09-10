@@ -19,29 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useUserRole } from './RoleBasedPOSAccess'
 import { useAuthStore } from '@/stores/authStore'
-
-interface SaleItem {
-  id: number
-  productName: string
-  quantity: number
-  unitPrice: number
-  totalPrice: number
-}
-
-interface Sale {
-  id: number
-  billNumber: string
-  customerName?: string
-  customerCode?: string
-  saleDate: Date
-  items: SaleItem[]
-  subtotal: number
-  tax: number
-  discount: number
-  total: number
-  paymentMethods: string[]
-  itemCount: number
-}
+import { Sale, salesService } from '@/services/salesService'
 
 interface PersonalSalesHistoryProps {
   cashierId?: number
@@ -113,93 +91,18 @@ export function PersonalSalesHistory({
     }
   ]
 
-  // Mock sales data fetch function (replace with actual API call)
+  // Real sales data fetch using the API
   const fetchPersonalSales = async (cashierId: number): Promise<Sale[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    // Mock sales data - in real app this would filter by cashierId
-    const mockSales: Sale[] = [
-      {
-        id: 1,
-        billNumber: 'SALE-001',
-        customerName: 'John Doe',
-        customerCode: 'CUST001',
-        saleDate: new Date(),
-        items: [
-          {
-            id: 1,
-            productName: 'Hammer',
-            quantity: 2,
-            unitPrice: 15.99,
-            totalPrice: 31.98
-          },
-          {
-            id: 2,
-            productName: 'Screwdriver Set',
-            quantity: 1,
-            unitPrice: 24.99,
-            totalPrice: 24.99
-          }
-        ],
-        subtotal: 56.97,
-        tax: 5.70,
-        discount: 0,
-        total: 62.67,
-        paymentMethods: ['Cash'],
-        itemCount: 3
-      },
-      {
-        id: 2,
-        billNumber: 'SALE-002',
-        customerName: 'Jane Smith',
-        saleDate: subDays(new Date(), 1),
-        items: [
-          {
-            id: 3,
-            productName: 'Drill Bits Set',
-            quantity: 1,
-            unitPrice: 19.99,
-            totalPrice: 19.99
-          }
-        ],
-        subtotal: 19.99,
-        tax: 2.00,
-        discount: 2.00,
-        total: 19.99,
-        paymentMethods: ['Card'],
-        itemCount: 1
-      },
-      {
-        id: 3,
-        billNumber: 'SALE-003',
-        saleDate: subDays(new Date(), 3),
-        items: [
-          {
-            id: 4,
-            productName: 'Paint Brush',
-            quantity: 5,
-            unitPrice: 3.99,
-            totalPrice: 19.95
-          },
-          {
-            id: 5,
-            productName: 'Paint Roller',
-            quantity: 2,
-            unitPrice: 7.99,
-            totalPrice: 15.98
-          }
-        ],
-        subtotal: 35.93,
-        tax: 3.59,
-        discount: 0,
-        total: 39.52,
-        paymentMethods: ['Cash', 'Card'],
-        itemCount: 7
-      }
-    ]
-
-    return mockSales
+    try {
+      const response = await salesService.getCashierSales(cashierId, {
+        limit: maxRecords
+      })
+      
+      return response.sales
+    } catch (error) {
+      console.error('Failed to fetch personal sales:', error)
+      throw new Error('Failed to load sales data')
+    }
   }
 
   // Load sales data
@@ -226,7 +129,7 @@ export function PersonalSalesHistory({
   // Filter sales based on date range and search term
   useEffect(() => {
     let filtered = sales.filter(sale => 
-      isWithinInterval(sale.saleDate, {
+      isWithinInterval(new Date(sale.sale_date), {
         start: selectedDateFilter.start,
         end: selectedDateFilter.end
       })
@@ -235,10 +138,10 @@ export function PersonalSalesHistory({
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase()
       filtered = filtered.filter(sale =>
-        sale.billNumber.toLowerCase().includes(term) ||
-        sale.customerName?.toLowerCase().includes(term) ||
-        sale.customerCode?.toLowerCase().includes(term) ||
-        sale.items.some(item => item.productName.toLowerCase().includes(term))
+        sale.bill_number.toLowerCase().includes(term) ||
+        sale.customer_name?.toLowerCase().includes(term) ||
+        sale.customer_code?.toLowerCase().includes(term) ||
+        sale.sale_items.some(item => item.product_name.toLowerCase().includes(term))
       )
     }
 
@@ -258,10 +161,10 @@ export function PersonalSalesHistory({
   // Calculate summary statistics
   const summaryStats = {
     totalSales: filteredSales.length,
-    totalRevenue: filteredSales.reduce((sum, sale) => sum + sale.total, 0),
-    totalItems: filteredSales.reduce((sum, sale) => sum + sale.itemCount, 0),
+    totalRevenue: filteredSales.reduce((sum, sale) => sum + sale.total_amount, 0),
+    totalItems: filteredSales.reduce((sum, sale) => sum + sale.sale_items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0),
     averageSale: filteredSales.length > 0 
-      ? filteredSales.reduce((sum, sale) => sum + sale.total, 0) / filteredSales.length 
+      ? filteredSales.reduce((sum, sale) => sum + sale.total_amount, 0) / filteredSales.length 
       : 0
   }
 
@@ -271,9 +174,11 @@ export function PersonalSalesHistory({
 
     const csvData = [
       'Date,Bill Number,Customer,Items,Total,Payment Methods',
-      ...filteredSales.map(sale =>
-        `${format(sale.saleDate, 'yyyy-MM-dd')},${sale.billNumber},${sale.customerName || 'Walk-in'},${sale.itemCount},${sale.total.toFixed(2)},"${sale.paymentMethods.join(', ')}"`
-      )
+      ...filteredSales.map(sale => {
+        const itemCount = sale.sale_items.reduce((sum, item) => sum + item.quantity, 0)
+        const paymentMethods = sale.payments.map(p => p.method).join(', ')
+        return `${format(new Date(sale.sale_date), 'yyyy-MM-dd')},${sale.bill_number},${sale.customer_name || 'Walk-in'},${itemCount},${sale.total_amount.toFixed(2)},"${paymentMethods}"`
+      })
     ].join('\n')
 
     const blob = new Blob([csvData], { type: 'text/csv' })
@@ -426,34 +331,34 @@ export function PersonalSalesHistory({
                   <div key={sale.id} className="border border-gray-200 rounded-md p-4 hover:bg-gray-50">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <div className="font-medium">{sale.billNumber}</div>
+                        <div className="font-medium">{sale.bill_number}</div>
                         <div className="text-sm text-gray-600">
-                          {format(sale.saleDate, 'MMM dd, yyyy HH:mm')}
+                          {format(new Date(sale.sale_date), 'MMM dd, yyyy HH:mm')}
                         </div>
-                        {sale.customerName && (
+                        {sale.customer_name && (
                           <div className="text-sm text-gray-600">
-                            Customer: {sale.customerName}
+                            Customer: {sale.customer_name}
                           </div>
                         )}
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-lg">
-                          {formatCurrency(sale.total)}
+                          {formatCurrency(sale.total_amount)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {sale.itemCount} item{sale.itemCount !== 1 ? 's' : ''}
+                          {sale.sale_items.reduce((sum, item) => sum + item.quantity, 0)} item{sale.sale_items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''}
                         </div>
                       </div>
                     </div>
 
                     {/* Items */}
                     <div className="space-y-1 mb-2">
-                      {sale.items.map((item) => (
+                      {sale.sale_items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm text-gray-600">
                           <span>
-                            {item.quantity}x {item.productName}
+                            {item.quantity}x {item.product_name}
                           </span>
-                          <span>{formatCurrency(item.totalPrice)}</span>
+                          <span>{formatCurrency(item.total_price)}</span>
                         </div>
                       ))}
                     </div>
@@ -461,17 +366,16 @@ export function PersonalSalesHistory({
                     {/* Payment Methods */}
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex gap-1">
-                        {sale.paymentMethods.map((method, index) => (
+                        {sale.payments.map((payment, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
-                            {method}
+                            {payment.method}
                           </Badge>
                         ))}
                       </div>
                       <div className="text-gray-500">
-                        Tax: {formatCurrency(sale.tax)}
-                        {sale.discount > 0 && (
-                          <span className="ml-2 text-red-600">
-                            Discount: -{formatCurrency(sale.discount)}
+                        {sale.bill_discount_amount > 0 && (
+                          <span className="text-red-600">
+                            Discount: -{formatCurrency(sale.bill_discount_amount)}
                           </span>
                         )}
                       </div>

@@ -10,6 +10,7 @@ import (
 	"inventory-api/internal/business/inventory"
 	"inventory-api/internal/business/product"
 	"inventory-api/internal/business/purchase_receipt"
+	"inventory-api/internal/business/sale"
 	"inventory-api/internal/business/supplier"
 	"inventory-api/internal/business/user"
 	"inventory-api/internal/config"
@@ -33,6 +34,9 @@ type Context struct {
 	CustomerRepo              interfaces.CustomerRepository
 	BrandRepo                 interfaces.BrandRepository
 	PurchaseReceiptRepo       interfaces.PurchaseReceiptRepository
+	SaleRepo                  interfaces.SaleRepository
+	SaleItemRepo              interfaces.SaleItemRepository
+	PaymentRepo               interfaces.PaymentRepository
 
 	// Services
 	UserService           user.Service
@@ -44,6 +48,7 @@ type Context struct {
 	HierarchyService      hierarchy.Service
 	InventoryService      inventory.Service
 	AuditService          audit.Service
+	SaleService           sale.Service
 }
 
 func NewContext() (*Context, error) {
@@ -92,6 +97,9 @@ func (ctx *Context) initRepositories() {
 	ctx.CustomerRepo = repository.NewCustomerRepository(ctx.Database.DB)
 	ctx.BrandRepo = repository.NewBrandRepository(ctx.Database.DB)
 	ctx.PurchaseReceiptRepo = repository.NewPurchaseReceiptRepository(ctx.Database.DB)
+	ctx.SaleRepo = repository.NewSaleRepository(ctx.Database.DB)
+	ctx.SaleItemRepo = repository.NewSaleItemRepository(ctx.Database.DB)
+	ctx.PaymentRepo = repository.NewPaymentRepository(ctx.Database.DB)
 }
 
 func (ctx *Context) initServices() {
@@ -121,6 +129,17 @@ func (ctx *Context) initServices() {
 		ctx.ProductRepo,
 	)
 	ctx.AuditService = audit.NewService(ctx.AuditLogRepo, ctx.UserRepo)
+	ctx.SaleService = sale.NewService(
+		ctx.SaleRepo,
+		ctx.SaleItemRepo,
+		ctx.PaymentRepo,
+		ctx.ProductRepo,
+		ctx.CustomerRepo,
+		ctx.UserRepo,
+		ctx.InventoryRepo,
+		ctx.StockBatchRepo,
+		ctx.StockMovementRepo,
+	)
 }
 
 func (ctx *Context) Close() error {

@@ -71,6 +71,17 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		brandHandler := handlers.NewBrandHandler(appCtx.BrandService)
 		// Legacy handlers removed - replaced by unified PurchaseReceiptHandler
 		purchaseReceiptHandler := handlers.NewPurchaseReceiptHandler(appCtx.PurchaseReceiptService)
+		salesHandler := handlers.NewSalesHandler(appCtx.SaleService)
+		dashboardHandler := handlers.NewDashboardHandler(
+			appCtx.SaleService,
+			appCtx.ProductService,
+			appCtx.CustomerService,
+			appCtx.InventoryService,
+			appCtx.InventoryRepo,
+			appCtx.ProductRepo,
+			appCtx.SaleRepo,
+			appCtx.CustomerRepo,
+		)
 
 		// Authentication routes (public)
 		auth := v1.Group("/auth")
@@ -79,6 +90,13 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 			auth.POST("/logout", middleware.AuthMiddleware(jwtSecret), authHandler.Logout)
 			auth.POST("/refresh", middleware.AuthMiddleware(jwtSecret), authHandler.RefreshToken)
 			auth.GET("/me", middleware.AuthMiddleware(jwtSecret), authHandler.Me)
+		}
+
+		// Dashboard routes (protected)
+		dashboard := v1.Group("/dashboard")
+		dashboard.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			dashboard.GET("/stats", middleware.RequireMinimumRole("viewer"), dashboardHandler.GetDashboardStats)
 		}
 
 		// User management routes (protected)
@@ -224,6 +242,20 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		pos.Use(middleware.AuthMiddleware(jwtSecret))
 		{
 			pos.GET("/lookup", middleware.RequireMinimumRole("staff"), productHandler.POSLookup)
+		}
+
+		// Sales management routes (protected)
+		sales := v1.Group("/sales")
+		sales.Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			// Basic CRUD operations
+			sales.GET("", middleware.RequireMinimumRole("staff"), salesHandler.GetSales)
+			sales.POST("", middleware.RequireMinimumRole("staff"), salesHandler.CreateSale)
+			sales.GET("/summary", middleware.RequireMinimumRole("staff"), salesHandler.GetSalesSummary)
+			sales.GET("/generate-bill-number", middleware.RequireMinimumRole("staff"), salesHandler.GenerateBillNumber)
+			sales.GET("/bill/:billNumber", middleware.RequireMinimumRole("staff"), salesHandler.GetSaleByBillNumber)
+			sales.GET("/:id", middleware.RequireMinimumRole("staff"), salesHandler.GetSale)
+			sales.POST("/:id/void", middleware.RequireMinimumRole("manager"), salesHandler.VoidSale)
 		}
 
 		// Audit and reporting routes (protected)

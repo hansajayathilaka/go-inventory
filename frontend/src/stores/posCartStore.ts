@@ -271,19 +271,25 @@ export const usePOSCartStore = create<POSCartState>()(
           itemCount
         });
 
-        // Sync with session store
-        const sessionStore = usePOSSessionStore.getState();
-        const activeSessionId = sessionStore.activeSessionId;
-        if (activeSessionId) {
-          sessionStore.updateSessionCart(
-            activeSessionId,
-            get().items,
-            subtotal,
-            taxAmount,
-            discountAmount,
-            total
-          );
-        }
+        // Async session sync to prevent infinite loops
+        setTimeout(() => {
+          try {
+            const sessionStore = usePOSSessionStore.getState();
+            const activeSessionId = sessionStore.activeSessionId;
+            if (activeSessionId) {
+              sessionStore.updateSessionCart(
+                activeSessionId,
+                get().items,
+                subtotal,
+                taxAmount,
+                discountAmount,
+                total
+              );
+            }
+          } catch (error) {
+            console.warn('Failed to sync cart with session store:', error);
+          }
+        }, 0);
       },
 
       // Internal method to find item index
@@ -353,7 +359,12 @@ export const usePOSCartStore = create<POSCartState>()(
       // Restore computed values after hydration
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.calculateTotals();
+          // Avoid immediate calculateTotals to prevent loops
+          setTimeout(() => {
+            if (state.calculateTotals) {
+              state.calculateTotals();
+            }
+          }, 100);
         }
       },
     }
@@ -391,25 +402,12 @@ export const useCartItems = () => {
   return usePOSCartStore((state) => state.items);
 };
 
-// Session synchronization hook
+// Session synchronization hook - disabled to prevent infinite loops
 export const synchronizeCartWithSession = () => {
-  // Subscribe to session changes
-  const unsubscribe = usePOSSessionStore.subscribe(
-    (state) => state.activeSessionId,
-    (activeSessionId, prevActiveSessionId) => {
-      if (activeSessionId && activeSessionId !== prevActiveSessionId) {
-        const sessionStore = usePOSSessionStore.getState();
-        const activeSession = sessionStore.getActiveSession();
-        const cartStore = usePOSCartStore.getState();
-        
-        if (activeSession) {
-          cartStore.loadFromSession(activeSession);
-        }
-      }
-    }
-  );
-  
-  return unsubscribe;
+  // NOTE: Disabled automatic synchronization to prevent infinite loops
+  // Manual synchronization can be done via loadFromSession when needed
+  console.log('Cart-session sync initialized (manual mode)');
+  return () => {}; // No-op unsubscribe
 };
 
 // Initialize session-cart synchronization
