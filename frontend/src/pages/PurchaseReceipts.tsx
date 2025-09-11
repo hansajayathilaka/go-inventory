@@ -190,7 +190,7 @@ export function PurchaseReceipts() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleView(receipt.id)}
+                            onClick={() => handleView(Number(receipt.id))}
                             className="h-8 w-8 p-0"
                           >
                             <Eye className="h-4 w-4" />
@@ -199,7 +199,7 @@ export function PurchaseReceipts() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEdit(receipt.id)}
+                            onClick={() => handleEdit(Number(receipt.id))}
                             className="h-8 w-8 p-0"
                             disabled={receipt.status === 'received' || receipt.status === 'cancelled'}
                           >
@@ -209,7 +209,7 @@ export function PurchaseReceipts() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(receipt.id)}
+                            onClick={() => handleDelete(Number(receipt.id))}
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             disabled={receipt.status === 'received'}
                           >

@@ -5,7 +5,7 @@ import type { CartItem } from './posCartStore'
 export interface POSSession {
   id: string
   name: string
-  customerId?: number
+  customerId?: string
   customerName?: string
   cartItems: CartItem[]
   createdAt: Date
@@ -22,13 +22,13 @@ interface POSSessionState {
   activeSessionId: string | null
   maxSessions: number
 
-  createSession: (customerName?: string, customerId?: number) => string
+  createSession: (customerName?: string, customerId?: string) => string
   switchToSession: (sessionId: string) => void
   closeSession: (sessionId: string) => void
   updateSession: (sessionId: string, updates: Partial<POSSession>) => void
   updateSessionCart: (sessionId: string, cartItems: CartItem[], subtotal: number, tax: number, discount: number, total: number) => void
-  setSessionCustomer: (sessionId: string, customerId?: number, customerName?: string) => void
-  getSessionCustomer: (sessionId: string) => { id: number; name: string } | null
+  setSessionCustomer: (sessionId: string, customerId?: string, customerName?: string) => void
+  getSessionCustomer: (sessionId: string) => { id: string; name: string } | null
   getActiveSession: () => POSSession | null
   getSessionCount: () => number
   isMaxSessionsReached: () => boolean
@@ -61,7 +61,7 @@ export const usePOSSessionStore = create<POSSessionState>()(
         activeSessionId: null,
         maxSessions: 5,
 
-        createSession: (customerName?: string, customerId?: number) => {
+        createSession: (customerName?: string, customerId?: string) => {
           const state = get()
           
           if (state.sessions.length >= state.maxSessions) {
@@ -162,7 +162,7 @@ export const usePOSSessionStore = create<POSSessionState>()(
         },
 
         // Update session customer
-        setSessionCustomer: (sessionId: string, customerId?: number, customerName?: string) => {
+        setSessionCustomer: (sessionId: string, customerId?: string, customerName?: string) => {
           set((state) => ({
             sessions: state.sessions.map(s => 
               s.id === sessionId 

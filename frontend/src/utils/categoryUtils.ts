@@ -20,8 +20,8 @@ export function transformCategoryHierarchy(nodes: CategoryHierarchyNode[]): Hier
   }))
 }
 
-export function flattenCategoryHierarchy(nodes: CategoryHierarchyNode[]): { id: number; name: string; path: string }[] {
-  const flattened: { id: number; name: string; path: string }[] = []
+export function flattenCategoryHierarchy(nodes: CategoryHierarchyNode[]): { id: string; name: string; path: string }[] {
+  const flattened: { id: string; name: string; path: string }[] = []
   
   function traverse(nodes: CategoryHierarchyNode[]) {
     for (const node of nodes) {

@@ -72,7 +72,7 @@ export const completeSale = async (request: CompleteSaleRequest): Promise<Comple
       customer_id: request.customerId,
       session_id: request.sessionId,
       items: request.items.map(item => ({
-        product_id: item.product.id,
+        product_id: Number(item.product.id),
         quantity: item.quantity,
         unit_price: item.unitPrice,
         total_price: item.totalPrice,

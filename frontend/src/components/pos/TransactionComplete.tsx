@@ -71,7 +71,7 @@ export function TransactionComplete({
         // Prepare transaction request
         const request: CompleteSaleRequest = {
           sessionId: activeSession.id,
-          customerId: sessionCustomer?.id,
+          customerId: sessionCustomer?.id ? Number(sessionCustomer.id) : undefined,
           customerName: sessionCustomer?.name,
           items,
           payments,

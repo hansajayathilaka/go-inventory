@@ -3,7 +3,7 @@ import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { productService, Product } from '@/services/productService'
+import { productService, type Product } from '@/services/productService'
 
 interface POSProductSearchProps {
   onProductSelect: (product: Product) => void

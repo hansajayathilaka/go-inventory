@@ -31,8 +31,8 @@ export interface POSCartState {
   
   // Actions
   addItem: (product: Product, quantity?: number) => Promise<boolean>;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => Promise<boolean>;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => Promise<boolean>;
   applyDiscount: (amount: number, type: 'fixed' | 'percentage') => void;
   removeDiscount: () => void;
   clearCart: () => void;
@@ -43,7 +43,7 @@ export interface POSCartState {
   clearCurrentSession: () => void;
   
   // Internal methods
-  _findItemIndex: (productId: number) => number;
+  _findItemIndex: (productId: string) => number;
   _createSessionId: () => string;
 }
 
@@ -136,7 +136,7 @@ export const usePOSCartStore = create<POSCartState>()(
       },
 
       // Remove item from cart
-      removeItem: (productId: number) => {
+      removeItem: (productId: string) => {
         const state = get();
         const filteredItems = state.items.filter(item => item.product.id !== productId);
         set({ items: filteredItems });
@@ -144,7 +144,7 @@ export const usePOSCartStore = create<POSCartState>()(
       },
 
       // Update item quantity
-      updateQuantity: async (productId: number, quantity: number): Promise<boolean> => {
+      updateQuantity: async (productId: string, quantity: number): Promise<boolean> => {
         const state = get();
         const itemIndex = state._findItemIndex(productId);
         
@@ -293,7 +293,7 @@ export const usePOSCartStore = create<POSCartState>()(
       },
 
       // Internal method to find item index
-      _findItemIndex: (productId: number): number => {
+      _findItemIndex: (productId: string): number => {
         const state = get();
         return state.items.findIndex(item => item.product.id === productId);
       },

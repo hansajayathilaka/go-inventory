@@ -24,8 +24,8 @@ interface SimpleShoppingCartProps {
 // Cart Item Row Component
 interface CartItemRowProps {
   item: SimpleCartItem;
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onUpdateQuantity: (productId: string, quantity: number) => void;
+  onRemoveItem: (productId: string) => void;
 }
 
 function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRowProps) {

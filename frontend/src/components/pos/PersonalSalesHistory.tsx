@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react'
 import { format, subDays, isWithinInterval } from 'date-fns'
 import { 
-  Calendar, 
   Receipt, 
-  DollarSign, 
-  ShoppingCart,
   Download,
-  Filter,
   RefreshCw,
   AlertCircle,
-  TrendingUp,
   User
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +14,8 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useUserRole } from './RoleBasedPOSAccess'
 import { useAuthStore } from '@/stores/authStore'
-import { Sale, salesService } from '@/services/salesService'
+import { salesService } from '@/services/salesService'
+import type { Sale } from '@/services/salesService'
 
 interface PersonalSalesHistoryProps {
   cashierId?: number
@@ -129,7 +125,7 @@ export function PersonalSalesHistory({
   // Filter sales based on date range and search term
   useEffect(() => {
     let filtered = sales.filter(sale => 
-      isWithinInterval(new Date(sale.sale_date), {
+      isWithinInterval(new Date(sale.created_at || ''), {
         start: selectedDateFilter.start,
         end: selectedDateFilter.end
       })
@@ -141,7 +137,7 @@ export function PersonalSalesHistory({
         sale.bill_number.toLowerCase().includes(term) ||
         sale.customer_name?.toLowerCase().includes(term) ||
         sale.customer_code?.toLowerCase().includes(term) ||
-        sale.sale_items.some(item => item.product_name.toLowerCase().includes(term))
+        sale.items?.some(item => item.product_name?.toLowerCase().includes(term))
       )
     }
 
@@ -162,7 +158,7 @@ export function PersonalSalesHistory({
   const summaryStats = {
     totalSales: filteredSales.length,
     totalRevenue: filteredSales.reduce((sum, sale) => sum + sale.total_amount, 0),
-    totalItems: filteredSales.reduce((sum, sale) => sum + sale.sale_items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0),
+    totalItems: filteredSales.reduce((sum, sale) => sum + (sale.items || []).reduce((itemSum: number, item: any) => itemSum + item.quantity, 0), 0),
     averageSale: filteredSales.length > 0 
       ? filteredSales.reduce((sum, sale) => sum + sale.total_amount, 0) / filteredSales.length 
       : 0
@@ -175,9 +171,9 @@ export function PersonalSalesHistory({
     const csvData = [
       'Date,Bill Number,Customer,Items,Total,Payment Methods',
       ...filteredSales.map(sale => {
-        const itemCount = sale.sale_items.reduce((sum, item) => sum + item.quantity, 0)
-        const paymentMethods = sale.payments.map(p => p.method).join(', ')
-        return `${format(new Date(sale.sale_date), 'yyyy-MM-dd')},${sale.bill_number},${sale.customer_name || 'Walk-in'},${itemCount},${sale.total_amount.toFixed(2)},"${paymentMethods}"`
+        const itemCount = (sale.items || []).reduce((sum: number, item: any) => sum + item.quantity, 0)
+        const paymentMethods = (sale.payments || []).map(p => p.method).join(', ')
+        return `${format(new Date(sale.created_at || ''), 'yyyy-MM-dd')},${sale.bill_number},${sale.customer_name || 'Walk-in'},${itemCount},${sale.total_amount.toFixed(2)},"${paymentMethods}"`
       })
     ].join('\n')
 
@@ -333,7 +329,7 @@ export function PersonalSalesHistory({
                       <div>
                         <div className="font-medium">{sale.bill_number}</div>
                         <div className="text-sm text-gray-600">
-                          {format(new Date(sale.sale_date), 'MMM dd, yyyy HH:mm')}
+                          {format(new Date(sale.created_at || ''), 'MMM dd, yyyy HH:mm')}
                         </div>
                         {sale.customer_name && (
                           <div className="text-sm text-gray-600">
@@ -346,19 +342,19 @@ export function PersonalSalesHistory({
                           {formatCurrency(sale.total_amount)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {sale.sale_items.reduce((sum, item) => sum + item.quantity, 0)} item{sale.sale_items.reduce((sum, item) => sum + item.quantity, 0) !== 1 ? 's' : ''}
+                          {(sale.items || []).reduce((sum: number, item: any) => sum + item.quantity, 0)} item{(sale.items || []).reduce((sum: number, item: any) => sum + item.quantity, 0) !== 1 ? 's' : ''}
                         </div>
                       </div>
                     </div>
 
                     {/* Items */}
                     <div className="space-y-1 mb-2">
-                      {sale.sale_items.map((item) => (
+                      {sale.items?.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm text-gray-600">
                           <span>
                             {item.quantity}x {item.product_name}
                           </span>
-                          <span>{formatCurrency(item.total_price)}</span>
+                          <span>{formatCurrency(item.sub_total)}</span>
                         </div>
                       ))}
                     </div>
@@ -366,16 +362,16 @@ export function PersonalSalesHistory({
                     {/* Payment Methods */}
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex gap-1">
-                        {sale.payments.map((payment, index) => (
+                        {sale.payments?.map((payment, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {payment.method}
                           </Badge>
                         ))}
                       </div>
                       <div className="text-gray-500">
-                        {sale.bill_discount_amount > 0 && (
+                        {sale.discount_amount > 0 && (
                           <span className="text-red-600">
-                            Discount: -{formatCurrency(sale.bill_discount_amount)}
+                            Discount: -{formatCurrency(sale.discount_amount)}
                           </span>
                         )}
                       </div>

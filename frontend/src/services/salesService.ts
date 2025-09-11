@@ -2,7 +2,7 @@ import { apiClient } from './api'
 
 export interface SaleItem {
   id?: string
-  product_id: string
+  product_id: number
   product_name?: string
   sku?: string
   quantity: number
@@ -11,6 +11,7 @@ export interface SaleItem {
   discount_percent?: number
   discount_amount?: number
   tax_amount?: number
+  total_price: number
   sub_total: number
 }
 
@@ -45,12 +46,15 @@ export interface Sale {
 export interface CreateSaleRequest {
   bill_number: string
   customer_id?: string
+  cashier_id: string
+  sub_total: number
   discount_percent?: number
   discount_amount?: number
-  tax_amount?: number
+  tax_amount: number
+  total_amount: number
   notes?: string
   items: {
-    product_id: string
+    product_id: number
     quantity: number
     unit_price: number
     unit_cost?: number
@@ -224,9 +228,6 @@ export const salesService = {
       }
       if (!item.unit_price || item.unit_price <= 0) {
         errors.push(`Item ${index + 1}: Unit price must be greater than 0`)
-      }
-      if (!item.total_price || item.total_price <= 0) {
-        errors.push(`Item ${index + 1}: Total price must be greater than 0`)
       }
     })
 

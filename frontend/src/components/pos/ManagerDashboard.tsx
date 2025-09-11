@@ -11,8 +11,6 @@ import {
   Bell,
   RefreshCw,
   Clock,
-  Eye,
-  Package,
   AlertCircle,
   CheckCircle,
   XCircle,
@@ -22,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import {
   Table,
   TableBody,
@@ -31,17 +28,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { RoleBasedPOSAccess, useUserRole } from './RoleBasedPOSAccess'
+import { RoleBasedPOSAccess } from './RoleBasedPOSAccess'
 import { posManagerService } from '@/services/posManagerService'
 import type {
   DashboardMetrics,
   DashboardAlerts,
-  DashboardSummary,
-  RecentTransaction,
-  StaffActivity,
-  LowStockAlert,
-  SystemAlert,
-  PerformanceAlert
+  DashboardSummary
 } from '@/types/posManager'
 
 interface ManagerDashboardProps {
@@ -55,7 +47,6 @@ export function ManagerDashboard({
   autoRefresh = true, 
   refreshInterval = 30000 // 30 seconds 
 }: ManagerDashboardProps) {
-  const { isManager, isAdmin } = useUserRole()
   
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [alerts, setAlerts] = useState<DashboardAlerts | null>(null)

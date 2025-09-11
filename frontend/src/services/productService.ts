@@ -144,19 +144,19 @@ export const productService = {
   /**
    * Get product inventory information
    */
-  async getProductInventory(id: number): Promise<{
-    product: Product
-    current_stock: number
-    reserved_stock?: number
-    available_stock: number
-    last_movement?: {
-      date: string
-      type: string
-      quantity: number
-      reason?: string
-    }
-  }> {
+  async getProductInventory(id: number) {
     const response = await apiClient.get(`/products/${id}/inventory`)
-    return response.data
+    return response.data as {
+      product: Product
+      current_stock: number
+      reserved_stock?: number
+      available_stock: number
+      last_movement?: {
+        date: string
+        type: string
+        quantity: number
+        reason?: string
+      }
+    }
   }
 }

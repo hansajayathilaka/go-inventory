@@ -3,7 +3,7 @@ import type { Product } from '@/types/inventory';
 
 // Basic cart item interface
 export interface BasicCartItem {
-  id: number;
+  id: string;
   name: string;
   sku?: string;
   price: number;
@@ -24,8 +24,8 @@ interface BasicCartState {
 // Basic cart actions
 interface BasicCartActions {
   addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -89,7 +89,7 @@ export const useBasicCartStore = create<BasicCartStore>((set, get) => ({
   },
 
   // Remove item action
-  removeItem: (productId: number) => {
+  removeItem: (productId: string) => {
     const { items } = get();
     const newItems = items.filter(item => item.id !== productId);
     
@@ -109,7 +109,7 @@ export const useBasicCartStore = create<BasicCartStore>((set, get) => ({
   },
 
   // Update quantity action
-  updateQuantity: (productId: number, quantity: number) => {
+  updateQuantity: (productId: string, quantity: number) => {
     if (quantity <= 0) {
       get().removeItem(productId);
       return;

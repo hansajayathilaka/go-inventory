@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { format, endOfMonth } from 'date-fns'
 import {
   BarChart3,
   TrendingUp,
-  TrendingDown,
-  Calendar,
   Download,
   RefreshCw,
   Users,
@@ -36,7 +34,7 @@ import {
 } from '@/components/ui/select'
 import { RoleBasedPOSAccess, useUserRole } from './RoleBasedPOSAccess'
 import { posManagerService } from '@/services/posManagerService'
-import {
+import type {
   POSDailyReport,
   POSWeeklyReport,
   POSMonthlyReport,
@@ -63,7 +61,6 @@ export function POSReports({ className }: POSReportsProps) {
 
   // Initialize default periods
   useEffect(() => {
-    const today = new Date()
     const periods = posManagerService.getReportPeriods()
     
     switch (activeTab) {
@@ -241,7 +238,7 @@ export function POSReports({ className }: POSReportsProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {reportData.top_products.map((product, index) => (
+          {reportData.top_products.map((product) => (
             <TableRow key={product.product_id}>
               <TableCell className="font-medium">{product.product_name}</TableCell>
               <TableCell className="text-gray-600">{product.sku}</TableCell>

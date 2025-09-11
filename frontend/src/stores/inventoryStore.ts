@@ -165,17 +165,17 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
     // Category filter
     if (filters.categoryId) {
-      filtered = filtered.filter(product => product.category_id === filters.categoryId);
+      filtered = filtered.filter(product => product.category_id === String(filters.categoryId));
     }
 
     // Brand filter
     if (filters.brandId) {
-      filtered = filtered.filter(product => product.brand_id === filters.brandId);
+      filtered = filtered.filter(product => product.brand_id === String(filters.brandId));
     }
 
     // Supplier filter
     if (filters.supplierId) {
-      filtered = filtered.filter(product => product.supplier_id === filters.supplierId);
+      filtered = filtered.filter(product => product.supplier_id === String(filters.supplierId));
     }
 
     // Stock range filters
@@ -223,6 +223,6 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   getProductsByCategory: (categoryId: number) => {
     const state = get();
-    return state.products.filter(product => product.category_id === categoryId);
+    return state.products.filter(product => product.category_id === String(categoryId));
   },
 }));

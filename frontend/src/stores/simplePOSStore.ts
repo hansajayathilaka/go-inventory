@@ -19,8 +19,8 @@ export interface SimplePOSState {
   
   // Actions
   addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -78,7 +78,7 @@ export const useSimplePOSStore = create<SimplePOSState>((set, get) => ({
     });
   },
 
-  removeItem: (productId: number) => {
+  removeItem: (productId: string) => {
     const state = get();
     const newItems = state.items.filter(item => item.product.id !== productId);
     const totals = calculateTotals(newItems);
@@ -89,7 +89,7 @@ export const useSimplePOSStore = create<SimplePOSState>((set, get) => ({
     });
   },
 
-  updateQuantity: (productId: number, quantity: number) => {
+  updateQuantity: (productId: string, quantity: number) => {
     const state = get();
     
     if (quantity <= 0) {

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePOSSessionStore } from '@/stores/posSessionStore'
-import type { Customer } from '@/types/inventory'
+import type { Customer } from '@/services/customerService'
 
 interface SessionCustomer {
-  id?: number
+  id?: string
   name?: string
   email?: string
   phone?: string
@@ -42,9 +42,9 @@ export function useSessionCustomer() {
     if (!activeSessionId) return
 
     if (customer) {
-      setSessionCustomer(activeSessionId, customer.id, customer.name)
+      setSessionCustomer(activeSessionId, String(customer.id), customer.name)
       setSelectedCustomer({
-        id: customer.id,
+        id: String(customer.id),
         name: customer.name,
         email: customer.email,
         phone: customer.phone,

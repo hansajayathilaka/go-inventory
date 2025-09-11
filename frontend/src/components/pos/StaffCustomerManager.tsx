@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, UserPlus, User, Phone, Mail, MapPin, AlertCircle } from 'lucide-react'
+import { Search, UserPlus, User, Phone, Mail, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,13 +8,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useUserRole } from './RoleBasedPOSAccess'
 
 // Import types and services
-import { Customer, customerService } from '@/services/customerService'
+import { customerService, type Customer } from '@/services/customerService'
 
 interface StaffCustomerManagerProps {
   onCustomerSelect: (customer: Customer | null) => void
   selectedCustomer?: Customer | null
   allowCreate?: boolean
-  allowEdit?: boolean
   className?: string
 }
 
@@ -29,7 +28,6 @@ export function StaffCustomerManager({
   onCustomerSelect,
   selectedCustomer,
   allowCreate = true,
-  allowEdit = false,
   className
 }: StaffCustomerManagerProps) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -45,7 +43,7 @@ export function StaffCustomerManager({
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { hasRole, isStaff } = useUserRole()
+  const { isStaff } = useUserRole()
 
   // Real customer search using the API
   const searchCustomers = async (term: string): Promise<Customer[]> => {

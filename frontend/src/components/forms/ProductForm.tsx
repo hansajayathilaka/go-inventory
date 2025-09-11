@@ -26,9 +26,9 @@ const productSchema = z.object({
   min_stock_level: z.number().int().min(0, 'Minimum stock level must be non-negative').optional(),
   max_stock_level: z.number().int().min(0, 'Maximum stock level must be non-negative').optional(),
   unit: z.string().min(1, 'Unit is required').max(20, 'Unit too long'),
-  category_id: z.number().int().positive().optional(),
-  brand_id: z.number().int().positive().optional(),
-  supplier_id: z.number().int().positive().optional(),
+  category_id: z.string().optional(),
+  brand_id: z.string().optional(),
+  supplier_id: z.string().optional(),
   is_active: z.boolean(),
 })
 
@@ -272,7 +272,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               <Label>Category</Label>
               <HierarchicalSelect
                 value={watchedValues.category_id}
-                onValueChange={(value) => setValue('category_id', value ? Number(value) : undefined)}
+                onValueChange={(value) => setValue('category_id', value ? String(value) : undefined)}
                 placeholder="Select category"
                 items={hierarchicalCategories}
                 disabled={isLoading}
@@ -284,7 +284,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               <Label>Brand</Label>
               <Select
                 value={watchedValues.brand_id?.toString() || ''}
-                onValueChange={(value) => setValue('brand_id', value ? parseInt(value) : undefined)}
+                onValueChange={(value) => setValue('brand_id', value || undefined)}
                 disabled={isLoading}
               >
                 <SelectTrigger>
@@ -305,7 +305,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               <Label>Supplier</Label>
               <Select
                 value={watchedValues.supplier_id?.toString() || ''}
-                onValueChange={(value) => setValue('supplier_id', value ? parseInt(value) : undefined)}
+                onValueChange={(value) => setValue('supplier_id', value || undefined)}
                 disabled={isLoading}
               >
                 <SelectTrigger>

@@ -24,7 +24,7 @@ interface POSManagerInterfaceProps {
 }
 
 export function POSManagerInterface({ className }: POSManagerInterfaceProps) {
-  const { user, isManager, isAdmin, roleDisplayName } = useUserRole()
+  const { user, isAdmin, roleDisplayName } = useUserRole()
   const [activeTab, setActiveTab] = useState('dashboard')
 
   return (

@@ -183,7 +183,7 @@ function DiscountDialog({ isOpen, onClose, onApply, currentDiscount }: DiscountD
 // Cart Item Component
 interface CartItemRowProps {
   item: CartItem;
-  onUpdateQuantity: (productId: number, quantity: number) => Promise<boolean>;
+  onUpdateQuantity: (productId: string, quantity: number) => Promise<boolean>;
   onRemoveItem: (item: CartItem) => void;
 }
 

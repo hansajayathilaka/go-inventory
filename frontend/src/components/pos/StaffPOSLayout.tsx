@@ -22,7 +22,7 @@ interface StaffPOSLayoutProps {
   restrictedFeatures?: string[]
 }
 
-export function StaffPOSLayout({ children, restrictedFeatures = [] }: StaffPOSLayoutProps) {
+export function StaffPOSLayout({ children }: StaffPOSLayoutProps) {
   const location = useLocation()
   const { user, logout } = useAuthStore()
   const { hasRole, isStaff, roleDisplayName } = useUserRole()

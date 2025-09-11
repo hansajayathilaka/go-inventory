@@ -49,7 +49,7 @@ export function ProductSearch({
     error: searchError 
   } = useProducts({
     search: debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
-    category_id: selectedCategoryId,
+    category_id: selectedCategoryId ? String(selectedCategoryId) : undefined,
     limit: 20,
     page: 1
   })
@@ -170,7 +170,7 @@ export function ProductSearch({
   // Get category name for display
   const getSelectedCategoryName = useCallback(() => {
     if (!selectedCategoryId) return null
-    const category = categories.find(c => c.id === selectedCategoryId)
+    const category = categories.find(c => c.id === String(selectedCategoryId))
     return category?.name
   }, [selectedCategoryId, categories])
 
@@ -275,9 +275,9 @@ export function ProductSearch({
                   .map((category) => (
                     <Button
                       key={category.id}
-                      variant={selectedCategoryId === category.id ? "secondary" : "ghost"}
+                      variant={String(selectedCategoryId) === category.id ? "secondary" : "ghost"}
                       className="w-full justify-start"
-                      onClick={() => handleCategorySelect(category.id)}
+                      onClick={() => handleCategorySelect(Number(category.id))}
                     >
                       {category.name}
                       <Badge variant="outline" className="ml-auto">

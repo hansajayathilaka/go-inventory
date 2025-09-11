@@ -71,7 +71,7 @@ interface RecentPurchase {
 
 // Walk-in customer constant
 const WALK_IN_CUSTOMER: Customer = {
-  id: -1,
+  id: "walk-in",
   name: "Walk-in Customer",
   email: undefined,
   phone: undefined,
@@ -230,7 +230,7 @@ function RecentPurchases({ customer }: RecentPurchasesProps) {
 
   useEffect(() => {
     const fetchRecentPurchases = async () => {
-      if (customer.id === -1) return; // Skip for walk-in customer
+      if (customer.id === "walk-in") return; // Skip for walk-in customer
       
       setIsLoading(true);
       try {
@@ -256,7 +256,7 @@ function RecentPurchases({ customer }: RecentPurchasesProps) {
     fetchRecentPurchases();
   }, [customer.id]);
 
-  if (customer.id === -1 || isLoading) {
+  if (customer.id === "walk-in" || isLoading) {
     return null;
   }
 
@@ -293,7 +293,7 @@ interface CustomerListItemProps {
 }
 
 function CustomerListItem({ customer, isSelected, onSelect }: CustomerListItemProps) {
-  const isWalkIn = customer.id === -1;
+  const isWalkIn = customer.id === "walk-in";
   
   return (
     <CommandItem
@@ -493,13 +493,13 @@ export function CustomerSelect({
 
   const displayValue = useMemo(() => {
     if (!selectedCustomer) return 'Select customer...';
-    if (selectedCustomer.id === -1) return 'Walk-in Customer';
+    if (selectedCustomer.id === "walk-in") return 'Walk-in Customer';
     return selectedCustomer.name;
   }, [selectedCustomer]);
 
   const selectedCustomerStatus = useMemo(() => {
     if (!selectedCustomer) return null;
-    if (selectedCustomer.id === -1) return 'walk-in';
+    if (selectedCustomer.id === "walk-in") return 'walk-in';
     return selectedCustomer.is_active ? 'active' : 'inactive';
   }, [selectedCustomer]);
 
@@ -562,7 +562,7 @@ export function CustomerSelect({
                   )}
                 </div>
                 <div className="flex items-center gap-1">
-                  {selectedCustomer && selectedCustomer.id !== -1 && (
+                  {selectedCustomer && selectedCustomer.id !== "walk-in" && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -647,7 +647,7 @@ export function CustomerSelect({
         </div>
 
         {/* Selected Customer Details */}
-        {selectedCustomer && selectedCustomer.id !== -1 && (
+        {selectedCustomer && selectedCustomer.id !== "walk-in" && (
           <div className="p-3 bg-blue-50 rounded-md border">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
@@ -682,7 +682,7 @@ export function CustomerSelect({
         )}
 
         {/* Walk-in Customer Notice */}
-        {selectedCustomer && selectedCustomer.id === -1 && (
+        {selectedCustomer && selectedCustomer.id === "walk-in" && (
           <div className="p-3 bg-orange-50 rounded-md border border-orange-200">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600">

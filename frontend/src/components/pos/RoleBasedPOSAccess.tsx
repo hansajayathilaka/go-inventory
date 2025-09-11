@@ -1,6 +1,6 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useAuthStore } from '@/stores/authStore'
-import { AlertTriangle, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 type UserRole = 'viewer' | 'staff' | 'manager' | 'admin'

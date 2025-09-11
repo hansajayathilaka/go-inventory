@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { ProductSearch } from '@/components/pos/ProductSearch'
 import { ShoppingCart } from '@/components/pos/ShoppingCart'
 import { PaymentForm } from '@/components/pos/PaymentForm'
-import { useCartActions } from '@/stores/posCartStore'
+import { useCartActions, useCartTotals } from '@/stores/posCartStore'
 import type { Product } from '@/types/inventory'
 
 interface POSProps {
@@ -12,6 +12,7 @@ interface POSProps {
 export function POS(_props: POSProps) {
   const [showPayment, setShowPayment] = useState(false)
   const { addItem } = useCartActions()
+  const { total } = useCartTotals()
 
   const handleProductSelect = useCallback(async (product: Product) => {
     console.log('Product selected:', product)
@@ -41,7 +42,8 @@ export function POS(_props: POSProps) {
       <div className="h-full p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <PaymentForm 
-            onComplete={handlePaymentComplete}
+            totalAmount={total}
+            onPaymentComplete={handlePaymentComplete}
             onCancel={() => setShowPayment(false)}
           />
         </div>
