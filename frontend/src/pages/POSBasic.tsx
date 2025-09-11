@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { ProductSearch } from '@/components/pos/ProductSearch'
-import { BasicCart } from '@/components/pos/BasicCart'
-import { useAddItem } from '@/stores/basicCartStore'
+import { ShoppingCart } from '@/components/pos/ShoppingCart'
+import { useCartActions } from '@/stores/posCartStore'
 import type { Product } from '@/types/inventory'
 
 export function POSBasic() {
   const [showPayment, setShowPayment] = useState(false)
-  const addItem = useAddItem()
+  const { addItem } = useCartActions()
 
-  const handleProductSelect = (product: Product) => {
+  const handleProductSelect = async (product: Product) => {
     console.log('Adding product:', product)
-    addItem(product, 1)
+    const success = await addItem(product, 1)
+    if (!success) {
+      console.error('Failed to add product to cart')
+    }
   }
 
   const handleBarcodeScanned = (barcode: string) => {
@@ -67,7 +70,7 @@ export function POSBasic() {
           </div>
           
           <div>
-            <BasicCart onCheckout={handleCheckout} />
+            <ShoppingCart onCheckout={handleCheckout} />
           </div>
         </div>
       </div>

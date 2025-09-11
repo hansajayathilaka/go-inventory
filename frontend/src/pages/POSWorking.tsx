@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { ProductSearch } from '@/components/pos/ProductSearch'
-import { SimpleShoppingCart } from '@/components/pos/SimpleShoppingCart'
-import { useSimpleAddItem } from '@/stores/simplePOSStore'
+import { ShoppingCart } from '@/components/pos/ShoppingCart'
+import { useCartActions } from '@/stores/posCartStore'
 import type { Product } from '@/types/inventory'
 
 interface POSProps {
@@ -10,12 +10,15 @@ interface POSProps {
 
 export function POSWorking(_props: POSProps) {
   const [showPayment, setShowPayment] = useState(false)
-  const addItem = useSimpleAddItem()
+  const { addItem } = useCartActions()
 
   const handleProductSelect = useCallback(async (product: Product) => {
     console.log('Product selected:', product)
     try {
-      addItem(product, 1)
+      const success = await addItem(product, 1)
+      if (!success) {
+        console.error('Failed to add product to cart - check stock availability')
+      }
     } catch (error) {
       console.error('Failed to add item to cart:', error)
     }
@@ -86,9 +89,8 @@ export function POSWorking(_props: POSProps) {
           
           {/* Shopping Cart Area */}
           <div className="flex flex-col h-full">
-            <SimpleShoppingCart 
+            <ShoppingCart 
               onCheckout={handleCheckout}
-              showCheckoutButton={true}
             />
           </div>
         </div>

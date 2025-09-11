@@ -92,7 +92,13 @@
       "Bash(./hardware-store-inventory-new)",
       "Bash(PORT=9091 ./hardware-store-inventory-new)",
       "Bash(PORT=9092 ./hardware-store-inventory-new)",
-      "Bash(PORT=9093 ./hardware-store-inventory-new)"
+      "Bash(PORT=9093 ./hardware-store-inventory-new)",
+      "Bash(netstat:*)",
+      "Bash(ss:*)",
+      "mcp__playwright__browser_tabs",
+      "Bash(killall:*)",
+      "Bash(awk:*)",
+      "Bash(xargs -r kill -9)"
     ],
     "deny": [],
     "ask": []

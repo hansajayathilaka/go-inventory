@@ -28,6 +28,8 @@ export const QUERY_KEYS = {
   supplier: (id: string) => ['suppliers', id] as const,
   purchaseReceipts: ['purchase-receipts'] as const,
   purchaseReceipt: (id: string) => ['purchase-receipts', id] as const,
+  inventory: ['inventory'] as const,
+  productInventory: (id: string) => ['products', id, 'inventory'] as const,
 } as const;
 
 // Products
@@ -51,40 +53,61 @@ export function useProducts(params?: {
         }, {} as Record<string, string>)
       ).toString() : '';
       
-      const response = await apiClient.get(`/products${queryString}`);
-      // API returns: { success: true, data: Product[], pagination: {...} }
-      // Transform the products to match frontend interface
-      const transformedProducts = (response.data as any[]).map((product: any) => ({
-        ...product,
-        // Map API fields to frontend interface
-        price: product.retail_price || 0,
-        stock_quantity: 0, // Default since API doesn't return inventory data
-        unit: 'pcs', // Default unit
-        min_stock_level: 10, // Default min stock level
-        max_stock_level: 100, // Default max stock level
-        // Keep API fields that match
-        id: product.id, // UUID string from API
-        name: product.name,
-        description: product.description,
-        sku: product.sku,
-        barcode: product.barcode,
-        cost_price: product.cost_price,
-        category_id: product.category_id,
-        supplier_id: product.supplier_id,
-        is_active: product.is_active,
-        created_at: product.created_at,
-        updated_at: product.updated_at,
-        // Include related data
-        category: product.category,
-        supplier: product.supplier,
-      }));
+      // Fetch products and inventory data in parallel
+      const [productsResponse, inventoryResponse] = await Promise.all([
+        apiClient.get(`/products${queryString}`),
+        apiClient.get('/inventory')
+      ]);
+      
+      // Create inventory lookup map by product_id
+      const inventoryMap = new Map();
+      if (inventoryResponse.data && Array.isArray(inventoryResponse.data)) {
+        inventoryResponse.data.forEach((inv: any) => {
+          inventoryMap.set(inv.product_id, {
+            quantity: inv.quantity || 0,
+            reserved_quantity: inv.reserved_quantity || 0,
+            reorder_level: inv.reorder_level || 10,
+          });
+        });
+      }
+      
+      // Transform the products to match frontend interface and include inventory data
+      const transformedProducts = (productsResponse.data as any[]).map((product: any) => {
+        const inventory = inventoryMap.get(product.id) || { quantity: 0, reserved_quantity: 0, reorder_level: 10 };
+        
+        return {
+          ...product,
+          // Map API fields to frontend interface
+          price: product.retail_price || 0,
+          stock_quantity: inventory.quantity,
+          reserved_quantity: inventory.reserved_quantity || 0,
+          unit: 'pcs', // Default unit
+          min_stock_level: inventory.reorder_level,
+          max_stock_level: 100, // Default max stock level
+          // Keep API fields that match
+          id: product.id, // UUID string from API
+          name: product.name,
+          description: product.description,
+          sku: product.sku,
+          barcode: product.barcode,
+          cost_price: product.cost_price,
+          category_id: product.category_id,
+          supplier_id: product.supplier_id,
+          is_active: product.is_active,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+          // Include related data
+          category: product.category,
+          supplier: product.supplier,
+        };
+      });
       
       return {
         data: transformedProducts,
-        pagination: (response as any).pagination
+        pagination: (productsResponse as any).pagination
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes - shorter stale time for POS usage
   });
 }
 
@@ -419,6 +442,7 @@ export function useStockAdjustment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       addNotification({
         type: 'success',
         title: 'Stock adjusted',
@@ -432,5 +456,30 @@ export function useStockAdjustment() {
         message: error.response?.data?.message || error.message,
       });
     },
+  });
+}
+
+// Inventory Management
+export function useInventoryRecords() {
+  return useQuery({
+    queryKey: QUERY_KEYS.inventory,
+    queryFn: async () => {
+      const response = await apiClient.get('/inventory');
+      return response.data;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+// Get inventory for specific product
+export function useProductInventory(productId: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.productInventory(productId),
+    queryFn: async () => {
+      const response = await apiClient.get(`/products/${productId}/inventory`);
+      return response.data;
+    },
+    enabled: !!productId,
+    staleTime: 1 * 60 * 1000, // 1 minute for real-time POS usage
   });
 }
