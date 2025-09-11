@@ -117,10 +117,18 @@ export function StaffPOSLayout({ children, restrictedFeatures = [] }: StaffPOSLa
                 </Button>
               </RoleBasedPOSAccess>
 
-              {/* Reports - Manager and Admin only */}
+              {/* Manager Interface - Manager and Admin only */}
               <RoleBasedPOSAccess requiredRole="manager" showFallback={false}>
-                <Button variant="ghost" size="sm" className="p-1 sm:p-2" title="Reports">
-                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-1 sm:p-2" 
+                  title="Manager Interface"
+                  asChild
+                >
+                  <Link to="/pos/manager">
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </Link>
                 </Button>
               </RoleBasedPOSAccess>
 

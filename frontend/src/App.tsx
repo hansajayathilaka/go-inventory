@@ -13,6 +13,7 @@ import { POSSimple } from './pages/POSSimple';
 import { POSMinimal } from './pages/POSMinimal';
 import { POSWorking } from './pages/POSWorking';
 import { POSBasic } from './pages/POSBasic';
+import { POSManagerInterface } from './components/pos/POSManagerInterface';
 import { Login } from './pages/Login';
 import { QueryProvider } from './providers/QueryProvider';
 import { useAuthStore } from './stores/authStore';
@@ -42,6 +43,7 @@ function AuthenticatedApp() {
           <Route path="minimal" element={<POSMinimal />} />
           <Route path="full" element={<POS />} />
           <Route path="simple" element={<POSSimple />} />
+          <Route path="manager" element={<POSManagerInterface />} />
           <Route path="session/:sessionId" element={<POS />} />
         </Route>
         <Route path="/login" element={<Login />} />

@@ -444,7 +444,7 @@ func (r *saleRepository) GetProfitByDateRange(ctx context.Context, startDate, en
 	err := r.db.WithContext(ctx).Table("sale_items").
 		Joins("JOIN sales ON sales.id = sale_items.sale_id").
 		Where("sales.sale_date BETWEEN ? AND ?", startDate, endDate).
-		Select("COALESCE(SUM(sale_items.profit_amount), 0)").
+		Select("COALESCE(SUM((sale_items.unit_price - sale_items.unit_cost) * sale_items.quantity), 0)").
 		Scan(&totalProfit).Error
 	
 	return totalProfit, err

@@ -115,3 +115,130 @@ type TopProductResponse struct {
 	Quantity    int       `json:"quantity"`
 	Revenue     float64   `json:"revenue"`
 }
+
+// POS Reports DTOs
+type POSDailyReportResponse struct {
+	Date           string                  `json:"date"`
+	TotalSales     int                     `json:"total_sales"`
+	TotalAmount    float64                 `json:"total_amount"`
+	AverageOrder   float64                 `json:"average_order"`
+	TopProducts    []TopProductSummary     `json:"top_products"`
+	PaymentMethods []PaymentMethodSummary  `json:"payment_methods"`
+	GeneratedAt    time.Time              `json:"generated_at"`
+}
+
+type POSWeeklyReportResponse struct {
+	Week           string           `json:"week"`
+	StartDate      string           `json:"start_date"`
+	EndDate        string           `json:"end_date"`
+	TotalSales     int              `json:"total_sales"`
+	TotalAmount    float64          `json:"total_amount"`
+	AverageDaily   float64          `json:"average_daily"`
+	DailyBreakdown []DailySummary   `json:"daily_breakdown"`
+	GeneratedAt    time.Time        `json:"generated_at"`
+}
+
+type POSMonthlyReportResponse struct {
+	Month        string    `json:"month"`
+	StartDate    string    `json:"start_date"`
+	EndDate      string    `json:"end_date"`
+	TotalSales   int       `json:"total_sales"`
+	TotalAmount  float64   `json:"total_amount"`
+	TotalProfit  float64   `json:"total_profit"`
+	ProfitMargin float64   `json:"profit_margin"`
+	AverageDaily float64   `json:"average_daily"`
+	GeneratedAt  time.Time `json:"generated_at"`
+}
+
+type POSStaffPerformanceResponse struct {
+	StartDate   string             `json:"start_date"`
+	EndDate     string             `json:"end_date"`
+	Staff       []StaffPerformance `json:"staff"`
+	GeneratedAt time.Time          `json:"generated_at"`
+}
+
+type TopProductSummary struct {
+	ProductID   string  `json:"product_id"`
+	ProductName string  `json:"product_name"`
+	Quantity    int     `json:"quantity"`
+	Revenue     float64 `json:"revenue"`
+}
+
+type PaymentMethodSummary struct {
+	Method string  `json:"method"`
+	Count  int     `json:"count"`
+	Amount float64 `json:"amount"`
+}
+
+type DailySummary struct {
+	Date        string  `json:"date"`
+	TotalSales  int     `json:"total_sales"`
+	TotalAmount float64 `json:"total_amount"`
+}
+
+type StaffPerformance struct {
+	UserID     uuid.UUID `json:"user_id"`
+	Name       string    `json:"name"`
+	SalesCount int       `json:"sales_count"`
+	SalesTotal float64   `json:"sales_total"`
+	AvgOrder   float64   `json:"avg_order"`
+}
+
+// POS Dashboard DTOs
+type POSDashboardMetricsResponse struct {
+	TodayRevenue         float64              `json:"today_revenue"`
+	TodaySalesCount      int                  `json:"today_sales_count"`
+	WeekRevenue          float64              `json:"week_revenue"`
+	WeekSalesCount       int                  `json:"week_sales_count"`
+	MonthRevenue         float64              `json:"month_revenue"`
+	MonthSalesCount      int                  `json:"month_sales_count"`
+	RevenueChangePercent float64              `json:"revenue_change_percent"`
+	SalesChangePercent   float64              `json:"sales_change_percent"`
+	RecentTransactions   []RecentTransaction  `json:"recent_transactions"`
+	LastUpdated          time.Time            `json:"last_updated"`
+}
+
+type POSDashboardAlertsResponse struct {
+	Alerts      []DashboardAlert `json:"alerts"`
+	TotalCount  int              `json:"total_count"`
+	LastChecked time.Time        `json:"last_checked"`
+}
+
+type POSDashboardSummaryResponse struct {
+	Overview     SummaryOverview    `json:"overview"`
+	StockStatus  StockStatus        `json:"stock_status"`
+	TopProducts  []TopProductSummary `json:"top_products"`
+	GeneratedAt  time.Time          `json:"generated_at"`
+}
+
+type RecentTransaction struct {
+	ID         uuid.UUID `json:"id"`
+	BillNumber string    `json:"bill_number"`
+	Amount     float64   `json:"amount"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type DashboardAlert struct {
+	Type      string    `json:"type"`
+	Severity  string    `json:"severity"`
+	Title     string    `json:"title"`
+	Message   string    `json:"message"`
+	Count     int       `json:"count"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type SummaryOverview struct {
+	TodayRevenue float64 `json:"today_revenue"`
+	TodaySales   int     `json:"today_sales"`
+	TodayProfit  float64 `json:"today_profit"`
+	WeekRevenue  float64 `json:"week_revenue"`
+	WeekSales    int     `json:"week_sales"`
+	MonthRevenue float64 `json:"month_revenue"`
+	MonthSales   int     `json:"month_sales"`
+}
+
+type StockStatus struct {
+	LowStockCount  int    `json:"low_stock_count"`
+	ZeroStockCount int    `json:"zero_stock_count"`
+	StockHealth    string `json:"stock_health"`
+}

@@ -87,7 +87,12 @@
       "Bash(TUI_INVENTORY_DATABASE_TYPE=sqlite TUI_INVENTORY_DATABASE_PATH=./data/test.db ./main --seed)",
       "Bash(INTEGRATION_TESTS=1 go test -v -timeout=30m ./tests/integration/)",
       "Bash(time curl:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(./hardware-store-inventory-new --seed)",
+      "Bash(./hardware-store-inventory-new)",
+      "Bash(PORT=9091 ./hardware-store-inventory-new)",
+      "Bash(PORT=9092 ./hardware-store-inventory-new)",
+      "Bash(PORT=9093 ./hardware-store-inventory-new)"
     ],
     "deny": [],
     "ask": []

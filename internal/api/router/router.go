@@ -241,7 +241,34 @@ func SetupRouter(appCtx *app.Context) *gin.Engine {
 		pos := v1.Group("/pos")
 		pos.Use(middleware.AuthMiddleware(jwtSecret))
 		{
+			// Product lookup for POS
 			pos.GET("/lookup", middleware.RequireMinimumRole("staff"), productHandler.POSLookup)
+			
+			// POS Reports (Manager+ access)
+			posReportsHandler := handlers.NewPOSReportsHandler(appCtx.SaleService, appCtx.UserService)
+			reports := pos.Group("/reports")
+			reports.Use(middleware.RequireMinimumRole("manager"))
+			{
+				reports.GET("/daily", posReportsHandler.GetDailyReport)
+				reports.GET("/weekly", posReportsHandler.GetWeeklyReport)
+				reports.GET("/monthly", posReportsHandler.GetMonthlyReport)
+			}
+			pos.GET("/staff-performance", middleware.RequireMinimumRole("manager"), posReportsHandler.GetStaffPerformance)
+			
+			// POS Dashboard (Manager+ access)
+			posDashboardHandler := handlers.NewPOSDashboardHandler(
+				appCtx.SaleService,
+				appCtx.InventoryService,
+				appCtx.InventoryRepo,
+				appCtx.SaleRepo,
+			)
+			dashboard := pos.Group("/dashboard")
+			dashboard.Use(middleware.RequireMinimumRole("manager"))
+			{
+				dashboard.GET("/metrics", posDashboardHandler.GetDashboardMetrics)
+				dashboard.GET("/alerts", posDashboardHandler.GetDashboardAlerts)
+				dashboard.GET("/summary", posDashboardHandler.GetDashboardSummary)
+			}
 		}
 
 		// Sales management routes (protected)
