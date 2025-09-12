@@ -7,14 +7,30 @@ import {
   X, 
   Calculator,
   Check,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-// Removed separator import - using simple div instead
+import { 
+  useKeyboardShortcuts, 
+  SHORTCUT_CONTEXTS,
+  type ShortcutHandlers 
+} from '@/hooks'
+import { ShortcutTooltip, KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge'
 import { cn } from '@/lib/utils'
+import { 
+  PaymentFormSchema, 
+  PaymentsCollectionSchema, 
+  QuickCashSchema,
+  ChangeCalculationSchema,
+  type PaymentFormData,
+  type PaymentsCollectionData
+} from '@/schemas/posValidation'
+import { usePOSToast } from '@/components/ui/toast'
+import { POSErrorBoundary } from './POSErrorBoundary'
 
 // Payment method interface
 export interface PaymentMethod {
@@ -41,6 +57,13 @@ interface PaymentState {
   currentPaymentAmount: string
   cardReference: string
   bankReference: string
+  validationErrors: {
+    amount?: string
+    reference?: string
+    payments?: string
+    general?: string
+  }
+  isValidating: boolean
 }
 
 const QUICK_CASH_AMOUNTS = [5, 10, 20, 50, 100]
@@ -51,6 +74,8 @@ export function PaymentForm({
   onCancel,
   className
 }: PaymentFormProps) {
+  const toast = usePOSToast()
+  
   const [state, setState] = useState<PaymentState>({
     payments: [],
     remainingAmount: totalAmount,
@@ -59,7 +84,9 @@ export function PaymentForm({
     activePaymentType: null,
     currentPaymentAmount: '',
     cardReference: '',
-    bankReference: ''
+    bankReference: '',
+    validationErrors: {},
+    isValidating: false
   })
 
   // Calculate amounts
@@ -76,9 +103,75 @@ export function PaymentForm({
     }))
   }, [state.payments, totalAmount])
 
-  // Add payment
+  // Validate payment data
+  const validatePayment = useCallback((paymentData: Partial<PaymentFormData>): string | null => {
+    const result = PaymentFormSchema.safeParse(paymentData)
+    
+    if (!result.success) {
+      const errors = result.error.errors
+      return errors[0]?.message || 'Invalid payment data'
+    }
+    
+    return null
+  }, [])
+
+  // Validate payments collection
+  const validatePaymentsCollection = useCallback((payments: PaymentMethod[], total: number, change: number): string | null => {
+    const collectionData: PaymentsCollectionData = {
+      payments: payments.map(p => ({
+        amount: p.amount,
+        type: p.type,
+        reference: p.reference,
+        timestamp: p.timestamp
+      })),
+      totalAmount: total,
+      changeAmount: change
+    }
+    
+    const result = PaymentsCollectionSchema.safeParse(collectionData)
+    
+    if (!result.success) {
+      const errors = result.error.errors
+      return errors[0]?.message || 'Invalid payments collection'
+    }
+    
+    return null
+  }, [])
+
+  // Clear validation errors
+  const clearValidationErrors = useCallback((field?: keyof PaymentState['validationErrors']) => {
+    setState(prev => ({
+      ...prev,
+      validationErrors: field
+        ? { ...prev.validationErrors, [field]: undefined }
+        : {}
+    }))
+  }, [])
+
+  // Add payment with validation
   const addPayment = useCallback((type: 'cash' | 'card' | 'bank_transfer', amount: number, reference?: string) => {
-    if (amount <= 0 || amount > state.remainingAmount + 1000) return // Allow overpayment for change
+    setState(prev => ({ ...prev, isValidating: true }))
+    clearValidationErrors()
+    
+    // Validate payment data
+    const paymentData: PaymentFormData = {
+      amount,
+      type,
+      reference: reference || undefined,
+      timestamp: new Date()
+    }
+    
+    const validationError = validatePayment(paymentData)
+    
+    if (validationError) {
+      setState(prev => ({
+        ...prev,
+        validationErrors: { general: validationError },
+        isValidating: false
+      }))
+      toast.validationError('Payment', validationError)
+      return
+    }
 
     const payment: PaymentMethod = {
       id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -88,15 +181,37 @@ export function PaymentForm({
       timestamp: new Date()
     }
 
-    setState(prev => ({
-      ...prev,
-      payments: [...prev.payments, payment],
-      activePaymentType: null,
-      currentPaymentAmount: '',
-      cardReference: '',
-      bankReference: ''
-    }))
-  }, [state.remainingAmount])
+    setState(prev => {
+      const newPayments = [...prev.payments, payment]
+      const newPaidAmount = newPayments.reduce((sum, payment) => sum + payment.amount, 0)
+      const newChangeAmount = Math.max(0, newPaidAmount - totalAmount)
+      
+      // Validate the new payments collection
+      const collectionError = validatePaymentsCollection(newPayments, totalAmount, newChangeAmount)
+      
+      if (collectionError) {
+        toast.validationError('Payments', collectionError)
+        return {
+          ...prev,
+          validationErrors: { payments: collectionError },
+          isValidating: false
+        }
+      }
+      
+      toast.success('Payment Added', `${type} payment of $${amount.toFixed(2)} added successfully`)
+      
+      return {
+        ...prev,
+        payments: newPayments,
+        activePaymentType: null,
+        currentPaymentAmount: '',
+        cardReference: '',
+        bankReference: '',
+        validationErrors: {},
+        isValidating: false
+      }
+    })
+  }, [totalAmount, validatePayment, validatePaymentsCollection, clearValidationErrors, toast])
 
   // Remove payment
   const removePayment = useCallback((paymentId: string) => {
@@ -115,7 +230,7 @@ export function PaymentForm({
     }))
   }, [state.remainingAmount])
 
-  // Handle amount input
+  // Handle amount input with real-time validation
   const handleAmountChange = useCallback((value: string) => {
     // Only allow valid decimal numbers
     if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
@@ -123,13 +238,47 @@ export function PaymentForm({
         ...prev,
         currentPaymentAmount: value
       }))
+      
+      // Clear amount validation error when user starts typing
+      clearValidationErrors('amount')
+      
+      // Real-time validation for amount
+      if (value && !isNaN(parseFloat(value))) {
+        const amount = parseFloat(value)
+        
+        if (amount <= 0) {
+          setState(prev => ({
+            ...prev,
+            validationErrors: { ...prev.validationErrors, amount: 'Amount must be greater than zero' }
+          }))
+        } else if (amount > 999999.99) {
+          setState(prev => ({
+            ...prev,
+            validationErrors: { ...prev.validationErrors, amount: 'Amount cannot exceed $999,999.99' }
+          }))
+        }
+      }
     }
-  }, [])
+  }, [clearValidationErrors])
 
-  // Handle quick cash amount
+  // Handle quick cash amount with validation
   const handleQuickCash = useCallback((amount: number) => {
+    // Validate quick cash amount
+    const quickCashData = {
+      amount,
+      totalDue: state.remainingAmount
+    }
+    
+    const result = QuickCashSchema.safeParse(quickCashData)
+    
+    if (!result.success) {
+      const error = result.error.errors[0]?.message || 'Invalid quick cash amount'
+      toast.validationError('Quick Cash', error)
+      return
+    }
+    
     addPayment('cash', amount)
-  }, [addPayment])
+  }, [addPayment, state.remainingAmount, toast])
 
   // Handle exact amount
   const handleExactAmount = useCallback(() => {
@@ -138,39 +287,121 @@ export function PaymentForm({
     }
   }, [state.remainingAmount, addPayment])
 
-  // Add current payment
+  // Add current payment with comprehensive validation
   const addCurrentPayment = useCallback(() => {
+    if (!state.activePaymentType) return
+    
     const amount = parseFloat(state.currentPaymentAmount)
-    if (isNaN(amount) || amount <= 0) return
+    if (isNaN(amount) || amount <= 0) {
+      setState(prev => ({
+        ...prev,
+        validationErrors: { ...prev.validationErrors, amount: 'Please enter a valid amount' }
+      }))
+      return
+    }
 
     let reference: string | undefined
-    if (state.activePaymentType === 'card' && state.cardReference.trim()) {
+    if (state.activePaymentType === 'card') {
+      if (!state.cardReference.trim()) {
+        setState(prev => ({
+          ...prev,
+          validationErrors: { ...prev.validationErrors, reference: 'Card reference is required' }
+        }))
+        return
+      }
       reference = state.cardReference.trim()
-    } else if (state.activePaymentType === 'bank_transfer' && state.bankReference.trim()) {
+    } else if (state.activePaymentType === 'bank_transfer') {
+      if (!state.bankReference.trim()) {
+        setState(prev => ({
+          ...prev,
+          validationErrors: { ...prev.validationErrors, reference: 'Bank transfer reference is required' }
+        }))
+        return
+      }
       reference = state.bankReference.trim()
     }
 
-    addPayment(state.activePaymentType!, amount, reference)
+    addPayment(state.activePaymentType, amount, reference)
   }, [state.currentPaymentAmount, state.activePaymentType, state.cardReference, state.bankReference, addPayment])
 
-  // Complete payment
+  // Complete payment with final validation
   const completePayment = useCallback(() => {
-    if (state.remainingAmount <= 0 && state.payments.length > 0) {
-      onPaymentComplete(state.payments, state.changeAmount)
+    if (state.remainingAmount > 0) {
+      toast.validationError('Payment Incomplete', `$${state.remainingAmount.toFixed(2)} remaining to be paid`)
+      return
     }
-  }, [state.remainingAmount, state.payments, state.changeAmount, onPaymentComplete])
+    
+    if (state.payments.length === 0) {
+      toast.validationError('No Payments', 'Please add at least one payment method')
+      return
+    }
+    
+    // Validate change calculation
+    const changeData = {
+      totalPaid: state.paidAmount,
+      totalDue: totalAmount,
+      changeDue: state.changeAmount
+    }
+    
+    const changeResult = ChangeCalculationSchema.safeParse(changeData)
+    
+    if (!changeResult.success) {
+      const error = changeResult.error.errors[0]?.message || 'Change calculation error'
+      toast.validationError('Change Calculation', error)
+      return
+    }
+    
+    // Final validation of payments collection
+    const collectionError = validatePaymentsCollection(state.payments, totalAmount, state.changeAmount)
+    
+    if (collectionError) {
+      toast.validationError('Payment Validation', collectionError)
+      return
+    }
+    
+    try {
+      onPaymentComplete(state.payments, state.changeAmount)
+      toast.success('Payment Complete', 'Transaction processed successfully')
+    } catch (error: any) {
+      toast.error('Payment Error', error.message || 'Failed to complete payment')
+    }
+  }, [state.remainingAmount, state.payments, state.changeAmount, state.paidAmount, totalAmount, onPaymentComplete, validatePaymentsCollection, toast])
 
-  // Check if current payment is valid
+  // Check if current payment is valid with detailed validation
   const isCurrentPaymentValid = useCallback(() => {
     if (!state.activePaymentType) return false
+    
     const amount = parseFloat(state.currentPaymentAmount)
     if (isNaN(amount) || amount <= 0) return false
+    
+    // Check for validation errors
+    if (state.validationErrors.amount || state.validationErrors.reference) return false
     
     if (state.activePaymentType === 'card' && !state.cardReference.trim()) return false
     if (state.activePaymentType === 'bank_transfer' && !state.bankReference.trim()) return false
     
     return true
-  }, [state.activePaymentType, state.currentPaymentAmount, state.cardReference, state.bankReference])
+  }, [state.activePaymentType, state.currentPaymentAmount, state.cardReference, state.bankReference, state.validationErrors])
+
+  // Keyboard shortcut handlers for payment
+  const shortcutHandlers: ShortcutHandlers = {
+    onProcessPayment: useCallback(() => {
+      if (state.remainingAmount <= 0 && state.payments.length > 0) {
+        completePayment()
+      }
+    }, [state.remainingAmount, state.payments.length, completePayment]),
+
+    onReturnToCart: useCallback(() => {
+      onCancel()
+    }, [onCancel])
+  }
+
+  // Initialize keyboard shortcuts for payment form
+  useKeyboardShortcuts({
+    context: SHORTCUT_CONTEXTS.PAYMENT,
+    handlers: shortcutHandlers,
+    enabled: true
+  })
 
   const getPaymentMethodIcon = (type: string) => {
     switch (type) {
@@ -199,17 +430,53 @@ export function PaymentForm({
   }
 
   return (
-    <div className={cn("w-full max-w-4xl mx-auto space-y-4", className)}>
+    <POSErrorBoundary sessionData={{ payments: state.payments, totalAmount, remainingAmount: state.remainingAmount }}>
+      <div className={cn("w-full max-w-4xl mx-auto space-y-4", className)}>
       {/* Payment Summary Header */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <span>Payment Processing</span>
-            <Button variant="ghost" size="sm" onClick={onCancel}>
-              <X className="h-4 w-4" />
-            </Button>
+            <ShortcutTooltip
+              shortcut="Escape"
+              description="Return to cart"
+            >
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onCancel}
+                aria-keyshortcuts="escape"
+              >
+                <X className="h-4 w-4" />
+                <KeyboardShortcutBadge 
+                  shortcut="Esc" 
+                  className="ml-1"
+                  size="sm"
+                />
+              </Button>
+            </ShortcutTooltip>
           </CardTitle>
         </CardHeader>
+        
+        {/* General validation errors */}
+        {state.validationErrors.general && (
+          <div className="px-6 pb-2">
+            <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">{state.validationErrors.general}</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Payments collection errors */}
+        {state.validationErrors.payments && (
+          <div className="px-6 pb-2">
+            <div className="flex items-center gap-2 text-orange-600 bg-orange-50 p-3 rounded-lg border border-orange-200">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">{state.validationErrors.payments}</span>
+            </div>
+          </div>
+        )}
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
             <div>
@@ -316,8 +583,17 @@ export function PaymentForm({
                     placeholder="0.00"
                     value={state.currentPaymentAmount}
                     onChange={(e) => handleAmountChange(e.target.value)}
-                    className="text-lg h-12"
+                    className={cn(
+                      "text-lg h-12",
+                      state.validationErrors.amount && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    )}
                   />
+                  {state.validationErrors.amount && (
+                    <div className="flex items-center gap-1 mt-1 text-red-600">
+                      <AlertTriangle className="h-3 w-3" />
+                      <span className="text-xs">{state.validationErrors.amount}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Reference Input for Non-Cash */}
@@ -329,9 +605,21 @@ export function PaymentForm({
                       type="text"
                       placeholder="****1234"
                       value={state.cardReference}
-                      onChange={(e) => setState(prev => ({ ...prev, cardReference: e.target.value }))}
+                      onChange={(e) => {
+                        setState(prev => ({ ...prev, cardReference: e.target.value }))
+                        clearValidationErrors('reference')
+                      }}
                       maxLength={50}
+                      className={cn(
+                        state.validationErrors.reference && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {state.validationErrors.reference && state.activePaymentType === 'card' && (
+                      <div className="flex items-center gap-1 mt-1 text-red-600">
+                        <AlertTriangle className="h-3 w-3" />
+                        <span className="text-xs">{state.validationErrors.reference}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -343,19 +631,40 @@ export function PaymentForm({
                       type="text"
                       placeholder="Transfer reference number"
                       value={state.bankReference}
-                      onChange={(e) => setState(prev => ({ ...prev, bankReference: e.target.value }))}
+                      onChange={(e) => {
+                        setState(prev => ({ ...prev, bankReference: e.target.value }))
+                        clearValidationErrors('reference')
+                      }}
                       maxLength={100}
+                      className={cn(
+                        state.validationErrors.reference && "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      )}
                     />
+                    {state.validationErrors.reference && state.activePaymentType === 'bank_transfer' && (
+                      <div className="flex items-center gap-1 mt-1 text-red-600">
+                        <AlertTriangle className="h-3 w-3" />
+                        <span className="text-xs">{state.validationErrors.reference}</span>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 <Button
                   onClick={addCurrentPayment}
-                  disabled={!isCurrentPaymentValid()}
+                  disabled={!isCurrentPaymentValid() || state.isValidating}
                   className="w-full h-12"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Payment
+                  {state.isValidating ? (
+                    <>
+                      <AlertTriangle className="h-4 w-4 mr-2 animate-pulse" />
+                      Validating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Payment
+                    </>
+                  )}
                 </Button>
               </div>
             )}
@@ -425,28 +734,40 @@ export function PaymentForm({
               )}
 
               {/* Complete Payment Button */}
-              <Button
-                onClick={completePayment}
-                disabled={state.remainingAmount > 0}
-                className="w-full h-12 text-lg"
-                variant={state.remainingAmount <= 0 ? "default" : "secondary"}
+              <ShortcutTooltip
+                shortcut="Enter"
+                description="Complete payment"
               >
-                {state.remainingAmount > 0 ? (
-                  <>
-                    <AlertCircle className="h-5 w-5 mr-2" />
-                    ${state.remainingAmount.toFixed(2)} Remaining
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-5 w-5 mr-2" />
-                    Complete Payment
-                  </>
-                )}
-              </Button>
+                <Button
+                  onClick={completePayment}
+                  disabled={state.remainingAmount > 0}
+                  className="w-full h-12 text-lg relative"
+                  variant={state.remainingAmount <= 0 ? "default" : "secondary"}
+                  aria-keyshortcuts="enter"
+                >
+                  {state.remainingAmount > 0 ? (
+                    <>
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      ${state.remainingAmount.toFixed(2)} Remaining
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-5 w-5 mr-2" />
+                      Complete Payment
+                      <KeyboardShortcutBadge 
+                        shortcut="⏎" 
+                        className="ml-auto"
+                        variant="outline"
+                      />
+                    </>
+                  )}
+                </Button>
+              </ShortcutTooltip>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
+    </POSErrorBoundary>
   )
 }

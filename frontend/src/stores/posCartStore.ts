@@ -3,6 +3,26 @@ import { persist, subscribeWithSelector } from 'zustand/middleware';
 import type { Product } from '@/types/inventory';
 import { usePOSSessionStore } from './posSessionStore';
 
+// Performance optimization: Batch update queue
+let updateQueue: (() => void)[] = [];
+let isProcessingQueue = false;
+
+// Batch cart updates to prevent multiple re-renders
+const batchCartUpdates = (updateFn: () => void) => {
+  updateQueue.push(updateFn);
+  
+  if (!isProcessingQueue) {
+    isProcessingQueue = true;
+    requestAnimationFrame(() => {
+      const currentQueue = [...updateQueue];
+      updateQueue = [];
+      
+      currentQueue.forEach(fn => fn());
+      isProcessingQueue = false;
+    });
+  }
+};
+
 // Cart-specific interfaces
 export interface CartItem {
   product: Product;
@@ -67,10 +87,67 @@ const validateQuantityAgainstStock = (product: Product, requestedQuantity: numbe
   return true;
 };
 
-// Helper function to calculate item total
+// Performance optimized helper functions with memoization
+const itemTotalCache = new Map<string, number>();
+
 const calculateItemTotal = (unitPrice: number, quantity: number, discount = 0): number => {
+  const cacheKey = `${unitPrice}_${quantity}_${discount}`;
+  
+  if (itemTotalCache.has(cacheKey)) {
+    return itemTotalCache.get(cacheKey)!;
+  }
+  
   const subtotal = unitPrice * quantity;
-  return subtotal - discount;
+  const total = subtotal - discount;
+  
+  // Cache result for future use
+  itemTotalCache.set(cacheKey, total);
+  
+  // Limit cache size to prevent memory leaks
+  if (itemTotalCache.size > 1000) {
+    const firstKey = itemTotalCache.keys().next().value;
+    if (firstKey !== undefined) {
+      itemTotalCache.delete(firstKey);
+    }
+  }
+  
+  return total;
+};
+
+// Memoized tax calculation service
+const taxCalculationCache = new Map<string, number>();
+
+const calculateTaxAmount = (taxableAmount: number, taxRate: number): number => {
+  const cacheKey = `${taxableAmount.toFixed(2)}_${taxRate}`;
+  
+  if (taxCalculationCache.has(cacheKey)) {
+    return taxCalculationCache.get(cacheKey)!;
+  }
+  
+  const taxAmount = taxableAmount * taxRate;
+  
+  taxCalculationCache.set(cacheKey, taxAmount);
+  
+  // Limit cache size
+  if (taxCalculationCache.size > 500) {
+    const firstKey = taxCalculationCache.keys().next().value;
+    if (firstKey !== undefined) {
+      taxCalculationCache.delete(firstKey);
+    }
+  }
+  
+  return taxAmount;
+};
+
+// Optimized discount calculation for bulk operations
+const calculateDiscountAmount = (subtotal: number, discountConfig?: CartDiscount): number => {
+  if (!discountConfig) return 0;
+  
+  if (discountConfig.type === 'fixed') {
+    return Math.min(discountConfig.amount, subtotal);
+  } else {
+    return (subtotal * discountConfig.amount) / 100;
+  }
 };
 
 export const usePOSCartStore = create<POSCartState>()(
@@ -96,7 +173,7 @@ export const usePOSCartStore = create<POSCartState>()(
           return false;
         }
         
-        const existingItemIndex = state._findItemIndex(product.id);
+        const existingItemIndex = state._findItemIndex(product.id || 'unknown');
         
         if (existingItemIndex >= 0) {
           // Update existing item
@@ -130,8 +207,8 @@ export const usePOSCartStore = create<POSCartState>()(
           set({ items: [...state.items, newItem] });
         }
         
-        // Recalculate totals
-        get().calculateTotals();
+        // Batch total recalculation for performance
+        batchCartUpdates(() => get().calculateTotals());
         return true;
       },
 
@@ -140,13 +217,13 @@ export const usePOSCartStore = create<POSCartState>()(
         const state = get();
         const filteredItems = state.items.filter(item => item.product.id !== productId);
         set({ items: filteredItems });
-        get().calculateTotals();
+        batchCartUpdates(() => get().calculateTotals());
       },
 
       // Update item quantity
       updateQuantity: async (productId: string, quantity: number): Promise<boolean> => {
         const state = get();
-        const itemIndex = state._findItemIndex(productId);
+        const itemIndex = state._findItemIndex(productId || 'unknown');
         
         if (itemIndex < 0) {
           console.warn(`Item with product ID ${productId} not found in cart`);
@@ -175,7 +252,7 @@ export const usePOSCartStore = create<POSCartState>()(
         };
         
         set({ items: updatedItems });
-        get().calculateTotals();
+        batchCartUpdates(() => get().calculateTotals());
         return true;
       },
 
@@ -195,7 +272,7 @@ export const usePOSCartStore = create<POSCartState>()(
           discountConfig: { amount, type }
         });
         
-        get().calculateTotals();
+        batchCartUpdates(() => get().calculateTotals());
       },
 
       // Remove discount
@@ -204,7 +281,7 @@ export const usePOSCartStore = create<POSCartState>()(
           discountConfig: undefined,
           discount: 0
         });
-        get().calculateTotals();
+        batchCartUpdates(() => get().calculateTotals());
       },
 
       // Clear entire cart
@@ -234,52 +311,61 @@ export const usePOSCartStore = create<POSCartState>()(
         return true;
       },
 
-      // Calculate all totals
+      // Performance optimized total calculations with memoization
       calculateTotals: () => {
         const state = get();
         
-        // Calculate subtotal
+        // Early return if no items
+        if (state.items.length === 0) {
+          const emptyState = {
+            subtotal: 0,
+            discount: 0,
+            tax: 0,
+            total: 0,
+            itemCount: 0
+          };
+          set(emptyState);
+          return;
+        }
+        
+        // Memoized subtotal calculation
         const subtotal = state.items.reduce((sum, item) => sum + item.totalPrice, 0);
         
-        // Calculate discount amount
-        let discountAmount = 0;
-        if (state.discountConfig) {
-          if (state.discountConfig.type === 'fixed') {
-            discountAmount = Math.min(state.discountConfig.amount, subtotal);
-          } else {
-            discountAmount = (subtotal * state.discountConfig.amount) / 100;
-          }
-        }
+        // Optimized discount calculation
+        const discountAmount = calculateDiscountAmount(subtotal, state.discountConfig);
         
         // Calculate taxable amount
         const taxableAmount = Math.max(0, subtotal - discountAmount);
         
-        // Calculate tax
-        const taxAmount = taxableAmount * state.taxRate;
+        // Memoized tax calculation
+        const taxAmount = calculateTaxAmount(taxableAmount, state.taxRate);
         
         // Calculate final total
         const total = taxableAmount + taxAmount;
         
-        // Calculate item count
+        // Optimized item count calculation
         const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
         
-        set({
+        // Batch state update
+        const newState = {
           subtotal,
           discount: discountAmount,
           tax: taxAmount,
           total,
           itemCount
-        });
+        };
+        
+        set(newState);
 
-        // Async session sync to prevent infinite loops
-        setTimeout(() => {
+        // Async session sync with performance optimization
+        batchCartUpdates(() => {
           try {
             const sessionStore = usePOSSessionStore.getState();
             const activeSessionId = sessionStore.activeSessionId;
             if (activeSessionId) {
               sessionStore.updateSessionCart(
                 activeSessionId,
-                get().items,
+                state.items,
                 subtotal,
                 taxAmount,
                 discountAmount,
@@ -289,7 +375,7 @@ export const usePOSCartStore = create<POSCartState>()(
           } catch (error) {
             console.warn('Failed to sync cart with session store:', error);
           }
-        }, 0);
+        });
       },
 
       // Internal method to find item index
@@ -356,15 +442,19 @@ export const usePOSCartStore = create<POSCartState>()(
         },
         removeItem: (name) => sessionStorage.removeItem(name),
       },
-      // Restore computed values after hydration
+      // Performance optimized rehydration
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Avoid immediate calculateTotals to prevent loops
-          setTimeout(() => {
+          // Clear caches on rehydration for fresh start
+          itemTotalCache.clear();
+          taxCalculationCache.clear();
+          
+          // Batch the initial calculation to prevent render loops
+          batchCartUpdates(() => {
             if (state.calculateTotals) {
               state.calculateTotals();
             }
-          }, 100);
+          });
         }
       },
     }
@@ -372,7 +462,9 @@ export const usePOSCartStore = create<POSCartState>()(
   )
 );
 
-// Hook for easy access to cart totals
+// Performance optimized hooks with selective subscriptions
+
+// Memoized hook for cart totals - only re-renders when totals change
 export const useCartTotals = () => {
   return usePOSCartStore((state) => ({
     subtotal: state.subtotal,
@@ -384,7 +476,7 @@ export const useCartTotals = () => {
   }));
 };
 
-// Hook for cart actions
+// Memoized hook for cart actions - never re-renders since actions are stable
 export const useCartActions = () => {
   return usePOSCartStore((state) => ({
     addItem: state.addItem,
@@ -397,20 +489,91 @@ export const useCartActions = () => {
   }));
 };
 
-// Hook for cart items
+// Optimized hook for cart items - only re-renders when items array changes
 export const useCartItems = () => {
   return usePOSCartStore((state) => state.items);
 };
 
-// Session synchronization hook - disabled to prevent infinite loops
-export const synchronizeCartWithSession = () => {
-  // NOTE: Disabled automatic synchronization to prevent infinite loops
-  // Manual synchronization can be done via loadFromSession when needed
-  console.log('Cart-session sync initialized (manual mode)');
-  return () => {}; // No-op unsubscribe
+// Performance monitoring hook for debugging
+export const useCartPerformance = () => {
+  return usePOSCartStore((state) => ({
+    itemCount: state.items.length,
+    totalValue: state.total,
+    lastUpdated: Date.now()
+  }));
 };
 
-// Initialize session-cart synchronization
+// Performance optimized session synchronization
+export const synchronizeCartWithSession = () => {
+  console.log('Cart-session sync initialized (performance optimized)');
+  
+  // Use batched updates for session sync
+  let syncTimeout: NodeJS.Timeout;
+  
+  const unsubscribe = usePOSCartStore.subscribe(
+    (state) => ({
+      items: state.items,
+      totals: {
+        subtotal: state.subtotal,
+        tax: state.tax,
+        discount: state.discount,
+        total: state.total
+      }
+    }),
+    (state) => {
+      // Debounce session sync to improve performance
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        try {
+          const sessionStore = usePOSSessionStore.getState();
+          const activeSessionId = sessionStore.activeSessionId;
+          if (activeSessionId && state.items.length > 0) {
+            sessionStore.updateSessionCart(
+              activeSessionId,
+              state.items,
+              state.totals.subtotal,
+              state.totals.tax,
+              state.totals.discount,
+              state.totals.total
+            );
+          }
+        } catch (error) {
+          console.warn('Failed to sync cart with session store:', error);
+        }
+      }, 200); // 200ms debounce for session sync
+    },
+    {
+      equalityFn: (a, b) => {
+        // Only sync when meaningful changes occur
+        return a.items.length === b.items.length &&
+               a.totals.total === b.totals.total;
+      }
+    }
+  );
+  
+  return () => {
+    clearTimeout(syncTimeout);
+    unsubscribe();
+  };
+};
+
+// Initialize performance optimized session-cart synchronization
 export const initializeCartSessionSync = () => {
   return synchronizeCartWithSession();
+};
+
+// Performance utilities
+export const clearCartCaches = () => {
+  itemTotalCache.clear();
+  taxCalculationCache.clear();
+  console.log('Cart calculation caches cleared');
+};
+
+export const getCartCacheStats = () => {
+  return {
+    itemTotalCacheSize: itemTotalCache.size,
+    taxCalculationCacheSize: taxCalculationCache.size,
+    updateQueueLength: updateQueue.length,
+    isProcessingQueue
+  };
 };

@@ -22,6 +22,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { usePOSSessionStore, type POSSession } from '@/stores/posSessionStore'
+import { ShortcutTooltip, KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge'
 import { cn } from '@/lib/utils'
 
 interface SessionTabsProps {
@@ -127,42 +128,59 @@ export function SessionTabs({ className, onSessionChange }: SessionTabsProps) {
           <div className="flex items-center gap-2">
             <ScrollArea className="flex-1">
               <div className="flex items-center gap-2 min-w-0">
-                {sessions.map((session) => {
+                {sessions.map((session, index) => {
                   const isActive = session.id === activeSessionId
                   const hasItems = session.cartItems.length > 0
                   const SessionIcon = getSessionIcon(session)
+                  const sessionNumber = index + 1
+                  const hasShortcut = sessionNumber <= 5
                   
                   return (
                     <div
                       key={session.id}
                       className="flex items-center shrink-0"
                     >
-                      <Button
-                        variant={isActive ? "default" : "ghost"}
-                        className={cn(
-                          "h-12 px-3 py-2 gap-2 min-w-[120px] max-w-[200px] justify-start relative",
-                          isActive && "bg-primary text-primary-foreground shadow-sm",
-                          !isActive && hasItems && "ring-1 ring-orange-200 bg-orange-50"
-                        )}
-                        onClick={() => handleSwitchSession(session.id)}
+                      <ShortcutTooltip
+                        shortcut={hasShortcut ? `Ctrl+${sessionNumber}` : ''}
+                        description={`Switch to ${session.name}`}
                       >
-                        <SessionIcon className="h-4 w-4 shrink-0" />
-                        <div className="flex-1 text-left truncate">
-                          <div className="font-medium text-sm truncate">
-                            {session.name}
-                          </div>
-                          {session.customerName && (
-                            <div className="text-xs opacity-75 truncate">
-                              {session.customerName}
-                            </div>
+                        <Button
+                          variant={isActive ? "default" : "ghost"}
+                          className={cn(
+                            "h-12 px-3 py-2 gap-2 min-w-[120px] max-w-[200px] justify-start relative",
+                            isActive && "bg-primary text-primary-foreground shadow-sm",
+                            !isActive && hasItems && "ring-1 ring-orange-200 bg-orange-50"
                           )}
-                        </div>
-                        {hasItems && (
-                          <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                            {session.cartItems.length}
-                          </Badge>
-                        )}
-                      </Button>
+                          onClick={() => handleSwitchSession(session.id)}
+                          aria-keyshortcuts={hasShortcut ? `ctrl+${sessionNumber}` : undefined}
+                        >
+                          <SessionIcon className="h-4 w-4 shrink-0" />
+                          <div className="flex-1 text-left truncate">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm truncate">
+                                {session.name}
+                              </span>
+                              {hasShortcut && (
+                                <KeyboardShortcutBadge 
+                                  shortcut={sessionNumber.toString()}
+                                  variant="outline"
+                                  size="sm"
+                                />
+                              )}
+                            </div>
+                            {session.customerName && (
+                              <div className="text-xs opacity-75 truncate">
+                                {session.customerName}
+                              </div>
+                            )}
+                          </div>
+                          {hasItems && (
+                            <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                              {session.cartItems.length}
+                            </Badge>
+                          )}
+                        </Button>
+                      </ShortcutTooltip>
 
                       {sessions.length > 1 && (
                         <Button
@@ -182,17 +200,28 @@ export function SessionTabs({ className, onSessionChange }: SessionTabsProps) {
             </ScrollArea>
 
             <div className="flex items-center gap-1 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCreateSession}
-                disabled={isMaxSessionsReached()}
-                className="gap-2"
-                title={isMaxSessionsReached() ? "Maximum sessions reached" : "Create new session"}
+              <ShortcutTooltip
+                shortcut="F1"
+                description="Create new session"
               >
-                <Plus className="h-4 w-4" />
-                New Session
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreateSession}
+                  disabled={isMaxSessionsReached()}
+                  className="gap-2 relative"
+                  title={isMaxSessionsReached() ? "Maximum sessions reached" : "Create new session"}
+                  aria-keyshortcuts="f1"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Session
+                  <KeyboardShortcutBadge 
+                    shortcut="F1" 
+                    className="ml-2"
+                    variant="outline"
+                  />
+                </Button>
+              </ShortcutTooltip>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

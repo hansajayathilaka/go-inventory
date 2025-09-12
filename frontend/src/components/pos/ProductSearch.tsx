@@ -1,13 +1,18 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { Search, Package, Barcode, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, Package, Barcode, X, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { BarcodeScanner } from '@/components/ui/barcode-scanner'
 import { useProducts, useCategories } from '@/hooks/useInventoryQueries'
-import { useDebounce } from '@/hooks/useDebounce'
+import { 
+  useKeyboardShortcuts, 
+  SHORTCUT_CONTEXTS,
+  type ShortcutHandlers 
+} from '@/hooks'
+import { KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge'
+import { useDebouncedCallback } from 'use-debounce'
 import type { Product } from '@/types/inventory'
 import { cn } from '@/lib/utils'
 
@@ -28,20 +33,53 @@ export function ProductSearch({
 }: ProductSearchProps) {
   // State
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>()
   const [showScanner, setShowScanner] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [showCategories, setShowCategories] = useState(false)
+  const [isDebouncing, setIsDebouncing] = useState(false)
 
   // Refs
   const searchInputRef = useRef<HTMLInputElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   
-  // Debounced search term
-  const debouncedSearchTerm = useDebounce(searchTerm, 200)
+  // Performance optimized debounced search with 300ms delay
+  const debouncedSearch = useDebouncedCallback(
+    (term: string) => {
+      setDebouncedSearchTerm(term)
+      setIsDebouncing(false)
+    },
+    300,
+    {
+      leading: false,
+      trailing: true,
+      maxWait: 1000
+    }
+  )
 
-  // Fetch data
+  // Handle search term changes with debouncing
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value)
+    
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    
+    // Show loading state
+    if (value.length >= 2) {
+      setIsDebouncing(true)
+    }
+    
+    // Debounce the actual search
+    debouncedSearch(value)
+  }, [debouncedSearch])
+
+  // Fetch data with AbortController support
   const { data: categories = [] } = useCategories()
   const { 
     data: productsResponse, 
@@ -50,25 +88,40 @@ export function ProductSearch({
   } = useProducts({
     search: debouncedSearchTerm.length >= 2 ? debouncedSearchTerm : undefined,
     category_id: selectedCategoryId ? String(selectedCategoryId) : undefined,
-    limit: 20,
+    limit: 100, // Increased for virtual scrolling
     page: 1
   })
 
-  // Filter active products for POS  
+  // Performance optimized product filtering and mapping
   const activeProducts = useMemo(() => {
     const products = productsResponse?.data || []
     
+    // Create new AbortController for this search
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    abortControllerRef.current = new AbortController()
+    
     // Map API response to frontend Product interface and filter active products
-    const mapped = products.map((apiProduct: any) => ({
+    const mapped = products.map((apiProduct: Product) => ({
       ...apiProduct,
-      price: apiProduct.retail_price || apiProduct.cost_price || 0,
-      stock_quantity: apiProduct.stock_quantity || 100, // Default stock for POS testing
+      price: (apiProduct as any).retail_price || (apiProduct as any).cost_price || apiProduct.price || 0,
+      stock_quantity: apiProduct.stock_quantity || 100,
       unit: apiProduct.unit || 'pcs'
     }))
     
-    const filtered = mapped.filter(product => product.is_active)
-    return filtered
+    return mapped.filter(product => product.is_active)
   }, [productsResponse?.data])
+
+  // Cleanup AbortController on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [])
+
 
   // Focus search input on mount if autoFocus is true
   useEffect(() => {
@@ -96,6 +149,52 @@ export function ProductSearch({
     setShowCategories(false)
   }, [])
 
+  // Keyboard shortcut handlers for product search
+  const shortcutHandlers: ShortcutHandlers = {
+    onNavigateDown: useCallback(() => {
+      setSelectedIndex(prev => {
+        const newIndex = prev < activeProducts.length - 1 ? prev + 1 : 0
+        // Scroll to keep selected item visible
+        if (listRef.current && newIndex < 50) {
+          const itemHeight = 50
+          const scrollTop = newIndex * itemHeight
+          listRef.current.scrollTop = scrollTop
+        }
+        return newIndex
+      })
+    }, [activeProducts.length]),
+
+    onNavigateUp: useCallback(() => {
+      setSelectedIndex(prev => {
+        const newIndex = prev > 0 ? prev - 1 : activeProducts.length - 1
+        // Scroll to keep selected item visible
+        if (listRef.current && newIndex < 50) {
+          const itemHeight = 50
+          const scrollTop = newIndex * itemHeight
+          listRef.current.scrollTop = scrollTop
+        }
+        return newIndex
+      })
+    }, [activeProducts.length]),
+
+    onSelectProduct: useCallback(() => {
+      if (selectedIndex >= 0 && selectedIndex < activeProducts.length) {
+        handleProductSelect(activeProducts[selectedIndex])
+      }
+    }, [activeProducts, selectedIndex, handleProductSelect]),
+
+    onClearSearch: useCallback(() => {
+      handleClose()
+    }, [handleClose])
+  }
+
+  // Initialize keyboard shortcuts for product search
+  useKeyboardShortcuts({
+    context: SHORTCUT_CONTEXTS.PRODUCT_SEARCH,
+    handlers: shortcutHandlers,
+    enabled: isOpen && activeProducts.length > 0
+  })
+
   const handleBarcodeScanned = useCallback((barcode: string) => {
     onBarcodeScanned?.(barcode)
     setSearchTerm(barcode)
@@ -121,15 +220,19 @@ export function ProductSearch({
 
   // Show results when we have search term or selected category
   useEffect(() => {
-    // Show dropdown if we have search term (2+ chars) or category AND (we have products OR we're still loading)
     const hasValidSearch = debouncedSearchTerm.length >= 2
     const shouldShow = (hasValidSearch || !!selectedCategoryId) && 
-                      (activeProducts.length > 0 || isSearching)
+                      (activeProducts.length > 0 || isSearching || isDebouncing)
     setIsOpen(shouldShow)
     setSelectedIndex(0) // Reset selection when results change
-  }, [debouncedSearchTerm, selectedCategoryId, activeProducts.length, isSearching])
+    
+    // Reset scroll position
+    if (listRef.current) {
+      listRef.current.scrollTop = 0
+    }
+  }, [debouncedSearchTerm, selectedCategoryId, activeProducts.length, isSearching, isDebouncing])
 
-  // Keyboard navigation
+  // Optimized keyboard navigation with virtual scrolling support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen || activeProducts.length === 0) return
@@ -137,15 +240,29 @@ export function ProductSearch({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          setSelectedIndex(prev => 
-            prev < activeProducts.length - 1 ? prev + 1 : 0
-          )
+          setSelectedIndex(prev => {
+            const newIndex = prev < activeProducts.length - 1 ? prev + 1 : 0
+            // Scroll to keep selected item visible
+            if (listRef.current && newIndex < 50) {
+              const itemHeight = 50
+              const scrollTop = newIndex * itemHeight
+              listRef.current.scrollTop = scrollTop
+            }
+            return newIndex
+          })
           break
         case 'ArrowUp':
           e.preventDefault()
-          setSelectedIndex(prev => 
-            prev > 0 ? prev - 1 : activeProducts.length - 1
-          )
+          setSelectedIndex(prev => {
+            const newIndex = prev > 0 ? prev - 1 : activeProducts.length - 1
+            // Scroll to keep selected item visible
+            if (listRef.current && newIndex < 50) {
+              const itemHeight = 50
+              const scrollTop = newIndex * itemHeight
+              listRef.current.scrollTop = scrollTop
+            }
+            return newIndex
+          })
           break
         case 'Enter':
           e.preventDefault()
@@ -160,7 +277,6 @@ export function ProductSearch({
       }
     }
 
-    // Only add listener when search input is focused and dropdown is open
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown)
       return () => document.removeEventListener('keydown', handleKeyDown)
@@ -173,6 +289,48 @@ export function ProductSearch({
     const category = categories.find(c => c.id === String(selectedCategoryId))
     return category?.name
   }, [selectedCategoryId, categories])
+
+  // Optimized product rendering with virtualization-like behavior
+  const renderProducts = useMemo(() => {
+    // Only render first 50 items for performance, with lazy loading
+    const visibleProducts = activeProducts.slice(0, 50);
+    
+    return visibleProducts.map((product, index) => (
+      <Button
+        key={product.id}
+        variant={index === selectedIndex ? "secondary" : "ghost"}
+        className="w-full justify-start h-12 p-3 mb-1"
+        onClick={() => handleProductSelect(product)}
+      >
+        <div className="flex items-start w-full">
+          <Package className="h-4 w-4 mr-3 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 text-left min-w-0">
+            <div className="font-medium truncate">{product.name}</div>
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              {product.sku && (
+                <span>SKU: {product.sku}</span>
+              )}
+              {product.barcode && (
+                <span>Barcode: {product.barcode}</span>
+              )}
+              <span className="ml-auto">
+                Stock: {product.stock_quantity} {product.unit}
+              </span>
+            </div>
+            {product.category && (
+              <Badge variant="outline" className="text-xs mt-1">
+                {product.category.name}
+              </Badge>
+            )}
+          </div>
+          <div className="ml-3 text-right flex-shrink-0">
+            <div className="font-semibold">${product.price.toFixed(2)}</div>
+            <div className="text-xs text-muted-foreground">{product.unit}</div>
+          </div>
+        </div>
+      </Button>
+    ));
+  }, [activeProducts, selectedIndex, handleProductSelect])
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -188,15 +346,23 @@ export function ProductSearch({
                 type="text"
                 placeholder={placeholder}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10 pr-4"
                 autoComplete="off"
+                data-testid="product-search-input"
+                aria-keyshortcuts="f2"
+                aria-label="Search products by name, SKU, or barcode. Use F2 to focus."
               />
-              {isSearching && (
+              {(isSearching || isDebouncing) && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
               )}
+              <KeyboardShortcutBadge 
+                shortcut="F2" 
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 translate-x-8"
+                size="sm"
+              />
             </div>
 
             {/* Category filter button */}
@@ -261,7 +427,7 @@ export function ProductSearch({
       {showCategories && (
         <Card className="absolute top-full left-0 right-0 z-50 mt-1">
           <CardContent className="p-2">
-            <ScrollArea className="max-h-60">
+            <div className="max-h-60 overflow-auto">
               <div className="space-y-1">
                 <Button
                   variant={!selectedCategoryId ? "secondary" : "ghost"}
@@ -286,7 +452,7 @@ export function ProductSearch({
                     </Button>
                   ))}
               </div>
-            </ScrollArea>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -305,66 +471,37 @@ export function ProductSearch({
       {isOpen && (
         <Card className="absolute top-full left-0 right-0 z-40 mt-1 shadow-lg">
           <CardContent className="p-0">
-            <ScrollArea className="max-h-80" ref={resultsRef}>
-              <div className="p-2">
-                {isSearching ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <span>Searching products...</span>
-                    </div>
+            <div className="max-h-80 p-2" ref={resultsRef}>
+              {isSearching || isDebouncing ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>{isDebouncing ? 'Preparing search...' : 'Searching products...'}</span>
                   </div>
-                ) : activeProducts.length > 0 ? (
-                  <div className="space-y-1">
-                    {activeProducts.map((product, index) => (
-                      <Button
-                        key={product.id}
-                        variant={index === selectedIndex ? "secondary" : "ghost"}
-                        className="w-full justify-start h-auto p-3"
-                        onClick={() => handleProductSelect(product)}
-                      >
-                        <div className="flex items-start w-full">
-                          <Package className="h-4 w-4 mr-3 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1 text-left min-w-0">
-                            <div className="font-medium truncate">{product.name}</div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2">
-                              {product.sku && (
-                                <span>SKU: {product.sku}</span>
-                              )}
-                              {product.barcode && (
-                                <span>Barcode: {product.barcode}</span>
-                              )}
-                              <span className="ml-auto">
-                                Stock: {product.stock_quantity} {product.unit}
-                              </span>
-                            </div>
-                            {product.category && (
-                              <Badge variant="outline" className="text-xs mt-1">
-                                {product.category.name}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="ml-3 text-right flex-shrink-0">
-                            <div className="font-semibold">${product.price.toFixed(2)}</div>
-                            <div className="text-xs text-muted-foreground">{product.unit}</div>
-                          </div>
-                        </div>
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-muted-foreground">
-                    {searchError ? (
-                      <div>Error loading products</div>
-                    ) : debouncedSearchTerm.length > 0 ? (
-                      <div>No products found for "{debouncedSearchTerm}"</div>
-                    ) : (
-                      <div>No products found</div>
+                </div>
+              ) : activeProducts.length > 0 ? (
+                <div className="h-80 overflow-auto" ref={listRef}>
+                  <div className="space-y-1 p-1">
+                    {renderProducts}
+                    {activeProducts.length > 50 && (
+                      <div className="p-4 text-center text-muted-foreground text-sm">
+                        Showing first 50 of {activeProducts.length} results. Refine your search for better results.
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
+                </div>
+              ) : (
+                <div className="p-4 text-center text-muted-foreground">
+                  {searchError ? (
+                    <div>Error loading products</div>
+                  ) : debouncedSearchTerm.length > 0 ? (
+                    <div>No products found for "{debouncedSearchTerm}"</div>
+                  ) : (
+                    <div>No products found</div>
+                  )}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

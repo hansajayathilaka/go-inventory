@@ -39,6 +39,12 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/services/api';
+import { 
+  useKeyboardShortcuts, 
+  SHORTCUT_CONTEXTS,
+  type ShortcutHandlers 
+} from '@/hooks';
+import { ShortcutTooltip, KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge';
 import type { Customer } from '@/types/inventory';
 import type { PaginatedResponse } from '@/types/api';
 
@@ -372,9 +378,51 @@ export function CustomerSelect({
   });
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   // Debounced search
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Keyboard shortcut handlers for customer select
+  const shortcutHandlers: ShortcutHandlers = {
+    onNavigateDown: useCallback(() => {
+      if (open && searchResult.customers.length > 0) {
+        setSelectedIndex(prev => 
+          prev < searchResult.customers.length - 1 ? prev + 1 : 0
+        );
+      }
+    }, [open, searchResult.customers.length]),
+
+    onNavigateUp: useCallback(() => {
+      if (open && searchResult.customers.length > 0) {
+        setSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : searchResult.customers.length - 1
+        );
+      }
+    }, [open, searchResult.customers.length]),
+
+    onSelectCustomer: useCallback(() => {
+      if (open && selectedIndex >= 0 && selectedIndex < searchResult.customers.length) {
+        const selectedCustomer = searchResult.customers[selectedIndex];
+        handleCustomerSelect(selectedCustomer);
+      }
+    }, [open, selectedIndex, searchResult.customers]),
+
+    onClearCustomer: useCallback(() => {
+      if (open) {
+        setOpen(false);
+      } else if (selectedCustomer) {
+        handleClearSelection();
+      }
+    }, [open, selectedCustomer])
+  };
+
+  // Initialize keyboard shortcuts for customer select
+  useKeyboardShortcuts({
+    context: SHORTCUT_CONTEXTS.CUSTOMER_SELECT,
+    handlers: shortcutHandlers,
+    enabled: true
+  });
 
   const searchCustomers = useCallback(async (query: string) => {
     if (query.length === 0) {
@@ -529,12 +577,22 @@ export function CustomerSelect({
           <Label>Selected Customer</Label>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between h-auto min-h-[40px] p-3"
+              <ShortcutTooltip
+                shortcut="F3"
+                description="Focus customer search"
               >
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between h-auto min-h-[40px] p-3 relative"
+                  aria-keyshortcuts="f3"
+                >
+                  <KeyboardShortcutBadge 
+                    shortcut="F3" 
+                    className="absolute top-2 right-2"
+                    size="sm"
+                  />
                 <div className="flex items-center gap-2">
                   {selectedCustomer ? (
                     <>
@@ -576,7 +634,8 @@ export function CustomerSelect({
                     </Button>
                   )}
                 </div>
-              </Button>
+                </Button>
+              </ShortcutTooltip>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0" align="start">
               <Command>
@@ -587,6 +646,8 @@ export function CustomerSelect({
                     value={searchTerm}
                     onValueChange={setSearchTerm}
                     className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                    data-testid="customer-search-input"
+                    aria-keyshortcuts="f3"
                   />
                 </div>
                 <CommandList>

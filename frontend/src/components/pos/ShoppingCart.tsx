@@ -32,6 +32,12 @@ import {
   useCartItems,
   type CartItem 
 } from '@/stores/posCartStore';
+import { 
+  useKeyboardShortcuts, 
+  SHORTCUT_CONTEXTS,
+  type ShortcutHandlers 
+} from '@/hooks';
+import { ShortcutTooltip, KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge';
 import { cn } from '@/lib/utils';
 
 interface ShoppingCartProps {
@@ -322,6 +328,22 @@ export function ShoppingCart({
     clearCart();
   }, [clearCart]);
 
+  // Keyboard shortcut handlers for shopping cart
+  const shortcutHandlers: ShortcutHandlers = {
+    onProceedCheckout: useCallback(() => {
+      if (items.length > 0 && onCheckout) {
+        onCheckout()
+      }
+    }, [items.length, onCheckout])
+  }
+
+  // Initialize keyboard shortcuts for shopping cart
+  useKeyboardShortcuts({
+    context: SHORTCUT_CONTEXTS.SHOPPING_CART,
+    handlers: shortcutHandlers,
+    enabled: items.length > 0
+  });
+
   // Empty cart state
   if (items.length === 0) {
     return (
@@ -440,15 +462,27 @@ export function ShoppingCart({
 
             {/* Checkout Button */}
             {showCheckoutButton && (
-              <Button 
-                className="w-full" 
-                size="lg"
-                onClick={onCheckout}
-                disabled={items.length === 0}
+              <ShortcutTooltip
+                shortcut="F4"
+                description="Process payment"
               >
-                <Receipt className="h-4 w-4 mr-2" />
-                Proceed to Checkout
-              </Button>
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={onCheckout}
+                  disabled={items.length === 0}
+                  data-testid="checkout-button"
+                  aria-keyshortcuts="f4"
+                >
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Proceed to Checkout
+                  <KeyboardShortcutBadge 
+                    shortcut="F4" 
+                    className="ml-auto"
+                    variant="outline"
+                  />
+                </Button>
+              </ShortcutTooltip>
             )}
           </div>
         </CardContent>
