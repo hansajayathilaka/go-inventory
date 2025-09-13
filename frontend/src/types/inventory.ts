@@ -35,7 +35,7 @@ export interface Inventory {
   quantity: number; // Current stock
   reserved_quantity: number;
   reorder_level: number; // Min stock level
-  max_level: number; // Max stock level
+  max_level?: number; // Max stock level (not supported by backend)
   last_updated: string;
   created_at: string;
   updated_at: string;
@@ -198,8 +198,7 @@ export interface ProductFormData {
 export interface InventoryFormData {
   product_id: string;
   quantity: number; // Current stock
-  reorder_level: number; // Min stock level  
-  max_level: number; // Max stock level
+  reorder_level: number; // Min stock level
 }
 
 // Combined form data for UI (includes both product and inventory)
@@ -207,7 +206,6 @@ export interface ProductWithInventoryFormData extends ProductFormData {
   // Inventory fields for UI convenience
   stock_quantity: number; // Maps to inventory.quantity
   min_stock_level?: number; // Maps to inventory.reorder_level
-  max_stock_level?: number; // Maps to inventory.max_level
 }
 
 export interface CategoryFormData {

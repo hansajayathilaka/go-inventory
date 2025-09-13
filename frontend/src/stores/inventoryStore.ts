@@ -54,7 +54,6 @@ export interface ProductFilters {
   brandId: number | null;
   supplierId: number | null;
   minStock: number | null;
-  maxStock: number | null;
   lowStock: boolean;
   sortBy: 'name' | 'retail_price' | 'stock_quantity' | 'updated_at';
   sortOrder: 'asc' | 'desc';
@@ -66,7 +65,6 @@ const defaultFilters: ProductFilters = {
   brandId: null,
   supplierId: null,
   minStock: null,
-  maxStock: null,
   lowStock: false,
   sortBy: 'name',
   sortOrder: 'asc',
@@ -182,10 +180,6 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     // Stock range filters
     if (filters.minStock !== null) {
       filtered = filtered.filter(product => getStockQuantity(product) >= filters.minStock!);
-    }
-    
-    if (filters.maxStock !== null) {
-      filtered = filtered.filter(product => getStockQuantity(product) <= filters.maxStock!);
     }
 
     // Low stock filter

@@ -171,7 +171,9 @@ class ErrorLogger {
 /**
  * Main POS Error Fallback component
  */
-interface POSErrorFallbackProps extends FallbackProps {
+interface POSErrorFallbackProps {
+  error: Error
+  resetErrorBoundary: () => void
   errorInfo?: POSErrorInfo
 }
 
@@ -522,7 +524,7 @@ export function POSErrorBoundary({
 
   return (
     <ErrorBoundary
-      FallbackComponent={(props) => {
+      FallbackComponent={(props: FallbackProps) => {
         const FallbackComp = fallback || POSErrorFallback
         return <FallbackComp {...props} />
       }}

@@ -13,11 +13,6 @@ export function getReorderLevel(product: Product): number {
   return product.inventory?.[0]?.reorder_level ?? 0;
 }
 
-// Get max stock level from inventory array
-export function getMaxLevel(product: Product): number {
-  return product.inventory?.[0]?.max_level ?? 100;
-}
-
 // Get reserved quantity from inventory array
 export function getReservedQuantity(product: Product): number {
   return product.inventory?.[0]?.reserved_quantity ?? 0;

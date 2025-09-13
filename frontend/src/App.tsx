@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout';
 import { POSLayout } from './components/pos/POSLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Products } from './pages/Products';
+import { Categories } from './pages/Categories';
 import { PurchaseReceipts } from './pages/PurchaseReceipts';
 import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
@@ -32,6 +33,7 @@ function AuthenticatedApp() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/categories" element={<Categories />} />
           <Route path="/purchase-receipts" element={<PurchaseReceipts />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/customers" element={<Customers />} />

@@ -2,12 +2,13 @@ import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/authStore'
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Building2, 
+import {
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  ShoppingCart,
+  Users,
+  Building2,
   UserCog,
   LogOut,
   User,
@@ -33,6 +34,11 @@ const navigation = [
     name: 'Products',
     href: '/products',
     icon: Package,
+  },
+  {
+    name: 'Categories',
+    href: '/categories',
+    icon: FolderTree,
   },
   {
     name: 'Purchase Receipts',

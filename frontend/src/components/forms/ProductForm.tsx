@@ -32,7 +32,6 @@ const productSchema = z.object({
   // Inventory fields for UI (will be handled separately in backend)
   stock_quantity: z.number().int().min(0, 'Stock quantity must be non-negative').optional(),
   min_stock_level: z.number().int().min(0, 'Minimum stock level must be non-negative').optional().or(z.undefined()),
-  max_stock_level: z.number().int().min(0, 'Maximum stock level must be non-negative').optional().or(z.undefined()),
 })
 
 type ProductFormValues = z.infer<typeof productSchema>
@@ -78,7 +77,6 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
       // Inventory fields (will be extracted for separate API call)
       stock_quantity: product?.inventory?.[0]?.quantity ?? 0,
       min_stock_level: product?.inventory?.[0]?.reorder_level ?? 0,
-      max_stock_level: product?.inventory?.[0]?.max_level ?? 0,
     },
   })
 
@@ -119,12 +117,11 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
         // Update existing product
         await updateProduct.mutateAsync({ id: product.id, data: productData })
         
-        // Update inventory reorder and max levels only (not quantity)
+        // Update inventory reorder level only (not quantity)
         if (data.min_stock_level !== undefined) {
           await updateInventoryLevels.mutateAsync({
             product_id: product.id,
             reorder_level: data.min_stock_level ?? 0,
-            max_level: data.max_stock_level ?? 0,
           })
         }
       } else {
@@ -136,7 +133,6 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           product_id: createdProduct.id,
           quantity: data.stock_quantity ?? 0,
           reorder_level: data.min_stock_level ?? 0,
-          max_level: data.max_stock_level ?? 0,
         }
         
         console.log('Creating inventory with data:', inventoryData) // Debug log
@@ -342,21 +338,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
                 id="min_stock_level"
                 type="number"
                 min="0"
-                {...register('min_stock_level', { 
-                  valueAsNumber: true,
-                  setValueAs: (value) => value === '' ? undefined : Number(value)
-                })}
-                placeholder="0"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="max_stock_level">Max Stock Level</Label>
-              <Input
-                id="max_stock_level"
-                type="number"
-                min="0"
-                {...register('max_stock_level', { 
+                {...register('min_stock_level', {
                   valueAsNumber: true,
                   setValueAs: (value) => value === '' ? undefined : Number(value)
                 })}

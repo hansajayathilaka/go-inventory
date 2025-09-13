@@ -29,7 +29,6 @@ export interface FullProduct {
   brand_id?: string
   stock_quantity: number
   min_stock_level?: number
-  max_stock_level?: number
   unit?: string
   barcode?: string
   location?: string

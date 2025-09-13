@@ -359,7 +359,7 @@ export function POSReports({ className }: POSReportsProps) {
           )}
 
           {/* Report Type Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ReportType)}>
+          <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as ReportType)}>
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <TabsList>
                 <TabsTrigger value="daily">Daily</TabsTrigger>

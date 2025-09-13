@@ -1,21 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../services/api';
+import { categoryService } from '../services/categoryService';
 import { useUiStore } from '../stores/uiStore';
-import type { 
-  Product, 
-  Category, 
+import type {
+  Product,
+  Category,
   CategoryHierarchy,
-  Brand, 
-  Supplier, 
+  Brand,
+  Supplier,
   PurchaseReceipt,
   ProductFormData,
   InventoryFormData,
   CategoryFormData,
   BrandFormData,
   SupplierFormData,
-  StockAdjustmentFormData 
+  StockAdjustmentFormData
 } from '../types/inventory';
 import type { PaginatedResponse, DashboardStats } from '../types/api';
+import type {
+  Category as NewCategory,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+  MoveCategoryRequest,
+  CategoryQueryParams
+} from '../types/category';
 
 // Query Keys
 export const QUERY_KEYS = {
@@ -27,6 +35,10 @@ export const QUERY_KEYS = {
   brand: (id: string) => ['brands', id] as const,
   suppliers: ['suppliers'] as const,
   supplier: (id: string) => ['suppliers', id] as const,
+  customers: ['customers'] as const,
+  customer: (id: string) => ['customers', id] as const,
+  users: ['users'] as const,
+  user: (id: string) => ['users', id] as const,
   purchaseReceipts: ['purchase-receipts'] as const,
   purchaseReceipt: (id: string) => ['purchase-receipts', id] as const,
   inventory: ['inventory'] as const,
@@ -83,7 +95,7 @@ export function useProducts(params?: {
           quantity: inventoryRecord.quantity,
           reserved_quantity: inventoryRecord.reserved_quantity || 0,
           reorder_level: inventoryRecord.reorder_level || 10,
-          max_level: 100, // Default max level
+          max_level: undefined, // Max level not supported by backend
           last_updated: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -146,7 +158,7 @@ export function useProduct(id: string) {
         quantity: inv.quantity,
         reserved_quantity: inv.reserved_quantity || 0,
         reorder_level: inv.reorder_level || 10,
-        max_level: inv.max_level || 100,
+        max_level: undefined, // Max level not supported by backend
         last_updated: inv.last_updated,
         created_at: inv.created_at,
         updated_at: inv.updated_at,
@@ -390,6 +402,218 @@ export function useCreateSupplier() {
   });
 }
 
+// Customers
+export function useCustomers(params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  is_active?: boolean;
+}) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.customers, params],
+    queryFn: async () => {
+      const queryString = params ? '?' + new URLSearchParams(
+        Object.entries(params).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null) {
+            acc[key] = value.toString();
+          }
+          return acc;
+        }, {} as Record<string, string>)
+      ).toString() : '';
+
+      const response = await apiClient.get(`/customers${queryString}`);
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useCreateCustomer() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/customers', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      addNotification({
+        type: 'success',
+        title: 'Customer created',
+        message: 'Customer has been created successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to create customer',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useUpdateCustomer() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/customers/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      addNotification({
+        type: 'success',
+        title: 'Customer updated',
+        message: 'Customer has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update customer',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDeleteCustomer() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/customers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.customers });
+      addNotification({
+        type: 'success',
+        title: 'Customer deleted',
+        message: 'Customer has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete customer',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+// Users
+export function useUsers(params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  role?: string;
+}) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.users, params],
+    queryFn: async () => {
+      const queryString = params ? '?' + new URLSearchParams(
+        Object.entries(params).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null) {
+            acc[key] = value.toString();
+          }
+          return acc;
+        }, {} as Record<string, string>)
+      ).toString() : '';
+
+      const response = await apiClient.get(`/users${queryString}`);
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/users', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+      addNotification({
+        type: 'success',
+        title: 'User created',
+        message: 'User has been created successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to create user',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/users/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+      addNotification({
+        type: 'success',
+        title: 'User updated',
+        message: 'User has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update user',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+      addNotification({
+        type: 'success',
+        title: 'User deleted',
+        message: 'User has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete user',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
 // Purchase Receipts
 export function usePurchaseReceipts(params?: {
   search?: string;
@@ -583,7 +807,7 @@ export function useUpdateInventoryLevels() {
   const { addNotification } = useUiStore();
 
   return useMutation({
-    mutationFn: async ({ product_id, reorder_level }: { product_id: string; reorder_level: number; max_level?: number }): Promise<any> => {
+    mutationFn: async ({ product_id, reorder_level }: { product_id: string; reorder_level: number }): Promise<any> => {
       const requestData = {
         reorder_levels: [{
           product_id: product_id,
@@ -599,7 +823,7 @@ export function useUpdateInventoryLevels() {
       addNotification({
         type: 'success',
         title: 'Stock levels updated',
-        message: 'Minimum and maximum stock levels have been updated successfully',
+        message: 'Minimum stock level has been updated successfully',
       });
     },
     onError: (error: any) => {
@@ -609,5 +833,186 @@ export function useUpdateInventoryLevels() {
         message: error.response?.data?.message || error.message,
       });
     },
+  });
+}
+
+// Enhanced Category Hooks using the dedicated category service
+export function useCategoriesWithService(params?: CategoryQueryParams) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, 'enhanced', params],
+    queryFn: async () => {
+      return await categoryService.listCategories(params);
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useCategory(id: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.category(id),
+    queryFn: async (): Promise<NewCategory> => {
+      return await categoryService.getCategoryById(id);
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCreateCategoryWithService() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: CreateCategoryRequest): Promise<NewCategory> => {
+      return await categoryService.createCategory(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+      addNotification({
+        type: 'success',
+        title: 'Category created',
+        message: 'Category has been created successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to create category',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateCategoryRequest }): Promise<NewCategory> => {
+      return await categoryService.updateCategory(id, data);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.category(data.id) });
+      addNotification({
+        type: 'success',
+        title: 'Category updated',
+        message: 'Category has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update category',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      return await categoryService.deleteCategory(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+      addNotification({
+        type: 'success',
+        title: 'Category deleted',
+        message: 'Category has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete category',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useMoveCategory() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: MoveCategoryRequest }): Promise<NewCategory> => {
+      return await categoryService.moveCategory(id, data);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.categories });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.category(data.id) });
+      addNotification({
+        type: 'success',
+        title: 'Category moved',
+        message: 'Category has been moved successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to move category',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useSearchCategories(query: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, 'search', query],
+    queryFn: async (): Promise<NewCategory[]> => {
+      return await categoryService.searchCategories(query);
+    },
+    enabled: !!query && query.length >= 2,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCategoryHierarchyService(rootId?: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, 'hierarchy-service', rootId],
+    queryFn: async () => {
+      return await categoryService.getCategoryHierarchy(rootId);
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useRootCategories() {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, 'roots'],
+    queryFn: async (): Promise<NewCategory[]> => {
+      return await categoryService.getRootCategories();
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useCategoryChildren(id: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, id, 'children'],
+    queryFn: async (): Promise<NewCategory[]> => {
+      return await categoryService.getCategoryChildren(id);
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCategoryPath(id: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.categories, id, 'path'],
+    queryFn: async (): Promise<NewCategory[]> => {
+      return await categoryService.getCategoryPath(id);
+    },
+    enabled: !!id,
+    staleTime: 10 * 60 * 1000,
   });
 }
