@@ -52,12 +52,9 @@ const CustomerPhoneSchema = z.string()
 
 // Payment method validation schemas
 const PaymentMethodTypeSchema = z.enum(['cash', 'card', 'bank_transfer'], {
-  errorMap: () => ({ message: "Please select a valid payment method" })
+  message: "Please select a valid payment method"
 })
 
-const PaymentReferenceSchema = z.string()
-  .min(1, { message: "Payment reference is required for this payment method" })
-  .max(100, { message: "Payment reference cannot exceed 100 characters" })
 
 const CardReferenceSchema = z.string()
   .min(4, { message: "Card reference must be at least 4 characters" })
@@ -89,8 +86,7 @@ export const PaymentFormSchema = z.object({
   reference: z.string().optional(),
   
   timestamp: z.date({
-    required_error: "Payment timestamp is required",
-    invalid_type_error: "Invalid payment timestamp"
+    message: "Payment timestamp is required"
   })
 }).superRefine((data, ctx) => {
   // Validate reference requirements based on payment type
@@ -106,7 +102,7 @@ export const PaymentFormSchema = z.object({
       if (!cardRefResult.success) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: cardRefResult.error.errors[0].message,
+          message: cardRefResult.error.issues[0].message,
           path: ['reference']
         })
       }
@@ -125,7 +121,7 @@ export const PaymentFormSchema = z.object({
       if (!bankRefResult.success) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: bankRefResult.error.errors[0].message,
+          message: bankRefResult.error.issues[0].message,
           path: ['reference']
         })
       }
@@ -228,7 +224,7 @@ export const CartItemSchema = z.object({
   }).default(0),
   
   isActive: z.boolean({
-    required_error: "Product active status is required"
+    message: "Product active status is required"
   }),
   
   stockQuantity: z.number().int().min(0, {
@@ -331,15 +327,15 @@ export const SessionSchema = z.object({
   cart: ShoppingCartSchema.optional(),
   
   status: z.enum(['active', 'checkout', 'completed', 'abandoned'], {
-    errorMap: () => ({ message: "Invalid session status" })
+    message: "Invalid session status"
   }),
   
   createdAt: z.date({
-    required_error: "Session creation date is required"
+    message: "Session creation date is required"
   }),
   
   lastActivity: z.date({
-    required_error: "Last activity date is required"
+    message: "Last activity date is required"
   })
 }).superRefine((data, ctx) => {
   // Validate session timing
@@ -422,9 +418,7 @@ export const POSTransactionSchema = z.object({
  * For predefined cash amounts
  */
 export const QuickCashSchema = z.object({
-  amount: z.enum([5, 10, 20, 50, 100], {
-    errorMap: () => ({ message: "Invalid quick cash amount" })
-  }),
+  amount: z.enum(['5', '10', '20', '50', '100']).transform(val => Number(val)),
   
   totalDue: PositiveNumberSchema
 }).superRefine((data, ctx) => {

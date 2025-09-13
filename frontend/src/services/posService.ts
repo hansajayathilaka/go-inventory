@@ -197,7 +197,7 @@ async function withRetry<T>(
   context: string,
   maxRetries: number = NETWORK_CONFIG.MAX_RETRIES
 ): Promise<T> {
-  let lastError: Error
+  let lastError: Error = new Error('No attempts made')
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -234,7 +234,7 @@ async function withRetry<T>(
 // Enhanced error handling
 function createPOSError(error: any, context: string): POSError {
   let message = `${context} failed`
-  let type = POSErrorType.UNKNOWN
+  let type: POSErrorType = POSErrorType.UNKNOWN
   let recoverable = true
 
   if (error.response) {
@@ -388,12 +388,12 @@ export class POSService {
       criticalOperation?: boolean
     } = {}
   ): Promise<T> {
-    const { queueOnOffline = false, showToast = true, criticalOperation = false } = options
+    const { queueOnOffline = false, showToast = true } = options
 
     // Check if we're offline
     if (!this.networkStatus.online) {
       if (queueOnOffline) {
-        const queueId = this.transactionQueue.add({
+        this.transactionQueue.add({
           id: `${context}_${Date.now()}`,
           operation,
           description: context
@@ -466,20 +466,30 @@ export class POSService {
 
   // Product search with error handling
   async searchProducts(query: string): Promise<any[]> {
-    return this.makeRequest(
-      () => apiClient.get(`/products/search?q=${encodeURIComponent(query)}`),
-      'Product search',
-      { showToast: false }
-    )
+    try {
+      const response = await this.makeRequest(
+        () => apiClient.get(`/products/search?q=${encodeURIComponent(query)}`),
+        'Product search',
+        { showToast: false }
+      )
+      return (response as any)?.data || []
+    } catch (error) {
+      return []
+    }
   }
 
   // Customer search with error handling
   async searchCustomers(query: string): Promise<any[]> {
-    return this.makeRequest(
-      () => apiClient.get(`/customers/search?q=${encodeURIComponent(query)}`),
-      'Customer search',
-      { showToast: false }
-    )
+    try {
+      const response = await this.makeRequest(
+        () => apiClient.get(`/customers/search?q=${encodeURIComponent(query)}`),
+        'Customer search',
+        { showToast: false }
+      )
+      return (response as any)?.data || []
+    } catch (error) {
+      return []
+    }
   }
 
   // Create customer with error handling and queueing
@@ -587,4 +597,3 @@ export const posService = new POSService()
 
 // Export types and utilities
 export { ToastManager, NetworkStatus, TransactionQueue }
-export type { ToastNotification }

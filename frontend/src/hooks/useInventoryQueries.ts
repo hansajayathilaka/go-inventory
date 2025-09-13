@@ -9,6 +9,7 @@ import type {
   Supplier, 
   PurchaseReceipt,
   ProductFormData,
+  InventoryFormData,
   CategoryFormData,
   BrandFormData,
   SupplierFormData,
@@ -73,32 +74,46 @@ export function useProducts(params?: {
       
       // Transform the products to match frontend interface and include inventory data
       const transformedProducts = (productsResponse.data as any[]).map((product: any) => {
-        const inventory = inventoryMap.get(product.id) || { quantity: 0, reserved_quantity: 0, reorder_level: 10 };
+        const inventoryRecord = inventoryMap.get(product.id) || { quantity: 0, reserved_quantity: 0, reorder_level: 10 };
+        
+        // Create the inventory array structure that matches the new Product interface
+        const inventory = inventoryRecord ? [{
+          id: `${product.id}-inv`, // Temporary ID for inventory record
+          product_id: product.id,
+          quantity: inventoryRecord.quantity,
+          reserved_quantity: inventoryRecord.reserved_quantity || 0,
+          reorder_level: inventoryRecord.reorder_level || 10,
+          max_level: 100, // Default max level
+          last_updated: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }] : [];
         
         return {
-          ...product,
-          // Map API fields to frontend interface
-          price: product.retail_price || 0,
-          stock_quantity: inventory.quantity,
-          reserved_quantity: inventory.reserved_quantity || 0,
-          unit: 'pcs', // Default unit
-          min_stock_level: inventory.reorder_level,
-          max_stock_level: 100, // Default max stock level
-          // Keep API fields that match
-          id: product.id, // UUID string from API
-          name: product.name,
-          description: product.description,
+          // Use backend API structure directly (matches our updated Product interface)
+          id: product.id,
           sku: product.sku,
-          barcode: product.barcode,
-          cost_price: product.cost_price,
+          name: product.name,
+          description: product.description || '',
           category_id: product.category_id,
           supplier_id: product.supplier_id,
-          is_active: product.is_active,
+          brand_id: product.brand_id,
+          cost_price: product.cost_price || 0,
+          retail_price: product.retail_price || 0,
+          wholesale_price: product.wholesale_price || 0,
+          barcode: product.barcode || '',
+          weight: product.weight || 0,
+          dimensions: product.dimensions || '',
+          is_active: product.is_active ?? true,
           created_at: product.created_at,
           updated_at: product.updated_at,
           // Include related data
           category: product.category,
           supplier: product.supplier,
+          brand: product.brand,
+          // Include inventory data
+          inventory,
+          total_stock: inventoryRecord.quantity,
         };
       });
       
@@ -115,8 +130,52 @@ export function useProduct(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.product(id),
     queryFn: async (): Promise<Product> => {
-      const response = await apiClient.get<Product>(`/products/${id}`);
-      return response.data;
+      // Fetch product and its inventory in parallel
+      const [productResponse, inventoryResponse] = await Promise.all([
+        apiClient.get(`/products/${id}`),
+        apiClient.get(`/inventory?product_id=${id}`).catch(() => ({ data: [] })) // Fallback if no inventory
+      ]);
+      
+      const product = productResponse.data as any;
+      const inventoryData = Array.isArray(inventoryResponse.data) ? inventoryResponse.data : [];
+      
+      // Transform inventory data to match frontend interface
+      const inventory = inventoryData.map((inv: any) => ({
+        id: inv.id,
+        product_id: inv.product_id,
+        quantity: inv.quantity,
+        reserved_quantity: inv.reserved_quantity || 0,
+        reorder_level: inv.reorder_level || 10,
+        max_level: inv.max_level || 100,
+        last_updated: inv.last_updated,
+        created_at: inv.created_at,
+        updated_at: inv.updated_at,
+      }));
+      
+      const result: Product = {
+        id: product.id,
+        sku: product.sku,
+        name: product.name,
+        description: product.description || '',
+        category_id: product.category_id,
+        supplier_id: product.supplier_id,
+        brand_id: product.brand_id,
+        cost_price: product.cost_price || 0,
+        retail_price: product.retail_price || 0,
+        wholesale_price: product.wholesale_price || 0,
+        barcode: product.barcode || '',
+        weight: product.weight || 0,
+        dimensions: product.dimensions || '',
+        is_active: product.is_active ?? true,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+        category: product.category,
+        supplier: product.supplier,
+        brand: product.brand,
+        inventory,
+        total_stock: inventory.reduce((sum, inv) => sum + inv.quantity, 0),
+      };
+      return result;
     },
     enabled: !!id,
   });
@@ -481,5 +540,74 @@ export function useProductInventory(productId: string) {
     },
     enabled: !!productId,
     staleTime: 1 * 60 * 1000, // 1 minute for real-time POS usage
+  });
+}
+
+// Create inventory record for a product
+export function useCreateInventory() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: InventoryFormData): Promise<any> => {
+      const response = await apiClient.post('/inventory', {
+        product_id: data.product_id,
+        quantity: data.quantity,
+        reorder_level: data.reorder_level,
+        reserved_quantity: 0, // Default to 0
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
+      addNotification({
+        type: 'success',
+        title: 'Inventory created',
+        message: 'Product inventory has been created successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to create inventory',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+// Update inventory reorder levels only
+export function useUpdateInventoryLevels() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ product_id, reorder_level }: { product_id: string; reorder_level: number; max_level?: number }): Promise<any> => {
+      const requestData = {
+        reorder_levels: [{
+          product_id: product_id,
+          reorder_level: reorder_level
+        }]
+      };
+      const response = await apiClient.put('/inventory/reorder-levels', requestData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
+      addNotification({
+        type: 'success',
+        title: 'Stock levels updated',
+        message: 'Minimum and maximum stock levels have been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update stock levels',
+        message: error.response?.data?.message || error.message,
+      });
+    },
   });
 }

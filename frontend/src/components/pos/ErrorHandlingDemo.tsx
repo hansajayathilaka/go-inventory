@@ -15,14 +15,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
   validatePaymentForm, 
-  validatePaymentsCollection,
-  validateCartItem,
-  validateShoppingCart,
-  validatePOSTransaction 
+  validateCartItem
 } from '@/schemas/posValidation'
 import { usePOSToast } from '@/components/ui/toast'
 import { POSErrorTesting, DEV_ERROR_TESTING } from '@/utils/posErrorTesting'
-import { POSError, POSErrorType } from './POSErrorBoundary'
 import { posService } from '@/services/posService'
 
 /**
@@ -255,7 +251,7 @@ export function ErrorHandlingDemo() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  const error = POSErrorTesting.simulateSessionExpired()
+                  POSErrorTesting.simulateSessionExpired()
                   toast.sessionExpired()
                 }}
                 className="w-full"

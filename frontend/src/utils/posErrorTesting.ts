@@ -365,12 +365,8 @@ export class POSErrorTesting {
     console.time('Error Processing')
     errors.forEach(error => {
       // Simulate error processing
-      const processed = {
-        message: error.message,
-        type: error.type,
-        recoverable: error.recoverable,
-        timestamp: error.timestamp
-      }
+      // Process error (placeholder for actual processing logic)
+      console.debug('Processing error:', error.message)
     })
     console.timeEnd('Error Processing')
     
@@ -397,7 +393,14 @@ export const DEV_ERROR_TESTING = {
   
   // Test all error types
   testAllErrorTypes: () => {
-    const errorTypes = Object.values(POSErrorType)
+    const errorTypes = [
+      POSErrorType.NETWORK_FAILURE,
+      POSErrorType.PAYMENT_PROCESSING,
+      POSErrorType.VALIDATION_ERROR,
+      POSErrorType.STATE_MANAGEMENT,
+      POSErrorType.SESSION_CORRUPTION,
+      POSErrorType.COMPONENT_RENDER
+    ]
     errorTypes.forEach(type => {
       const error = new POSError(`Test error: ${type}`, type, true)
       console.log(`Error type ${type}:`, error)
@@ -418,6 +421,7 @@ export const DEV_ERROR_TESTING = {
 
 // Export for use in development
 if (process.env.NODE_ENV === 'development') {
-  (window as any).POSErrorTesting = POSErrorTesting
-  (window as any).DEV_ERROR_TESTING = DEV_ERROR_TESTING
+  const w = window as any;
+  w.POSErrorTesting = POSErrorTesting;
+  w.DEV_ERROR_TESTING = DEV_ERROR_TESTING;
 }

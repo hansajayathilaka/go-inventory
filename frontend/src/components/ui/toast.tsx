@@ -326,7 +326,7 @@ export function ToastProvider({ children, showNetworkStatus = true }: ToastProvi
 }
 
 // Toast hook for components
-export function useToast() {
+function useToast() {
   const context = useContext(ToastContext)
   
   if (!context) {
@@ -335,7 +335,7 @@ export function useToast() {
 
   const { addToast, removeToast, clearAll } = context
 
-  const toast = useCallback({
+  const toast = React.useMemo(() => ({
     success: (title: string, message: string) => 
       addToast({ type: 'success', title, message, duration: 4000 }),
     
@@ -353,13 +353,13 @@ export function useToast() {
     dismiss: removeToast,
     
     clear: clearAll
-  }, [addToast, removeToast, clearAll])
+  }), [addToast, removeToast, clearAll])
 
   return toast
 }
 
 // POS-specific toast notifications
-export function usePOSToast() {
+function usePOSToast() {
   const toast = useToast()
 
   return {
@@ -412,4 +412,5 @@ export function usePOSToast() {
 
 // Export components and types
 export { ToastContainer, NetworkStatusToast }
+export { useToast, usePOSToast }
 export type { ToastNotification }

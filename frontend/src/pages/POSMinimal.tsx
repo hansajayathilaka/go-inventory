@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ProductSearch } from '@/components/pos/ProductSearch'
 import type { Product } from '@/types/inventory'
+import { getDisplayPrice, getStockQuantity } from '@/utils/productUtils'
 
 interface POSProps {
   sessionId?: string
@@ -44,7 +45,7 @@ export function POSMinimal(_props: POSProps) {
                     {selectedProducts.map((product, index) => (
                       <div key={`${product.id}-${index}`} className="text-xs text-gray-600 flex justify-between">
                         <span>{product.name}</span>
-                        <span>${product.price} (Stock: {product.stock_quantity})</span>
+                        <span>${getDisplayPrice(product)} (Stock: {getStockQuantity(product)})</span>
                       </div>
                     ))}
                   </div>

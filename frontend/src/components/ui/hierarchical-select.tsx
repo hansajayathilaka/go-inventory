@@ -212,7 +212,7 @@ export function HierarchicalSelect({
             <CommandGroup>
               {/* Clear selection option */}
               <CommandItem
-                value=""
+                value="none"
                 onSelect={() => {
                   onValueChange(undefined)
                   setOpen(false)

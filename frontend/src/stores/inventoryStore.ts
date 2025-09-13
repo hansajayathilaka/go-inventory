@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Product, Category, Brand, Supplier } from '../types/inventory';
+import { getStockQuantity, getReorderLevel, getDisplayPrice } from '@/utils/productUtils';
 
 export interface InventoryState {
   // Products
@@ -55,7 +56,7 @@ export interface ProductFilters {
   minStock: number | null;
   maxStock: number | null;
   lowStock: boolean;
-  sortBy: 'name' | 'price' | 'stock_quantity' | 'updated_at';
+  sortBy: 'name' | 'retail_price' | 'stock_quantity' | 'updated_at';
   sortOrder: 'asc' | 'desc';
 }
 
@@ -180,24 +181,28 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
     // Stock range filters
     if (filters.minStock !== null) {
-      filtered = filtered.filter(product => product.stock_quantity >= filters.minStock!);
+      filtered = filtered.filter(product => getStockQuantity(product) >= filters.minStock!);
     }
     
     if (filters.maxStock !== null) {
-      filtered = filtered.filter(product => product.stock_quantity <= filters.maxStock!);
+      filtered = filtered.filter(product => getStockQuantity(product) <= filters.maxStock!);
     }
 
     // Low stock filter
     if (filters.lowStock) {
       filtered = filtered.filter(product => 
-        product.stock_quantity <= (product.min_stock_level || 10)
+        getStockQuantity(product) <= getReorderLevel(product)
       );
     }
 
     // Sorting
     filtered.sort((a, b) => {
-      const aVal = a[filters.sortBy];
-      const bVal = b[filters.sortBy];
+      const aVal = filters.sortBy === 'stock_quantity' ? getStockQuantity(a) : 
+                   filters.sortBy === 'retail_price' ? getDisplayPrice(a) : 
+                   (a as any)[filters.sortBy];
+      const bVal = filters.sortBy === 'stock_quantity' ? getStockQuantity(b) : 
+                   filters.sortBy === 'retail_price' ? getDisplayPrice(b) : 
+                   (b as any)[filters.sortBy];
       const modifier = filters.sortOrder === 'desc' ? -1 : 1;
       
       if (typeof aVal === 'string' && typeof bVal === 'string') {
@@ -217,7 +222,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   getLowStockProducts: () => {
     const state = get();
     return state.products.filter(product => 
-      product.stock_quantity <= (product.min_stock_level || 10)
+      getStockQuantity(product) <= getReorderLevel(product)
     );
   },
 

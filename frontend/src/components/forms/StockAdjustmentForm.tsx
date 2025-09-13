@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Package, AlertCircle, TrendingUp, TrendingDown, RotateCcw } from 'lucide-react'
 import { useStockAdjustment } from '@/hooks/useInventoryQueries'
 import type { Product, StockAdjustmentFormData } from '@/types/inventory'
+import { getStockQuantity, getReorderLevel, getUnit } from '@/utils/productUtils'
 import { Textarea } from '@/components/ui/textarea'
 
 // Validation schema
@@ -60,22 +61,22 @@ export function StockAdjustmentForm({ product, onSuccess, onCancel }: StockAdjus
   // Calculate new stock level
   const calculateNewStock = () => {
     const { adjustment_type, quantity } = watchedValues
-    if (!quantity) return product.stock_quantity
+    if (!quantity) return getStockQuantity(product)
 
     switch (adjustment_type) {
       case 'increase':
-        return product.stock_quantity + quantity
+        return getStockQuantity(product) + quantity
       case 'decrease':
-        return Math.max(0, product.stock_quantity - quantity)
+        return Math.max(0, getStockQuantity(product) - quantity)
       case 'set':
         return quantity
       default:
-        return product.stock_quantity
+        return getStockQuantity(product)
     }
   }
 
   const newStockLevel = calculateNewStock()
-  const stockChange = newStockLevel - product.stock_quantity
+  const stockChange = newStockLevel - getStockQuantity(product)
 
   // Get adjustment type config
   const getAdjustmentConfig = (type: string) => {
@@ -147,13 +148,13 @@ export function StockAdjustmentForm({ product, onSuccess, onCancel }: StockAdjus
             <div>
               <div className="text-sm text-muted-foreground">Current Stock</div>
               <div className="text-2xl font-bold">
-                {product.stock_quantity.toLocaleString()} {product.unit}
+                {getStockQuantity(product).toLocaleString()} {getUnit(product)}
               </div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Min Stock Level</div>
               <div className="text-lg font-medium">
-                {product.min_stock_level ? `${product.min_stock_level} ${product.unit}` : 'Not set'}
+                {getReorderLevel(product) > 0 ? `${getReorderLevel(product)} ${getUnit(product)}` : 'Not set'}
               </div>
             </div>
           </div>
@@ -199,7 +200,7 @@ export function StockAdjustmentForm({ product, onSuccess, onCancel }: StockAdjus
           {/* Quantity */}
           <div className="space-y-2">
             <Label htmlFor="quantity">
-              {watchedValues.adjustment_type === 'set' ? 'New Stock Level' : 'Quantity'} * ({product.unit})
+              {watchedValues.adjustment_type === 'set' ? 'New Stock Level' : 'Quantity'} * ({getUnit(product)})
             </Label>
             <Input
               id="quantity"
@@ -225,26 +226,26 @@ export function StockAdjustmentForm({ product, onSuccess, onCancel }: StockAdjus
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <div className="text-muted-foreground">Current</div>
-                  <div className="font-medium">{product.stock_quantity} {product.unit}</div>
+                  <div className="font-medium">{getStockQuantity(product)} {getUnit(product)}</div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Change</div>
                   <div className={`font-medium ${stockChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stockChange >= 0 ? '+' : ''}{stockChange} {product.unit}
+                    {stockChange >= 0 ? '+' : ''}{stockChange} {getUnit(product)}
                   </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">New Stock</div>
-                  <div className="font-bold">{newStockLevel} {product.unit}</div>
+                  <div className="font-bold">{newStockLevel} {getUnit(product)}</div>
                 </div>
               </div>
               
               {/* Warning for low stock */}
-              {product.min_stock_level && newStockLevel <= product.min_stock_level && (
+              {getReorderLevel(product) > 0 && newStockLevel <= getReorderLevel(product) && (
                 <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
                   <div className="flex items-center gap-1 text-yellow-800">
                     <AlertCircle className="h-4 w-4" />
-                    Warning: New stock level will be at or below minimum stock level ({product.min_stock_level} {product.unit})
+                    Warning: New stock level will be at or below minimum stock level ({getReorderLevel(product)} {getUnit(product)})
                   </div>
                 </div>
               )}

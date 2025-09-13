@@ -2,19 +2,18 @@
 
 export interface Product {
   id: string; // UUID from API
+  sku: string; // Required in backend
   name: string;
-  description?: string;
-  sku?: string;
-  barcode?: string;
-  price: number;
-  cost_price?: number;
-  stock_quantity: number;
-  min_stock_level?: number;
-  max_stock_level?: number;
-  unit: string;
-  category_id?: string;
-  brand_id?: string;
-  supplier_id?: string;
+  description: string;
+  category_id: string; // Required in backend (UUID)
+  supplier_id?: string; // Optional UUID
+  brand_id?: string; // Optional UUID
+  cost_price: number;
+  retail_price: number; // Backend uses retail_price, not price
+  wholesale_price: number;
+  barcode: string;
+  weight: number;
+  dimensions: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -23,6 +22,23 @@ export interface Product {
   category?: Category;
   brand?: Brand;
   supplier?: Supplier;
+  
+  // Inventory data (separate from product in backend)
+  total_stock?: number; // From inventory
+  inventory?: Inventory[];
+}
+
+// Separate Inventory interface to match backend
+export interface Inventory {
+  id: string;
+  product_id: string;
+  quantity: number; // Current stock
+  reserved_quantity: number;
+  reorder_level: number; // Min stock level
+  max_level: number; // Max stock level
+  last_updated: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Category {
@@ -161,22 +177,37 @@ export type StockMovementType =
   | 'return';
 
 
-// Form types
+// Form types - matches backend API exactly
 export interface ProductFormData {
+  sku: string; // Required in backend
   name: string;
-  description?: string;
-  sku?: string;
-  barcode?: string;
-  price: number;
-  cost_price?: number;
-  stock_quantity: number;
-  min_stock_level?: number;
-  max_stock_level?: number;
-  unit: string;
-  category_id?: string;
-  brand_id?: string;
-  supplier_id?: string;
+  description: string;
+  category_id: string; // Required UUID in backend
+  supplier_id?: string; // Optional UUID
+  brand_id?: string; // Optional UUID
+  cost_price: number;
+  retail_price: number; // Backend expects retail_price, not price
+  wholesale_price: number;
+  barcode: string;
+  weight: number;
+  dimensions: string;
   is_active: boolean;
+}
+
+// Separate form data for inventory (handled separately from product)
+export interface InventoryFormData {
+  product_id: string;
+  quantity: number; // Current stock
+  reorder_level: number; // Min stock level  
+  max_level: number; // Max stock level
+}
+
+// Combined form data for UI (includes both product and inventory)
+export interface ProductWithInventoryFormData extends ProductFormData {
+  // Inventory fields for UI convenience
+  stock_quantity: number; // Maps to inventory.quantity
+  min_stock_level?: number; // Maps to inventory.reorder_level
+  max_stock_level?: number; // Maps to inventory.max_level
 }
 
 export interface CategoryFormData {

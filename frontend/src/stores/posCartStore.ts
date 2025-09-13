@@ -1,27 +1,11 @@
 import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
+import { useMemo } from 'react';
 import type { Product } from '@/types/inventory';
+import { getDisplayPrice, getStockQuantity } from '@/utils/productUtils';
 import { usePOSSessionStore } from './posSessionStore';
 
-// Performance optimization: Batch update queue
-let updateQueue: (() => void)[] = [];
-let isProcessingQueue = false;
-
-// Batch cart updates to prevent multiple re-renders
-const batchCartUpdates = (updateFn: () => void) => {
-  updateQueue.push(updateFn);
-  
-  if (!isProcessingQueue) {
-    isProcessingQueue = true;
-    requestAnimationFrame(() => {
-      const currentQueue = [...updateQueue];
-      updateQueue = [];
-      
-      currentQueue.forEach(fn => fn());
-      isProcessingQueue = false;
-    });
-  }
-};
+// Note: Removed batchCartUpdates to fix infinite loop issues
 
 // Cart-specific interfaces
 export interface CartItem {
@@ -58,7 +42,7 @@ export interface POSCartState {
   clearCart: () => void;
   validateStock: () => Promise<boolean>;
   calculateTotals: () => void;
-  loadFromSession: (sessionData: any) => void;
+  loadFromSession: (sessionData: unknown) => void;
   getCurrentSessionId: () => string | null;
   clearCurrentSession: () => void;
   
@@ -69,7 +53,7 @@ export interface POSCartState {
 
 // Helper function to generate session ID
 const generateSessionId = (): string => {
-  return `pos_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `pos_session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 };
 
 // Helper function to validate quantity against stock
@@ -79,8 +63,8 @@ const validateQuantityAgainstStock = (product: Product, requestedQuantity: numbe
     return false;
   }
   
-  if (product.stock_quantity < requestedQuantity) {
-    console.warn(`Insufficient stock for ${product.name}. Available: ${product.stock_quantity}, Requested: ${requestedQuantity}`);
+  if (getStockQuantity(product) < requestedQuantity) {
+    console.warn(`Insufficient stock for ${product.name}. Available: ${getStockQuantity(product)}, Requested: ${requestedQuantity}`);
     return false;
   }
   
@@ -190,7 +174,7 @@ export const usePOSCartStore = create<POSCartState>()(
             ...existingItem,
             quantity: newQuantity,
             totalPrice: calculateItemTotal(existingItem.unitPrice, newQuantity, existingItem.discount),
-            maxQuantity: product.stock_quantity
+            maxQuantity: getStockQuantity(product)
           };
           
           set({ items: updatedItems });
@@ -199,16 +183,16 @@ export const usePOSCartStore = create<POSCartState>()(
           const newItem: CartItem = {
             product,
             quantity,
-            unitPrice: product.price,
-            totalPrice: calculateItemTotal(product.price, quantity),
-            maxQuantity: product.stock_quantity
+            unitPrice: getDisplayPrice(product),
+            totalPrice: calculateItemTotal(getDisplayPrice(product), quantity),
+            maxQuantity: getStockQuantity(product)
           };
           
           set({ items: [...state.items, newItem] });
         }
         
-        // Batch total recalculation for performance
-        batchCartUpdates(() => get().calculateTotals());
+        // Recalculate totals immediately without batching to prevent loops
+        get().calculateTotals();
         return true;
       },
 
@@ -217,7 +201,7 @@ export const usePOSCartStore = create<POSCartState>()(
         const state = get();
         const filteredItems = state.items.filter(item => item.product.id !== productId);
         set({ items: filteredItems });
-        batchCartUpdates(() => get().calculateTotals());
+        get().calculateTotals();
       },
 
       // Update item quantity
@@ -248,11 +232,11 @@ export const usePOSCartStore = create<POSCartState>()(
           ...item,
           quantity,
           totalPrice: calculateItemTotal(item.unitPrice, quantity, item.discount),
-          maxQuantity: item.product.stock_quantity
+          maxQuantity: getStockQuantity(item.product)
         };
         
         set({ items: updatedItems });
-        batchCartUpdates(() => get().calculateTotals());
+        get().calculateTotals();
         return true;
       },
 
@@ -272,7 +256,7 @@ export const usePOSCartStore = create<POSCartState>()(
           discountConfig: { amount, type }
         });
         
-        batchCartUpdates(() => get().calculateTotals());
+        get().calculateTotals();
       },
 
       // Remove discount
@@ -281,7 +265,7 @@ export const usePOSCartStore = create<POSCartState>()(
           discountConfig: undefined,
           discount: 0
         });
-        batchCartUpdates(() => get().calculateTotals());
+        get().calculateTotals();
       },
 
       // Clear entire cart
@@ -357,25 +341,8 @@ export const usePOSCartStore = create<POSCartState>()(
         
         set(newState);
 
-        // Async session sync with performance optimization
-        batchCartUpdates(() => {
-          try {
-            const sessionStore = usePOSSessionStore.getState();
-            const activeSessionId = sessionStore.activeSessionId;
-            if (activeSessionId) {
-              sessionStore.updateSessionCart(
-                activeSessionId,
-                state.items,
-                subtotal,
-                taxAmount,
-                discountAmount,
-                total
-              );
-            }
-          } catch (error) {
-            console.warn('Failed to sync cart with session store:', error);
-          }
-        });
+        // Async session sync with performance optimization (but avoid during calculation)
+        // Note: Removed session sync from calculateTotals to prevent circular updates
       },
 
       // Internal method to find item index
@@ -388,16 +355,25 @@ export const usePOSCartStore = create<POSCartState>()(
       _createSessionId: generateSessionId,
 
       // Load cart from session
-      loadFromSession: (sessionData: any) => {
-        if (sessionData) {
+      loadFromSession: (sessionData: unknown) => {
+        if (sessionData && typeof sessionData === 'object' && sessionData !== null) {
+          const data = sessionData as Record<string, unknown>;
+          const cartItems = Array.isArray(data.cartItems) ? data.cartItems : [];
+          
           set({
-            items: sessionData.cartItems || [],
-            subtotal: sessionData.subtotal || 0,
-            tax: sessionData.tax || 0,
-            discount: sessionData.discount || 0,
-            total: sessionData.total || 0,
-            itemCount: sessionData.cartItems?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0,
-            sessionId: sessionData.id || generateSessionId()
+            items: cartItems,
+            subtotal: typeof data.subtotal === 'number' ? data.subtotal : 0,
+            tax: typeof data.tax === 'number' ? data.tax : 0,
+            discount: typeof data.discount === 'number' ? data.discount : 0,
+            total: typeof data.total === 'number' ? data.total : 0,
+            itemCount: cartItems.reduce((sum: number, item: unknown) => {
+              if (item && typeof item === 'object' && 'quantity' in item) {
+                const quantity = (item as { quantity: unknown }).quantity;
+                return typeof quantity === 'number' ? sum + quantity : sum;
+              }
+              return sum;
+            }, 0),
+            sessionId: typeof data.id === 'string' ? data.id : generateSessionId()
           });
         }
       },
@@ -449,12 +425,10 @@ export const usePOSCartStore = create<POSCartState>()(
           itemTotalCache.clear();
           taxCalculationCache.clear();
           
-          // Batch the initial calculation to prevent render loops
-          batchCartUpdates(() => {
-            if (state.calculateTotals) {
-              state.calculateTotals();
-            }
-          });
+          // Calculate totals immediately after rehydration
+          if (state.calculateTotals) {
+            state.calculateTotals();
+          }
         }
       },
     }
@@ -466,27 +440,42 @@ export const usePOSCartStore = create<POSCartState>()(
 
 // Memoized hook for cart totals - only re-renders when totals change
 export const useCartTotals = () => {
-  return usePOSCartStore((state) => ({
-    subtotal: state.subtotal,
-    tax: state.tax,
-    taxRate: state.taxRate,
-    discount: state.discount,
-    total: state.total,
-    itemCount: state.itemCount,
-  }));
+  const subtotal = usePOSCartStore((state) => state.subtotal);
+  const tax = usePOSCartStore((state) => state.tax);
+  const taxRate = usePOSCartStore((state) => state.taxRate);
+  const discount = usePOSCartStore((state) => state.discount);
+  const total = usePOSCartStore((state) => state.total);
+  const itemCount = usePOSCartStore((state) => state.itemCount);
+
+  return useMemo(() => ({
+    subtotal,
+    tax,
+    taxRate,
+    discount,
+    total,
+    itemCount,
+  }), [subtotal, tax, taxRate, discount, total, itemCount]);
 };
 
-// Memoized hook for cart actions - never re-renders since actions are stable
+// Memoized hook for cart actions - properly memoized to prevent re-renders
 export const useCartActions = () => {
-  return usePOSCartStore((state) => ({
-    addItem: state.addItem,
-    removeItem: state.removeItem,
-    updateQuantity: state.updateQuantity,
-    applyDiscount: state.applyDiscount,
-    removeDiscount: state.removeDiscount,
-    clearCart: state.clearCart,
-    validateStock: state.validateStock,
-  }));
+  const addItem = usePOSCartStore((state) => state.addItem);
+  const removeItem = usePOSCartStore((state) => state.removeItem);
+  const updateQuantity = usePOSCartStore((state) => state.updateQuantity);
+  const applyDiscount = usePOSCartStore((state) => state.applyDiscount);
+  const removeDiscount = usePOSCartStore((state) => state.removeDiscount);
+  const clearCart = usePOSCartStore((state) => state.clearCart);
+  const validateStock = usePOSCartStore((state) => state.validateStock);
+
+  return useMemo(() => ({
+    addItem,
+    removeItem,
+    updateQuantity,
+    applyDiscount,
+    removeDiscount,
+    clearCart,
+    validateStock,
+  }), [addItem, removeItem, updateQuantity, applyDiscount, removeDiscount, clearCart, validateStock]);
 };
 
 // Optimized hook for cart items - only re-renders when items array changes
@@ -496,11 +485,13 @@ export const useCartItems = () => {
 
 // Performance monitoring hook for debugging
 export const useCartPerformance = () => {
-  return usePOSCartStore((state) => ({
-    itemCount: state.items.length,
-    totalValue: state.total,
-    lastUpdated: Date.now()
-  }));
+  const itemCount = usePOSCartStore((state) => state.items.length);
+  const totalValue = usePOSCartStore((state) => state.total);
+
+  return useMemo(() => ({
+    itemCount,
+    totalValue,
+  }), [itemCount, totalValue]);
 };
 
 // Performance optimized session synchronization
@@ -573,7 +564,6 @@ export const getCartCacheStats = () => {
   return {
     itemTotalCacheSize: itemTotalCache.size,
     taxCalculationCacheSize: taxCalculationCache.size,
-    updateQueueLength: updateQueue.length,
-    isProcessingQueue
+    // Removed update queue stats since batching was removed
   };
 };

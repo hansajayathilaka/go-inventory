@@ -1,5 +1,7 @@
-import React, { Component, ReactNode } from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import React, { Component } from 'react'
+import type { ReactNode } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import type { FallbackProps } from 'react-error-boundary'
 import { 
   AlertTriangle, 
   RefreshCw, 
@@ -16,15 +18,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 /**
  * Error types that can occur in the POS system
  */
-export enum POSErrorType {
-  PAYMENT_PROCESSING = 'payment_processing',
-  NETWORK_FAILURE = 'network_failure',
-  COMPONENT_RENDER = 'component_render',
-  STATE_MANAGEMENT = 'state_management',
-  SESSION_CORRUPTION = 'session_corruption',
-  VALIDATION_ERROR = 'validation_error',
-  UNKNOWN = 'unknown'
-}
+export const POSErrorType = {
+  PAYMENT_PROCESSING: 'payment_processing',
+  NETWORK_FAILURE: 'network_failure',
+  COMPONENT_RENDER: 'component_render',
+  STATE_MANAGEMENT: 'state_management',
+  SESSION_CORRUPTION: 'session_corruption',
+  VALIDATION_ERROR: 'validation_error',
+  UNKNOWN: 'unknown'
+} as const
+
+export type POSErrorType = typeof POSErrorType[keyof typeof POSErrorType]
 
 /**
  * Interface for POS-specific error information
@@ -161,15 +165,6 @@ class ErrorLogger {
 
     // TODO: Send to backend error reporting service
     // this.sendToBackend(logEntry)
-  }
-
-  private static async sendToBackend(logEntry: any) {
-    try {
-      // Implementation for sending error logs to backend
-      // await apiClient.post('/api/v1/errors', logEntry)
-    } catch (error) {
-      console.error('Failed to send error to backend:', error)
-    }
   }
 }
 
@@ -450,7 +445,7 @@ class POSErrorBoundaryClass extends Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Determine error type
-    let errorType = POSErrorType.COMPONENT_RENDER
+    let errorType: POSErrorType = POSErrorType.COMPONENT_RENDER
     let recoverable = true
 
     if (error.message.includes('payment')) {
@@ -470,8 +465,8 @@ class POSErrorBoundaryClass extends Component<
     const posErrorInfo: POSErrorInfo = {
       type: errorType,
       recoverable,
-      sessionData: this.props.sessionData,
-      componentStack: errorInfo.componentStack,
+      sessionData: this.props.sessionData ?? undefined,
+      componentStack: errorInfo.componentStack || undefined,
       timestamp: new Date()
     }
 
@@ -545,7 +540,7 @@ export function POSErrorBoundary({
 }
 
 // Export utilities for use in other components
-export { SessionRecovery, ErrorLogger, POSError }
+export { SessionRecovery, ErrorLogger }
 
 // Export error boundary hook for functional components
 export function usePOSErrorHandler() {

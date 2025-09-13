@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { BarcodeScanner } from '@/components/ui/barcode-scanner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Search, Filter, Plus, MoreHorizontal, Package, AlertTriangle, CheckCircle, XCircle, Edit, Scan } from 'lucide-react'
@@ -14,6 +14,7 @@ import { useProducts, useBrands, useCategories, useSuppliers } from '@/hooks/use
 import { ProductForm } from '@/components/forms/ProductForm'
 import { StockAdjustmentForm } from '@/components/forms/StockAdjustmentForm'
 import type { Product } from '@/types/inventory'
+import { getStockQuantity, getReorderLevel, getDisplayPrice, getUnit, isLowStock } from '@/utils/productUtils'
 
 export function Products() {
   const [search, setSearch] = useState('')
@@ -49,8 +50,8 @@ export function Products() {
 
   // Stock status helpers
   const getStockStatus = (product: Product) => {
-    if (product.stock_quantity === 0) return 'out-of-stock'
-    if (product.min_stock_level && product.stock_quantity <= product.min_stock_level) return 'low-stock'
+    if (getStockQuantity(product) === 0) return 'out-of-stock'
+    if (isLowStock(product)) return 'low-stock'
     return 'in-stock'
   }
 
@@ -103,6 +104,9 @@ export function Products() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Product</DialogTitle>
+            </DialogHeader>
             <ProductForm
               onSuccess={() => {
                 setShowCreateDialog(false)
@@ -142,6 +146,9 @@ export function Products() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Scan Barcode</DialogTitle>
+                    </DialogHeader>
                     <BarcodeScanner
                       onScan={handleBarcodeSearch}
                       onError={(error) => console.error('Barcode search error:', error)}
@@ -306,21 +313,21 @@ export function Products() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {product.stock_quantity.toLocaleString()}
+                            {getStockQuantity(product).toLocaleString()}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            {product.unit}
+                            {getUnit(product)}
                           </span>
                         </div>
-                        {product.min_stock_level && (
+                        {getReorderLevel(product) > 0 && (
                           <div className="text-xs text-muted-foreground">
-                            Min: {product.min_stock_level}
+                            Min: {getReorderLevel(product)}
                           </div>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          ${product.price.toFixed(2)}
+                          ${getDisplayPrice(product).toFixed(2)}
                         </div>
                         {product.cost_price && (
                           <div className="text-xs text-muted-foreground">
@@ -393,6 +400,9 @@ export function Products() {
       {/* Edit Product Dialog */}
       <Dialog open={!!editingProduct} onOpenChange={(open) => !open && setEditingProduct(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+          </DialogHeader>
           {editingProduct && (
             <ProductForm
               product={editingProduct}
@@ -408,6 +418,9 @@ export function Products() {
       {/* Stock Adjustment Dialog */}
       <Dialog open={!!adjustingStockProduct} onOpenChange={(open) => !open && setAdjustingStockProduct(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Adjust Stock</DialogTitle>
+          </DialogHeader>
           {adjustingStockProduct && (
             <StockAdjustmentForm
               product={adjustingStockProduct}

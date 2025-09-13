@@ -6,6 +6,7 @@ import { useDashboardStats, useLowStockProducts } from '@/hooks';
 import { useUiStore } from '@/stores';
 import { Loader2, AlertTriangle, Package, ExternalLink, RefreshCw } from 'lucide-react';
 import type { Product } from '@/types/inventory';
+import { getStockQuantity, getReorderLevel, getUnit, isOutOfStock } from '@/utils/productUtils';
 
 export function Dashboard() {
   const { data: stats, isLoading, error } = useDashboardStats();
@@ -143,9 +144,9 @@ export function Dashboard() {
             ) : (
               <div className="space-y-3">
                 {lowStockProducts.slice(0, 5).map((product: Product) => {
-                  const isOutOfStock = product.stock_quantity === 0
-                  const stockPercentage = product.min_stock_level 
-                    ? Math.round((product.stock_quantity / product.min_stock_level) * 100)
+                  const isOutOfStockProduct = isOutOfStock(product)
+                  const stockPercentage = getReorderLevel(product) 
+                    ? Math.round((getStockQuantity(product) / getReorderLevel(product)) * 100)
                     : 100
 
                   return (
@@ -153,17 +154,17 @@ export function Dashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium text-sm truncate">{product.name}</h4>
-                          <Badge variant={isOutOfStock ? 'destructive' : 'secondary'} className="text-xs">
-                            {isOutOfStock ? 'Out of Stock' : 'Low Stock'}
+                          <Badge variant={isOutOfStockProduct ? 'destructive' : 'secondary'} className="text-xs">
+                            {isOutOfStockProduct ? 'Out of Stock' : 'Low Stock'}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                           <span>
-                            <strong>{product.stock_quantity}</strong> {product.unit} remaining
+                            <strong>{getStockQuantity(product)}</strong> {getUnit(product)} remaining
                           </span>
-                          {product.min_stock_level && (
+                          {getReorderLevel(product) > 0 && (
                             <span>
-                              Min: {product.min_stock_level} {product.unit}
+                              Min: {getReorderLevel(product)} {getUnit(product)}
                             </span>
                           )}
                           {product.brand && (
@@ -173,11 +174,11 @@ export function Dashboard() {
                           )}
                         </div>
                         {/* Stock level bar */}
-                        {product.min_stock_level && (
+                        {getReorderLevel(product) > 0 && (
                           <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
                             <div
                               className={`h-1.5 rounded-full ${
-                                isOutOfStock 
+                                isOutOfStockProduct 
                                   ? 'bg-red-500' 
                                   : stockPercentage <= 50 
                                   ? 'bg-orange-500' 

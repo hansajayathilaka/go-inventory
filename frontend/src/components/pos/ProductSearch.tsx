@@ -14,6 +14,7 @@ import {
 import { KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge'
 import { useDebouncedCallback } from 'use-debounce'
 import type { Product } from '@/types/inventory'
+import { getDisplayPrice, getStockQuantity, getUnit } from '@/utils/productUtils'
 import { cn } from '@/lib/utils'
 
 interface ProductSearchProps {
@@ -102,13 +103,8 @@ export function ProductSearch({
     }
     abortControllerRef.current = new AbortController()
     
-    // Map API response to frontend Product interface and filter active products
-    const mapped = products.map((apiProduct: Product) => ({
-      ...apiProduct,
-      price: (apiProduct as any).retail_price || (apiProduct as any).cost_price || apiProduct.price || 0,
-      stock_quantity: apiProduct.stock_quantity || 100,
-      unit: apiProduct.unit || 'pcs'
-    }))
+    // Filter active products (no mapping needed, utilities handle the data extraction)
+    const mapped = products
     
     return mapped.filter(product => product.is_active)
   }, [productsResponse?.data])
@@ -314,7 +310,7 @@ export function ProductSearch({
                 <span>Barcode: {product.barcode}</span>
               )}
               <span className="ml-auto">
-                Stock: {product.stock_quantity} {product.unit}
+                Stock: {getStockQuantity(product)} {getUnit(product)}
               </span>
             </div>
             {product.category && (
@@ -324,8 +320,8 @@ export function ProductSearch({
             )}
           </div>
           <div className="ml-3 text-right flex-shrink-0">
-            <div className="font-semibold">${product.price.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{product.unit}</div>
+            <div className="font-semibold">${getDisplayPrice(product).toFixed(2)}</div>
+            <div className="text-xs text-muted-foreground">{getUnit(product)}</div>
           </div>
         </div>
       </Button>

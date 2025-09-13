@@ -108,7 +108,7 @@ export function PaymentForm({
     const result = PaymentFormSchema.safeParse(paymentData)
     
     if (!result.success) {
-      const errors = result.error.errors
+      const errors = result.error.issues
       return errors[0]?.message || 'Invalid payment data'
     }
     
@@ -131,7 +131,7 @@ export function PaymentForm({
     const result = PaymentsCollectionSchema.safeParse(collectionData)
     
     if (!result.success) {
-      const errors = result.error.errors
+      const errors = result.error.issues
       return errors[0]?.message || 'Invalid payments collection'
     }
     
@@ -272,7 +272,7 @@ export function PaymentForm({
     const result = QuickCashSchema.safeParse(quickCashData)
     
     if (!result.success) {
-      const error = result.error.errors[0]?.message || 'Invalid quick cash amount'
+      const error = result.error.issues[0]?.message || 'Invalid quick cash amount'
       toast.validationError('Quick Cash', error)
       return
     }
@@ -346,7 +346,7 @@ export function PaymentForm({
     const changeResult = ChangeCalculationSchema.safeParse(changeData)
     
     if (!changeResult.success) {
-      const error = changeResult.error.errors[0]?.message || 'Change calculation error'
+      const error = changeResult.error.issues[0]?.message || 'Change calculation error'
       toast.validationError('Change Calculation', error)
       return
     }

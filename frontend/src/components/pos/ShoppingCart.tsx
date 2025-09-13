@@ -39,6 +39,7 @@ import {
 } from '@/hooks';
 import { ShortcutTooltip, KeyboardShortcutBadge } from '@/components/ui/keyboard-shortcut-badge';
 import { cn } from '@/lib/utils';
+import { getDisplayPrice, getStockQuantity, getReorderLevel, getUnit } from '@/utils/productUtils';
 
 interface ShoppingCartProps {
   className?: string;
@@ -57,7 +58,7 @@ interface RemoveItemDialogProps {
 function RemoveItemDialog({ item, isOpen, onConfirm, onCancel }: RemoveItemDialogProps) {
   if (!item) return null;
 
-  const isExpensive = item.product.price > 100;
+  const isExpensive = getDisplayPrice(item.product) > 100;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
@@ -73,7 +74,7 @@ function RemoveItemDialog({ item, isOpen, onConfirm, onCancel }: RemoveItemDialo
               <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm">
                 <div className="flex items-center gap-1">
                   <AlertTriangle className="h-4 w-4" />
-                  High-value item (${item.product.price.toFixed(2)})
+                  High-value item (${getDisplayPrice(item.product).toFixed(2)})
                 </div>
               </div>
             )}
@@ -203,8 +204,8 @@ function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRowProps)
     setIsUpdating(false);
   };
 
-  const isLowStock = item.product.stock_quantity <= (item.product.min_stock_level || 0);
-  const isNearStockLimit = item.quantity >= (item.maxQuantity || item.product.stock_quantity) * 0.8;
+  const isLowStock = getStockQuantity(item.product) <= getReorderLevel(item.product);
+  const isNearStockLimit = item.quantity >= (item.maxQuantity || getStockQuantity(item.product)) * 0.8;
 
   return (
     <div className="flex items-center gap-3 p-3 border rounded-lg bg-white">
@@ -218,7 +219,7 @@ function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRowProps)
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {item.product.sku && <span>SKU: {item.product.sku}</span>}
             <span>•</span>
-            <span>${item.unitPrice.toFixed(2)}/{item.product.unit}</span>
+            <span>${item.unitPrice.toFixed(2)}/{getUnit(item.product)}</span>
           </div>
           {(isLowStock || isNearStockLimit) && (
             <div className="flex items-center gap-1 mt-1">
@@ -256,7 +257,7 @@ function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRowProps)
           size="icon"
           className="h-8 w-8"
           onClick={() => handleQuantityChange(1)}
-          disabled={isUpdating || item.quantity >= (item.maxQuantity || item.product.stock_quantity)}
+          disabled={isUpdating || item.quantity >= (item.maxQuantity || getStockQuantity(item.product))}
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -300,7 +301,7 @@ export function ShoppingCart({
 
   // Handlers
   const handleRemoveItem = useCallback((item: CartItem) => {
-    const isExpensive = item.product.price > 100;
+    const isExpensive = getDisplayPrice(item.product) > 100;
     
     if (isExpensive) {
       setRemoveDialogItem(item);
