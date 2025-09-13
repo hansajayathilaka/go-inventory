@@ -7,13 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Search, Filter, Edit, Trash2, Users, Phone, Mail, MapPin, CreditCard } from 'lucide-react'
-import { useCustomers, useDeleteCustomer } from '@/hooks/useInventoryQueries'
+import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from '@/hooks/useInventoryQueries'
+import { CustomerForm } from '@/components/forms/CustomerForm'
 import { formatDate, formatCurrency } from '@/lib/utils'
+
+interface Customer {
+  id: string
+  name: string
+  code: string
+  email?: string
+  phone?: string
+  address?: string
+  city?: string
+  state?: string
+  postal_code?: string
+  country?: string
+  credit_limit?: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
 
 export function Customers() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
 
   // Fetch customers
   const { data: customersData = [], isLoading, error } = useCustomers({
@@ -21,10 +40,31 @@ export function Customers() {
     is_active: statusFilter === 'all' ? undefined : statusFilter === 'active'
   })
 
+  const createCustomer = useCreateCustomer()
+  const updateCustomer = useUpdateCustomer()
   const deleteCustomer = useDeleteCustomer()
 
   // Extract customers from API response
   const customers = Array.isArray(customersData) ? customersData : ((customersData as any)?.data || []) as any[]
+
+  const handleCreateCustomer = async (data: any) => {
+    try {
+      await createCustomer.mutateAsync(data)
+      setShowCreateDialog(false)
+    } catch (error) {
+      console.error('Failed to create customer:', error)
+    }
+  }
+
+  const handleUpdateCustomer = async (data: any) => {
+    if (!editingCustomer) return
+    try {
+      await updateCustomer.mutateAsync({ id: editingCustomer.id, data })
+      setEditingCustomer(null)
+    } catch (error) {
+      console.error('Failed to update customer:', error)
+    }
+  }
 
   const handleDeleteCustomer = async (id: string) => {
     if (confirm('Are you sure you want to delete this customer?')) {
@@ -52,10 +92,11 @@ export function Customers() {
             <DialogHeader>
               <DialogTitle>Create New Customer</DialogTitle>
             </DialogHeader>
-            {/* TODO: Add CustomerForm component */}
-            <div className="p-4 text-center text-muted-foreground">
-              Customer form component to be implemented
-            </div>
+            <CustomerForm
+              onSubmit={handleCreateCustomer}
+              onCancel={() => setShowCreateDialog(false)}
+              isLoading={createCustomer.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -209,6 +250,7 @@ export function Customers() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setEditingCustomer(customer)}
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
@@ -233,6 +275,24 @@ export function Customers() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Customer Dialog */}
+      <Dialog open={!!editingCustomer} onOpenChange={() => setEditingCustomer(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Customer</DialogTitle>
+          </DialogHeader>
+          {editingCustomer && (
+            <CustomerForm
+              customer={editingCustomer}
+              onSubmit={handleUpdateCustomer}
+              onCancel={() => setEditingCustomer(null)}
+              isLoading={updateCustomer.isPending}
+              isEditing
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

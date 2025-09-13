@@ -402,6 +402,59 @@ export function useCreateSupplier() {
   });
 }
 
+export function useUpdateSupplier() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/suppliers/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suppliers });
+      addNotification({
+        type: 'success',
+        title: 'Supplier updated',
+        message: 'Supplier has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update supplier',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDeleteSupplier() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/suppliers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suppliers });
+      addNotification({
+        type: 'success',
+        title: 'Supplier deleted',
+        message: 'Supplier has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete supplier',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
 // Customers
 export function useCustomers(params?: {
   search?: string;

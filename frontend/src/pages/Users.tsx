@@ -7,8 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Search, Filter, Edit, Trash2, Shield, User, Mail, Clock, UserCog } from 'lucide-react'
-import { useUsers, useDeleteUser } from '@/hooks/useInventoryQueries'
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/useInventoryQueries'
+import { UserForm } from '@/components/forms/UserForm'
 import { formatDate } from '@/lib/utils'
+
+interface UserType {
+  id: string
+  username: string
+  email: string
+  role: string
+  created_at: string
+  updated_at: string
+  last_login?: string
+}
 
 const roleLabels = {
   admin: 'Administrator',
@@ -28,6 +39,7 @@ export function Users() {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserType | null>(null)
 
   // Fetch users
   const { data: usersData = [], isLoading, error } = useUsers({
@@ -35,10 +47,31 @@ export function Users() {
     role: roleFilter === 'all' ? undefined : roleFilter
   })
 
+  const createUser = useCreateUser()
+  const updateUser = useUpdateUser()
   const deleteUser = useDeleteUser()
 
   // Extract users from API response
   const users = Array.isArray(usersData) ? usersData : ((usersData as any)?.data || []) as any[]
+
+  const handleCreateUser = async (data: any) => {
+    try {
+      await createUser.mutateAsync(data)
+      setShowCreateDialog(false)
+    } catch (error) {
+      console.error('Failed to create user:', error)
+    }
+  }
+
+  const handleUpdateUser = async (data: any) => {
+    if (!editingUser) return
+    try {
+      await updateUser.mutateAsync({ id: editingUser.id, data })
+      setEditingUser(null)
+    } catch (error) {
+      console.error('Failed to update user:', error)
+    }
+  }
 
   const handleDeleteUser = async (id: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
@@ -71,10 +104,11 @@ export function Users() {
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
             </DialogHeader>
-            {/* TODO: Add UserForm component */}
-            <div className="p-4 text-center text-muted-foreground">
-              User form component to be implemented
-            </div>
+            <UserForm
+              onSubmit={handleCreateUser}
+              onCancel={() => setShowCreateDialog(false)}
+              isLoading={createUser.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -203,6 +237,7 @@ export function Users() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setEditingUser(user)}
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
@@ -228,6 +263,24 @@ export function Users() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <UserForm
+              user={editingUser}
+              onSubmit={handleUpdateUser}
+              onCancel={() => setEditingUser(null)}
+              isLoading={updateUser.isPending}
+              isEditing
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

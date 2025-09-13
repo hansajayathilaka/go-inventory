@@ -6,15 +6,21 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Plus, Search, Edit, Trash2, Building2, Phone, Mail, MapPin } from 'lucide-react'
-import { useSuppliers } from '@/hooks/useInventoryQueries'
+import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from '@/hooks/useInventoryQueries'
+import { SupplierForm } from '@/components/forms/SupplierForm'
 import { formatDate } from '@/lib/utils'
+import type { Supplier } from '@/types/inventory'
 
 export function Suppliers() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
 
   // Fetch suppliers
   const { data: suppliers = [], isLoading, error } = useSuppliers()
+  const createSupplier = useCreateSupplier()
+  const updateSupplier = useUpdateSupplier()
+  const deleteSupplier = useDeleteSupplier()
 
   // Filter suppliers based on search
   const filteredSuppliers = suppliers.filter(supplier =>
@@ -22,6 +28,35 @@ export function Suppliers() {
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.phone?.includes(searchTerm)
   )
+
+  const handleCreateSupplier = async (data: any) => {
+    try {
+      await createSupplier.mutateAsync(data)
+      setShowCreateDialog(false)
+    } catch (error) {
+      console.error('Failed to create supplier:', error)
+    }
+  }
+
+  const handleUpdateSupplier = async (data: any) => {
+    if (!editingSupplier) return
+    try {
+      await updateSupplier.mutateAsync({ id: editingSupplier.id, data })
+      setEditingSupplier(null)
+    } catch (error) {
+      console.error('Failed to update supplier:', error)
+    }
+  }
+
+  const handleDeleteSupplier = async (id: string) => {
+    if (confirm('Are you sure you want to delete this supplier?')) {
+      try {
+        await deleteSupplier.mutateAsync(id)
+      } catch (error) {
+        console.error('Failed to delete supplier:', error)
+      }
+    }
+  }
 
 
   return (
@@ -40,10 +75,11 @@ export function Suppliers() {
             <DialogHeader>
               <DialogTitle>Create New Supplier</DialogTitle>
             </DialogHeader>
-            {/* TODO: Add SupplierForm component */}
-            <div className="p-4 text-center text-muted-foreground">
-              Supplier form component to be implemented
-            </div>
+            <SupplierForm
+              onSubmit={handleCreateSupplier}
+              onCancel={() => setShowCreateDialog(false)}
+              isLoading={createSupplier.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -167,6 +203,7 @@ export function Suppliers() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setEditingSupplier(supplier)}
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
@@ -175,8 +212,8 @@ export function Suppliers() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => handleDeleteSupplier(supplier.id)}
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            disabled={!supplier.is_active}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete</span>
@@ -191,6 +228,24 @@ export function Suppliers() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Supplier Dialog */}
+      <Dialog open={!!editingSupplier} onOpenChange={() => setEditingSupplier(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Supplier</DialogTitle>
+          </DialogHeader>
+          {editingSupplier && (
+            <SupplierForm
+              supplier={editingSupplier}
+              onSubmit={handleUpdateSupplier}
+              onCancel={() => setEditingSupplier(null)}
+              isLoading={updateSupplier.isPending}
+              isEditing
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
