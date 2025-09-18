@@ -2,7 +2,19 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { X, CheckCircle, AlertTriangle, AlertCircle, Info, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ToastNotification } from '@/services/posService'
+
+// Define ToastNotification type locally for now
+interface ToastNotification {
+  id: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  title: string
+  message: string
+  duration?: number
+  action?: {
+    label: string
+    handler: () => void
+  }
+}
 
 /**
  * Toast Notification System

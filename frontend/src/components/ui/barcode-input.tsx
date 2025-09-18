@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { BarcodeScanner } from './barcode-scanner'
 import { Scan } from 'lucide-react'
 
 interface BarcodeInputProps {
@@ -50,12 +49,22 @@ export function BarcodeInput({ value, onChange, placeholder, className, disabled
           <DialogHeader>
             <DialogTitle>Scan Barcode</DialogTitle>
           </DialogHeader>
-          <BarcodeScanner
-            onScan={handleScan}
-            onError={(error) => {
-              console.error('Barcode scanning error:', error)
-            }}
-          />
+          <div className="p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Barcode scanner functionality will be available in the next update.
+            </p>
+            <Input
+              placeholder="Enter barcode manually"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const target = e.target as HTMLInputElement;
+                  if (target.value) {
+                    handleScan(target.value);
+                  }
+                }
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { BarcodeScanner } from '@/components/ui/barcode-scanner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Search, Filter, Plus, MoreHorizontal, Package, AlertTriangle, CheckCircle, XCircle, Edit, Scan } from 'lucide-react'
 import { useProducts, useBrands, useCategories, useSuppliers } from '@/hooks/useInventoryQueries'
@@ -149,10 +148,22 @@ export function Products() {
                     <DialogHeader>
                       <DialogTitle>Scan Barcode</DialogTitle>
                     </DialogHeader>
-                    <BarcodeScanner
-                      onScan={handleBarcodeSearch}
-                      onError={(error) => console.error('Barcode search error:', error)}
-                    />
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Barcode scanner functionality will be available in the next update.
+                      </p>
+                      <Input
+                        placeholder="Enter barcode manually"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const target = e.target as HTMLInputElement;
+                            if (target.value) {
+                              handleBarcodeSearch(target.value);
+                            }
+                          }
+                        }}
+                      />
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>

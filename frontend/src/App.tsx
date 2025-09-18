@@ -10,6 +10,7 @@ import { ViewPurchaseReceipt } from './pages/ViewPurchaseReceipt';
 import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
 import { Users } from './pages/Users';
+import { POS } from './pages/POS';
 import { Login } from './pages/Login';
 import { QueryProvider } from './providers/QueryProvider';
 import { useAuthStore } from './stores/authStore';
@@ -37,6 +38,7 @@ function AuthenticatedApp() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/users" element={<Users />} />
         </Route>
+        <Route path="/pos" element={<POS />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
