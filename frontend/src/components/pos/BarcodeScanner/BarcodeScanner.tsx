@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, X, Smartphone, Keyboard, AlertCircle, CheckCircle, Scan } from 'lucide-react';
+import { Camera, X, Smartphone, Keyboard, AlertCircle, CheckCircle, Scan, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { barcodeService } from '@/services/pos/barcodeService';
 import type { BarcodeResult, BarcodeScannerConfig, BarcodeProductLookup } from '@/types/pos/barcode';
 
@@ -30,6 +31,8 @@ export function BarcodeScanner({
   const [manualInput, setManualInput] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [camerasSupported, setCamerasSupported] = useState(false);
+  const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -51,8 +54,27 @@ export function BarcodeScanner({
       const supported = await barcodeService.isCameraScanningSupported();
       setCamerasSupported(supported);
 
-      if (supported && defaultConfig.enableCamera) {
-        setActiveTab('camera');
+      if (supported) {
+        // Load available camera devices
+        const devices = await barcodeService.getCameraDevices();
+        setCameraDevices(devices);
+
+        // Select default camera (prefer back camera)
+        if (devices.length > 0 && !selectedCameraId) {
+          const backCamera = devices.find(device =>
+            device.label.toLowerCase().includes('back') ||
+            device.label.toLowerCase().includes('rear') ||
+            device.label.toLowerCase().includes('environment')
+          );
+          const defaultCamera = backCamera || devices[0];
+          setSelectedCameraId(defaultCamera.deviceId);
+        }
+
+        if (defaultConfig.enableCamera) {
+          setActiveTab('camera');
+        } else {
+          setActiveTab('manual');
+        }
       } else {
         setActiveTab('manual');
       }
@@ -61,7 +83,7 @@ export function BarcodeScanner({
       setCamerasSupported(false);
       setActiveTab('manual');
     }
-  }, [defaultConfig.enableCamera]);
+  }, [defaultConfig.enableCamera, selectedCameraId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -108,14 +130,22 @@ export function BarcodeScanner({
         }
       }
 
-      // Get video stream
-      const stream = await navigator.mediaDevices.getUserMedia({
+      // Get video stream with selected camera
+      const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: 'environment', // Prefer back camera
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
-      });
+      };
+
+      // Use specific device ID if selected, otherwise prefer back camera
+      if (selectedCameraId) {
+        (constraints.video as MediaTrackConstraints).deviceId = { exact: selectedCameraId };
+      } else {
+        (constraints.video as MediaTrackConstraints).facingMode = 'environment';
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       streamRef.current = stream;
 
@@ -168,6 +198,25 @@ export function BarcodeScanner({
     };
 
     animationRef.current = requestAnimationFrame(scanFrame);
+  };
+
+  const switchCamera = async (deviceId: string) => {
+    // Stop current scanning if active
+    const wasScanning = isScanning;
+    if (wasScanning) {
+      stopScanning();
+    }
+
+    // Update selected camera
+    setSelectedCameraId(deviceId);
+
+    // Restart scanning with new camera if it was previously running
+    if (wasScanning) {
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => {
+        startScanning();
+      }, 100);
+    }
   };
 
   const handleBarcodeDetected = async (barcodeText: string, confidence = 1.0) => {
@@ -337,6 +386,28 @@ export function BarcodeScanner({
                     </Button>
                   )}
                 </div>
+
+                {/* Camera Selection */}
+                {cameraDevices.length > 1 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4 text-muted-foreground" />
+                      <label className="text-sm font-medium">Camera</label>
+                    </div>
+                    <Select value={selectedCameraId} onValueChange={switchCamera}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a camera" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cameraDevices.map((device) => (
+                          <SelectItem key={device.deviceId} value={device.deviceId}>
+                            {device.label || `Camera ${cameraDevices.indexOf(device) + 1}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Permission Status */}
                 {hasPermission === false && (
