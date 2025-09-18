@@ -2,6 +2,8 @@
 export { useAuthStore, initializeAuth } from './authStore';
 export { useUiStore } from './uiStore';
 export { useInventoryStore } from './inventoryStore';
+export { usePOSSessionStore } from './pos/posSessionStore';
+export { usePOSCartStore } from './pos/posCartStore';
 
 // Store types
 export type { UiState, Notification } from './uiStore';
