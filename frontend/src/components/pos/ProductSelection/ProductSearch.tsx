@@ -6,6 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { productService, type Product } from '@/services/productService';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
+import { BarcodeScanner } from '../BarcodeScanner/BarcodeScanner';
+import { barcodeService } from '@/services/pos/barcodeService';
+import type { BarcodeResult, BarcodeProductLookup } from '@/types/pos/barcode';
 
 interface ProductSearchProps {
   activeSessionId: string | null;
@@ -22,6 +25,7 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   const { addItem } = usePOSCartStore();
 
@@ -119,8 +123,43 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
   };
 
   const handleBarcodeScanner = () => {
-    // TODO: Implement barcode scanner integration
-    console.log('Barcode scanner not yet implemented');
+    setShowBarcodeScanner(true);
+  };
+
+  const handleBarcodeDetected = async (result: BarcodeResult, productLookup?: BarcodeProductLookup) => {
+    if (productLookup?.found && productLookup.productId) {
+      // Product found, add to cart directly
+      if (activeSessionId) {
+        addItem(activeSessionId, {
+          productId: productLookup.productId,
+          productName: productLookup.productName || 'Unknown Product',
+          productSku: result.text,
+          price: productLookup.price || 0,
+        });
+
+        // Create a mock product for the callback
+        const product: Product = {
+          id: productLookup.productId,
+          name: productLookup.productName || 'Unknown Product',
+          sku: result.text,
+          barcode: result.text,
+          retail_price: productLookup.price || 0,
+          quantity: 1,
+          is_active: true
+        };
+
+        onProductSelect?.(product);
+      }
+    } else {
+      // Product not found, use the barcode as search query
+      const formattedBarcode = barcodeService.formatBarcodeForDisplay(result.text, result.format);
+      setSearchQuery(formattedBarcode);
+
+      // Trigger search with the barcode
+      performSearch(result.text);
+    }
+
+    setShowBarcodeScanner(false);
   };
 
   return (
@@ -237,6 +276,18 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
           </Card>
         </div>
       )}
+
+      {/* Barcode Scanner Modal */}
+      <BarcodeScanner
+        isOpen={showBarcodeScanner}
+        onClose={() => setShowBarcodeScanner(false)}
+        onBarcodeDetected={handleBarcodeDetected}
+        config={{
+          autoClose: true,
+          beepOnSuccess: true,
+          vibrate: true
+        }}
+      />
     </div>
   );
 }
