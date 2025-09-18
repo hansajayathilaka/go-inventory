@@ -8,15 +8,11 @@ import { usePOSCartStore } from '@/stores/pos/posCartStore';
 
 interface ProductGridProps {
   activeSessionId: string | null;
-  searchQuery?: string;
-  selectedCategoryId?: string | null;
   onProductSelect?: (product: Product) => void;
 }
 
 export function ProductGrid({
   activeSessionId,
-  searchQuery = '',
-  selectedCategoryId,
   onProductSelect
 }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,16 +34,6 @@ export function ProductGrid({
         is_active: true
       };
 
-      // Add search query if provided
-      if (searchQuery.trim()) {
-        params.search = searchQuery.trim();
-      }
-
-      // Add category filter if selected
-      if (selectedCategoryId) {
-        params.category_id = parseInt(selectedCategoryId);
-      }
-
       const response = await productService.searchProducts(params);
 
       setProducts(prev => reset ? (response.products || []) : [...(prev || []), ...(response.products || [])]);
@@ -64,7 +50,7 @@ export function ProductGrid({
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery, selectedCategoryId]);
+  }, []);
 
   const getMockProducts = (): Product[] => [
     {
@@ -247,11 +233,7 @@ export function ProductGrid({
         <Package className="h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="font-semibold mb-2">No products found</h3>
         <p className="text-sm text-muted-foreground">
-          {searchQuery
-            ? `No products match "${searchQuery}"`
-            : selectedCategoryId
-            ? 'No products in this category'
-            : 'No products available'}
+          No products available. Use the search and filter options above to find products.
         </p>
       </div>
     );
