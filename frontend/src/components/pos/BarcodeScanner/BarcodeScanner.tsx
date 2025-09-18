@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, X, Smartphone, Keyboard, AlertCircle, CheckCircle, Scan, Settings } from 'lucide-react';
+import { Camera, X, Smartphone, Keyboard, AlertCircle, CheckCircle, Scan, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { barcodeService } from '@/services/pos/barcodeService';
 import type { BarcodeResult, BarcodeScannerConfig, BarcodeProductLookup } from '@/types/pos/barcode';
 
@@ -200,7 +199,16 @@ export function BarcodeScanner({
     animationRef.current = requestAnimationFrame(scanFrame);
   };
 
-  const switchCamera = async (deviceId: string) => {
+  const switchToNextCamera = async () => {
+    if (cameraDevices.length <= 1) return;
+
+    // Find current camera index
+    const currentIndex = cameraDevices.findIndex(device => device.deviceId === selectedCameraId);
+
+    // Get next camera (cycle to first if at end)
+    const nextIndex = (currentIndex + 1) % cameraDevices.length;
+    const nextDeviceId = cameraDevices[nextIndex].deviceId;
+
     // Stop current scanning if active
     const wasScanning = isScanning;
     if (wasScanning) {
@@ -208,7 +216,7 @@ export function BarcodeScanner({
     }
 
     // Update selected camera
-    setSelectedCameraId(deviceId);
+    setSelectedCameraId(nextDeviceId);
 
     // Restart scanning with new camera if it was previously running
     if (wasScanning) {
@@ -373,7 +381,7 @@ export function BarcodeScanner({
                 </div>
 
                 {/* Camera Controls */}
-                <div className="flex justify-center space-x-2">
+                <div className="flex justify-center items-center space-x-2">
                   {!isScanning ? (
                     <Button onClick={startScanning} className="flex items-center space-x-2">
                       <Camera className="h-4 w-4" />
@@ -385,27 +393,31 @@ export function BarcodeScanner({
                       <span>Stop Scanning</span>
                     </Button>
                   )}
+
+                  {/* Camera Switch Icon */}
+                  {cameraDevices.length > 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={switchToNextCamera}
+                      className="p-2"
+                      title={`Switch camera (${cameraDevices.length} available)`}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
-                {/* Camera Selection */}
-                {cameraDevices.length > 1 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Settings className="h-4 w-4 text-muted-foreground" />
-                      <label className="text-sm font-medium">Camera</label>
-                    </div>
-                    <Select value={selectedCameraId} onValueChange={switchCamera}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a camera" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cameraDevices.map((device) => (
-                          <SelectItem key={device.deviceId} value={device.deviceId}>
-                            {device.label || `Camera ${cameraDevices.indexOf(device) + 1}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Current Camera Indicator */}
+                {cameraDevices.length > 1 && selectedCameraId && (
+                  <div className="text-center">
+                    <Badge variant="secondary" className="text-xs">
+                      {(() => {
+                        const currentDevice = cameraDevices.find(device => device.deviceId === selectedCameraId);
+                        const currentIndex = cameraDevices.findIndex(device => device.deviceId === selectedCameraId);
+                        return currentDevice?.label || `Camera ${currentIndex + 1}`;
+                      })()}
+                    </Badge>
                   </div>
                 )}
 
