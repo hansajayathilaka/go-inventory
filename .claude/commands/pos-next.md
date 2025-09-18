@@ -1,6 +1,6 @@
 # pos-next
 
-POS Development Orchestrator - Manages tasks, assigns specialists, delegates work, and tracks progress.
+POS Development Orchestrator - Automatically implements the next task from the POS implementation plan with full error handling and testing.
 
 ## Usage
 ```
@@ -8,86 +8,106 @@ POS Development Orchestrator - Manages tasks, assigns specialists, delegates wor
 ```
 
 ## Description
-This is the central command that orchestrates your entire POS development workflow. It reads progress files, identifies next tasks, assigns them to appropriate specialists, tracks completion, and ensures quality through testing.
+This is the central command that automatically implements the next task from the POS development plan. It reads the plan, identifies the next unchecked task, implements it completely, handles all errors, and commits the changes.
 
 ## What it does:
-1. **Progress Analysis**: Reads `POS_SIMPLE_PLAN.md` and `POS_SIMPLE_PROGRESS.md` for current state
-2. **Task Breakdown**: Breaks large tasks into very small, detailed sub-tasks with exact specifications
-3. **Detailed Assignment**: Provides specialists with comprehensive task descriptions including:
-   - **Backend**: Exact database schema, API endpoints, request/response bodies, error codes
-   - **Frontend**: Component structure, TypeScript interfaces, user interactions, validation rules
-   - **Testing**: Specific test scenarios for both API calls and UI interactions
-4. **Work Coordination**: Manages handoffs between frontend, backend, and testing
-5. **Progress Tracking**: Updates progress files as micro-tasks are completed
-6. **Quality Gates**: Ensures comprehensive testing of both API and UI before task completion
-7. **Dependency Management**: Coordinates when frontend needs backend APIs or testing needs both
-8. **Commit Changes**: Commit the relevent changes with proper commit message
+1. **Plan Analysis**: Reads `POS_IMPLEMENTATION_PLAN.md` to identify current progress and next task
+2. **Task Implementation**: Automatically implements the identified task with complete code
+3. **Build Error Handling**: Detects and fixes TypeScript, compilation, and linting errors
+4. **API Development**: Creates missing backend APIs if required by frontend
+5. **Testing & Validation**: Runs comprehensive tests to ensure everything works
+6. **Error Resolution**: Automatically fixes runtime errors and API integration issues
+7. **Progress Tracking**: Updates the plan file with completed checkboxes
+8. **Automatic Commit**: Commits all changes with detailed commit messages
 
-## Team Specialists Available:
-- **`/pos-frontend-dev`**: React/TypeScript specialist for POS UI/UX
-- **`/pos-backend-dev`**: Go specialist for APIs and business logic  
-- **`/pos-tester`**: Testing specialist for both frontend and backend validation
+## Automated Workflow:
 
-## Assignment Logic:
-- **Frontend Work** → `/pos-frontend-dev`: React components, UI/UX, TypeScript, styling
-- **Backend Work** → `/pos-backend-dev`: Go APIs, database, business logic, auth
-- **Testing Work** → `/pos-tester`: Unit tests, integration tests, E2E validation
-- **Complex Features** → Multiple specialists in sequence with coordination
+### 1. Plan Reading & Task Selection
+- Parses `POS_IMPLEMENTATION_PLAN.md` to find current phase and progress
+- Identifies the first unchecked `[ ]` task in the active phase
+- Extracts task details and requirements
 
-## Workflow Examples:
+### 2. Implementation Strategy
+- **Frontend Tasks**: Creates React components, types, and UI logic
+- **Backend Tasks**: Develops Go APIs, handlers, and business logic
+- **Full-Stack Tasks**: Implements both frontend and backend in sequence
+- **Infrastructure Tasks**: Sets up routing, stores, and architecture
 
-### New Feature Development:
-1. **Backend First**: API endpoints and business logic
-2. **Frontend Second**: UI components consuming the APIs
-3. **Testing Last**: Comprehensive validation of the complete feature
+### 3. Error Handling Pipeline
+- **Build Errors**: Runs `npm run build` and fixes TypeScript/compilation issues
+- **Lint Errors**: Runs `npm run lint` and auto-fixes code style issues
+- **Runtime Errors**: Tests implementation and fixes API integration problems
+- **Missing APIs**: Creates backend endpoints if frontend needs them
 
-### Bug Fixes:
-1. **Analysis**: Determine if bug is frontend, backend, or integration
-2. **Assignment**: Route to appropriate specialist  
-3. **Testing**: Validate fix and check for regressions
+### 4. Testing & Validation
+- **Frontend Tests**: Component rendering, user interactions, state management
+- **Backend Tests**: API endpoints, business logic, error handling
+- **Integration Tests**: Full stack functionality, API-UI communication
+- **Build Validation**: Ensures no TypeScript errors or lint issues
 
-### Testing Cycles:
-1. **Development Complete**: All planned tasks finished
-2. **Full Testing**: `/pos-tester` runs comprehensive test suite
-3. **Issue Resolution**: Route any discovered issues back to developers
-4. **Final Validation**: Ensure all tests pass before release
+### 5. Progress Tracking & Completion
+- Updates `POS_IMPLEMENTATION_PLAN.md` by checking off completed tasks `[x]`
+- Creates detailed commit messages describing what was implemented
+- Automatically moves to next phase when current phase is complete
 
-## Example Detailed Task Assignments:
+## Example Execution Flow:
 
-### Backend Task Assignment:
-"📋 **Task**: Product Search API  
-**Assigning to**: Backend Developer  
-**Details**: 
-- Database: Add `search_vector` column to `products` table with GIN index
-- API: `GET /api/v1/products/search` with query params (q, category_id, limit, offset)
-- Response: JSON with products array, total_count, has_more fields
-- Validation: minimum 2 chars for search term, max 100 results
-- Errors: 400 for short term, 422 for invalid category, 401 for auth"
+### Step 1: Plan Analysis
+```
+📋 Reading POS_IMPLEMENTATION_PLAN.md...
+✅ Found Phase 1: Core Infrastructure (Foundation)
+🎯 Next Task: "Create POS layout and routing"
+```
 
-### Frontend Task Assignment:
-"🎨 **Task**: Product Search Component  
-**Assigning to**: Frontend Developer  
-**Details**:
-- Component: ProductSearch with onProductSelect prop and state for query/results/loading
-- TypeScript: ProductSearchProps and ProductSearchState interfaces
-- UI: Input with search icon, ScrollArea for results, Card for each item, Skeleton for loading
-- Interactions: 300ms debounce, arrow key navigation, enter to select, escape to clear
-- API: Call /api/v1/products/search with proper error handling and loading states"
+### Step 2: Implementation
+```
+🚀 Implementing POS layout and routing...
+📁 Creating /workspaces/tui-inventory/frontend/src/pages/POS.tsx
+📁 Creating /workspaces/tui-inventory/frontend/src/components/pos/POSLayout.tsx
+🔧 Updating App.tsx with POS routes
+📝 Adding POS System to sidebar navigation
+```
 
-### Testing Task Assignment:
-"🧪 **Task**: Test Product Search Feature  
-**Assigning to**: Tester  
-**Details**:
-- API Tests: curl commands for valid search, validation errors, auth failures, performance
-- UI Tests: React component tests for rendering, user interactions, error scenarios
-- Integration: E2E test with real API calls and UI interaction flow
-- Performance: Response time < 200ms, UI render < 50ms, no memory leaks"
+### Step 3: Error Resolution
+```
+🏗️ Running build to check for errors...
+❌ Found TypeScript error in POSLayout.tsx:15
+🔧 Fixing: Adding missing import for Button component
+✅ Build successful!
+```
 
-## Progress Management:
-- **Task Tracking**: Updates progress files with completion status
-- **Dependency Management**: Ensures prerequisites are met before starting tasks
-- **Quality Control**: No task marked complete until testing passes
-- **Handoff Coordination**: Manages work transitions between specialists
-- **Blocker Resolution**: Identifies and helps resolve development blockers
+### Step 4: API Creation (if needed)
+```
+🔍 Checking if backend APIs are needed...
+⚡ Frontend requires POS session API
+📡 Creating /workspaces/tui-inventory/internal/api/handlers/pos_session_handler.go
+🛠️ Adding routes to router.go
+✅ Backend APIs ready!
+```
 
-This single command replaces multiple management tools and acts as your intelligent development workflow orchestrator, ensuring the right expert handles each task while maintaining quality and progress tracking. If there is any missing APIs needed for the frontend, implement those APIs as well. At last frontend and backend should both sync together to give the correct output.
+### Step 5: Testing & Validation
+```
+🧪 Running tests...
+✅ Frontend build: PASSED
+✅ Backend build: PASSED
+✅ API integration: PASSED
+✅ UI functionality: PASSED
+```
+
+### Step 6: Commit & Progress Update
+```
+📝 Updating progress in POS_IMPLEMENTATION_PLAN.md
+✅ Task marked as complete: [x] Create POS layout and routing
+💾 Committing changes...
+🎉 Task completed successfully!
+```
+
+## Smart Features:
+
+- **Dependency Detection**: Automatically identifies when backend APIs are needed
+- **Error Recovery**: Continues implementation even after fixing multiple errors
+- **Progress Preservation**: Never loses progress, always updates the plan file
+- **Quality Assurance**: Ensures every implementation is tested and working
+- **Full Automation**: Requires no manual intervention once started
+
+This command transforms your POS development from manual task management into a fully automated implementation pipeline that handles everything from code generation to testing to progress tracking.
