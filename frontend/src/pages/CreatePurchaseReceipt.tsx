@@ -87,9 +87,9 @@ export function CreatePurchaseReceipt() {
       setFormData({
         supplier_id: existingReceipt.supplier_id || '',
         purchase_date: formattedDate,
-        supplier_bill_number: '',
-        bill_discount_amount: 0,
-        bill_discount_percentage: 0,
+        supplier_bill_number: existingReceipt.supplier_bill_number || '',
+        bill_discount_amount: existingReceipt.bill_discount_amount || 0,
+        bill_discount_percentage: existingReceipt.bill_discount_percentage || 0,
         notes: existingReceipt.notes || '',
         items: existingReceipt.items?.map(item => ({
           product_id: item.product_id,
@@ -226,7 +226,7 @@ export function CreatePurchaseReceipt() {
     }
   }
 
-  const handleComplete = async () => {
+  const handleCompleteOrder = async () => {
     if (!validateForm()) return
 
     setIsSubmitting(true)
@@ -236,7 +236,7 @@ export function CreatePurchaseReceipt() {
         // Convert date to ISO datetime format
         purchase_date: new Date(formData.purchase_date + 'T00:00:00Z').toISOString(),
         total_amount: totalAmount,
-        status: 'completed' // Complete immediately
+        status: 'pending' // Create as pending first, then workflow manages progression
       }
 
       if (editingId) {
@@ -256,7 +256,7 @@ export function CreatePurchaseReceipt() {
   // Show loading state when loading existing receipt
   if (isLoadingReceipt && editingId) {
     return (
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="p-6 space-y-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Loading purchase receipt...</div>
         </div>
@@ -265,7 +265,7 @@ export function CreatePurchaseReceipt() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -601,7 +601,7 @@ export function CreatePurchaseReceipt() {
                 <span>{formatCurrency(totalAmount)}</span>
               </div>
 
-              <div className="space-y-2 pt-4">
+              <div className="space-y-3 pt-4">
                 <Button
                   onClick={handleSaveDraft}
                   disabled={isSubmitting || formData.items.length === 0}
@@ -613,20 +613,27 @@ export function CreatePurchaseReceipt() {
                 </Button>
 
                 <Button
-                  onClick={handleComplete}
+                  onClick={handleCompleteOrder}
                   disabled={isSubmitting || formData.items.length === 0}
                   className="w-full"
                 >
                   <Send className="h-4 w-4 mr-2" />
-                  {isSubmitting ? 'Updating...' : (editingId ? 'Update Order' : 'Complete Order')}
+                  {isSubmitting ? 'Processing...' : (editingId ? 'Update Order' : 'Complete Order')}
                 </Button>
               </div>
 
-              <div className="text-sm text-muted-foreground pt-2">
-                <Badge variant="outline" className="mb-2">
-                  Draft Mode
-                </Badge>
-                <p>Save as draft to continue editing later, or complete to finalize and update inventory.</p>
+              <div className="text-sm text-muted-foreground pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline">
+                    {editingId ? 'Edit Mode' : 'Create Mode'}
+                  </Badge>
+                </div>
+                <p className="text-xs leading-relaxed">
+                  {editingId
+                    ? 'Update draft to save changes, or update order to finalize modifications.'
+                    : 'Save as draft to continue editing later, or complete order to create the purchase receipt.'
+                  }
+                </p>
               </div>
             </CardContent>
           </Card>

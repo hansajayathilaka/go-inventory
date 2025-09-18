@@ -78,31 +78,32 @@ export function ViewPurchaseReceipt() {
     navigate(editUrl);
   }
 
-  const handleReceive = async () => {
-    console.log('📦 [ViewPurchaseReceipt] Receive button clicked:', {
+  const handleMarkAsRead = async () => {
+    console.log('👁️ [ViewPurchaseReceipt] Mark as Read button clicked:', {
       canEdit,
       hasReceipt: !!receipt,
       receiptNumber: receipt?.receipt_number
     });
 
     if (!canEdit || !receipt) {
-      console.warn('⚠️ [ViewPurchaseReceipt] Receive blocked:', { canEdit, hasReceipt: !!receipt });
+      console.warn('⚠️ [ViewPurchaseReceipt] Mark as Read blocked:', { canEdit, hasReceipt: !!receipt });
       return;
     }
 
-    const confirmed = confirm(`Mark goods as received for ${receipt.receipt_number}?`);
-    console.log('🤔 [ViewPurchaseReceipt] Receive confirmation:', confirmed);
+    const confirmed = confirm(`Mark receipt ${receipt.receipt_number} as read?`);
+    console.log('🤔 [ViewPurchaseReceipt] Mark as Read confirmation:', confirmed);
 
     if (confirmed) {
       try {
         console.log('📡 [ViewPurchaseReceipt] Calling receivePurchaseReceipt.mutateAsync...');
         await receivePurchaseReceipt.mutateAsync(receipt.id);
-        console.log('✅ [ViewPurchaseReceipt] Receive operation successful');
-      } catch (error: any) {
-        console.error('❌ [ViewPurchaseReceipt] Failed to receive goods:', {
-          error: error.message,
-          response: error.response?.data,
-          status: error.response?.status
+        console.log('✅ [ViewPurchaseReceipt] Mark as Read operation successful');
+      } catch (error: unknown) {
+        const errorObj = error as { response?: { data?: unknown; status?: number } };
+        console.error('❌ [ViewPurchaseReceipt] Failed to mark as read:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          response: errorObj?.response?.data,
+          status: errorObj?.response?.status
         });
       }
     }
@@ -128,11 +129,12 @@ export function ViewPurchaseReceipt() {
         console.log('📡 [ViewPurchaseReceipt] Calling completePurchaseReceipt.mutateAsync...');
         await completePurchaseReceipt.mutateAsync(receipt.id);
         console.log('✅ [ViewPurchaseReceipt] Complete operation successful');
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorObj = error as { response?: { data?: unknown; status?: number } };
         console.error('❌ [ViewPurchaseReceipt] Failed to complete purchase receipt:', {
-          error: error.message,
-          response: error.response?.data,
-          status: error.response?.status
+          error: error instanceof Error ? error.message : 'Unknown error',
+          response: errorObj?.response?.data,
+          status: errorObj?.response?.status
         });
       }
     }
@@ -158,11 +160,12 @@ export function ViewPurchaseReceipt() {
         console.log('📡 [ViewPurchaseReceipt] Calling cancelPurchaseReceipt.mutateAsync...');
         await cancelPurchaseReceipt.mutateAsync(receipt.id);
         console.log('✅ [ViewPurchaseReceipt] Cancel operation successful');
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorObj = error as { response?: { data?: unknown; status?: number } };
         console.error('❌ [ViewPurchaseReceipt] Failed to cancel purchase receipt:', {
-          error: error.message,
-          response: error.response?.data,
-          status: error.response?.status
+          error: error instanceof Error ? error.message : 'Unknown error',
+          response: errorObj?.response?.data,
+          status: errorObj?.response?.status
         });
       }
     }
@@ -197,9 +200,13 @@ export function ViewPurchaseReceipt() {
 
   // Calculate totals
   const subtotal = receipt.items?.reduce((sum, item) => sum + (item.line_total || item.total_cost || 0), 0) || 0
+  const discountAmount = receipt.bill_discount_amount || 0
+  const discountPercentage = receipt.bill_discount_percentage || 0
+  const percentageDiscount = subtotal * (discountPercentage / 100)
+  const totalDiscount = discountAmount + percentageDiscount
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -219,49 +226,64 @@ export function ViewPurchaseReceipt() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Status Action Buttons */}
+        <div className="flex items-center gap-3">
+          {/* Primary Action Buttons */}
           {canEdit && receipt.status === 'pending' && (
-            <Button
-              onClick={handleReceive}
-              variant="outline"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-            >
-              <Clock className="h-4 w-4" />
-              Mark as Received
-            </Button>
-          )}
-
-          {canEdit && receipt.status === 'received' && (
-            <Button
-              onClick={handleComplete}
-              variant="outline"
-              className="flex items-center gap-2 text-green-600 hover:text-green-700"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Complete Order
-            </Button>
-          )}
-
-          {canEdit && (receipt.status === 'pending' || receipt.status === 'received') && (
-            <>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleMarkAsRead}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
+              >
+                <Clock className="h-4 w-4" />
+                Mark as Read
+              </Button>
               <Button
                 onClick={handleCancel}
                 variant="outline"
-                className="flex items-center gap-2 text-orange-600 hover:text-orange-700"
+                size="sm"
+                className="flex items-center gap-2 text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300"
               >
                 <XCircle className="h-4 w-4" />
                 Cancel Order
               </Button>
+            </div>
+          )}
 
+          {canEdit && receipt.status === 'received' && (
+            <div className="flex items-center gap-2">
               <Button
-                onClick={handleEdit}
-                className="flex items-center gap-2"
+                onClick={handleComplete}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
               >
-                <Edit className="h-4 w-4" />
-                Edit Receipt
+                <CheckCircle className="h-4 w-4" />
+                Complete Order
               </Button>
-            </>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300"
+              >
+                <XCircle className="h-4 w-4" />
+                Cancel Order
+              </Button>
+            </div>
+          )}
+
+          {/* Edit button - always visible for editable statuses */}
+          {canEdit && (receipt.status === 'pending' || receipt.status === 'received') && (
+            <Button
+              onClick={handleEdit}
+              className="flex items-center gap-2"
+              size="sm"
+            >
+              <Edit className="h-4 w-4" />
+              Edit Receipt
+            </Button>
           )}
         </div>
       </div>
@@ -292,6 +314,13 @@ export function ViewPurchaseReceipt() {
                   </div>
                 </div>
               </div>
+
+              {receipt.supplier_bill_number && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Supplier Bill Number</label>
+                  <div className="text-lg font-medium">{receipt.supplier_bill_number}</div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -460,6 +489,26 @@ export function ViewPurchaseReceipt() {
                 <span>Subtotal:</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
+
+              {/* Display discounts if any */}
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount (Amount):</span>
+                  <span>-{formatCurrency(discountAmount)}</span>
+                </div>
+              )}
+              {discountPercentage > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount ({discountPercentage}%):</span>
+                  <span>-{formatCurrency(percentageDiscount)}</span>
+                </div>
+              )}
+              {totalDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Total Discount:</span>
+                  <span>-{formatCurrency(totalDiscount)}</span>
+                </div>
+              )}
 
               <Separator />
 

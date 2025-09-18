@@ -113,7 +113,8 @@ func (h *PurchaseReceiptHandler) GetPurchaseReceipt(c *gin.Context) {
 	}
 
 	response := dto.ToPurchaseReceiptResponse(pr)
-	c.JSON(http.StatusOK, response)
+	standardResponse := dto.CreateSuccessResponse(response, "Purchase receipt retrieved successfully")
+	c.JSON(http.StatusOK, standardResponse)
 }
 
 // UpdatePurchaseReceipt godoc

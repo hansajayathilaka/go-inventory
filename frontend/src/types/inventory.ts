@@ -125,6 +125,9 @@ export interface PurchaseReceipt {
   received_date?: string;
   total_amount: number;
   notes?: string;
+  supplier_bill_number?: string;
+  bill_discount_amount?: number;
+  bill_discount_percentage?: number;
   created_at: string;
   updated_at: string;
 

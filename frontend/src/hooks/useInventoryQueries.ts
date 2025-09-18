@@ -711,8 +711,8 @@ export function usePurchaseReceipts(params?: {
         ]);
 
         console.log('✅ [usePurchaseReceipts] API calls completed:', {
-          receiptsStatus: receiptsResponse.status,
-          suppliersStatus: suppliersResponse.status || 'fallback'
+          receiptsStatus: (receiptsResponse as any).status,
+          suppliersStatus: (suppliersResponse as any).status || 'fallback'
         });
 
         // Handle different response structures
@@ -767,12 +767,15 @@ export function usePurchaseReceipts(params?: {
           };
         });
 
-        const result = {
+        const result: PaginatedResponse<PurchaseReceipt> = {
           data: receiptsWithSuppliers,
           pagination: (receiptsResponse.data as any)?.pagination || {
             page: 1,
+            limit: receiptsWithSuppliers.length,
             total: receiptsWithSuppliers.length,
-            total_pages: 1
+            total_pages: 1,
+            has_next: false,
+            has_prev: false
           }
         };
 
@@ -794,20 +797,7 @@ export function usePurchaseReceipts(params?: {
         throw error;
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes - purchase receipts change more frequently
-    onError: (error: any) => {
-      console.error('🔥 [usePurchaseReceipts] React Query onError triggered:', {
-        error: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-    },
-    onSuccess: (data: PaginatedResponse<PurchaseReceipt>) => {
-      console.log('🎉 [usePurchaseReceipts] React Query onSuccess triggered:', {
-        receiptsCount: data.data.length,
-        pagination: data.pagination
-      });
-    }
+    staleTime: 2 * 60 * 1000 // 2 minutes - purchase receipts change more frequently
   });
 }
 
@@ -1009,23 +999,25 @@ export function usePurchaseReceipt(id: string) {
         ]);
 
         console.log('✅ [usePurchaseReceipt] API calls completed:', {
-          receiptStatus: receiptResponse.status,
+          receiptStatus: (receiptResponse as any).status,
           suppliersCount: Array.isArray(suppliersResponse.data) ? suppliersResponse.data.length : 'unknown',
           productsCount: Array.isArray(productsResponse.data) ? productsResponse.data.length : 'unknown'
         });
 
-        // Handle both wrapped and direct response formats
-        const data = (receiptResponse.data as any)?.data || receiptResponse.data;
-        console.log('📦 [usePurchaseReceipt] Raw receipt data:', {
+        // Now both individual and list APIs use consistent wrapped response format
+        const data = receiptResponse?.data as PurchaseReceipt;
+
+        console.log('📦 [usePurchaseReceipt] Processed receipt data:', {
           hasData: !!data,
           dataKeys: data ? Object.keys(data) : [],
           id: data?.id,
           supplier_id: data?.supplier_id,
-          itemsCount: data?.items?.length || 0
+          itemsCount: data?.items?.length || 0,
+          responseFormat: 'standardized_wrapped'
         });
 
         if (!data || !data.id) {
-          console.error('❌ [usePurchaseReceipt] Invalid receipt data received:', data);
+          console.error('❌ [usePurchaseReceipt] Invalid receipt data received:', { receiptResponse, data });
           throw new Error('Purchase receipt not found');
         }
 
@@ -1107,20 +1099,7 @@ export function usePurchaseReceipt(id: string) {
     },
     enabled: !!id,
     retry: 2, // Retry failed requests 2 times
-    staleTime: 1 * 60 * 1000, // 1 minute
-    onError: (error: any) => {
-      console.error('🔥 [usePurchaseReceipt] React Query onError triggered:', {
-        error: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-    },
-    onSuccess: (data: PurchaseReceipt) => {
-      console.log('🎉 [usePurchaseReceipt] React Query onSuccess triggered:', {
-        id: data.id,
-        itemsCount: data.items?.length || 0
-      });
-    }
+    staleTime: 1 * 60 * 1000 // 1 minute
   });
 }
 
