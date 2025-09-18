@@ -32,9 +32,9 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter states
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [stockFilter, setStockFilter] = useState<string>('');
-  const [priceRange, setPriceRange] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
+  const [stockFilter, setStockFilter] = useState<string>('all');
+  const [priceRange, setPriceRange] = useState<string>('all');
   const [categories, setCategories] = useState<Category[]>([]);
 
   const { addItem } = usePOSCartStore();
@@ -74,11 +74,11 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
     try {
       let results: Product[] = [];
 
-      if (query.trim() || selectedCategoryId || stockFilter || priceRange) {
+      if (query.trim() || selectedCategoryId !== 'all' || stockFilter !== 'all' || priceRange !== 'all') {
         results = await productService.posLookup(query || '', 20);
 
         // Apply client-side filters
-        if (stockFilter) {
+        if (stockFilter !== 'all') {
           results = results.filter(product => {
             const stock = product.quantity || product.stock_quantity || 0;
             switch (stockFilter) {
@@ -90,11 +90,11 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
           });
         }
 
-        if (selectedCategoryId) {
+        if (selectedCategoryId !== 'all') {
           results = results.filter(product => (product as any).category_id === selectedCategoryId);
         }
 
-        if (priceRange) {
+        if (priceRange !== 'all') {
           const getPrice = (product: Product) => product.retail_price || product.price || 0;
           results = results.filter(product => {
             switch (priceRange) {
@@ -133,12 +133,12 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
   }, [searchQuery, selectedCategoryId, stockFilter, priceRange, performSearch]);
 
   const clearAllFilters = () => {
-    setSelectedCategoryId('');
-    setStockFilter('');
-    setPriceRange('');
+    setSelectedCategoryId('all');
+    setStockFilter('all');
+    setPriceRange('all');
   };
 
-  const hasActiveFilters = selectedCategoryId || stockFilter || priceRange;
+  const hasActiveFilters = selectedCategoryId !== 'all' || stockFilter !== 'all' || priceRange !== 'all';
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showResults || searchResults.length === 0) return;
@@ -283,7 +283,7 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
           <span>Filters</span>
           {hasActiveFilters && (
             <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-xs">
-              {[selectedCategoryId, stockFilter, priceRange].filter(Boolean).length}
+              {[selectedCategoryId, stockFilter, priceRange].filter(val => val !== 'all').length}
             </Badge>
           )}
         </Button>
@@ -304,7 +304,7 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
@@ -325,7 +325,7 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
                   <SelectValue placeholder="All items" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All items</SelectItem>
+                  <SelectItem value="all">All items</SelectItem>
                   <SelectItem value="in_stock">In Stock</SelectItem>
                   <SelectItem value="low_stock">Low Stock (≤10)</SelectItem>
                   <SelectItem value="out_of_stock">Out of Stock</SelectItem>
@@ -344,7 +344,7 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
                   <SelectValue placeholder="All prices" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All prices</SelectItem>
+                  <SelectItem value="all">All prices</SelectItem>
                   <SelectItem value="under_10">Under $10</SelectItem>
                   <SelectItem value="10_50">$10 - $50</SelectItem>
                   <SelectItem value="50_100">$50 - $100</SelectItem>
@@ -358,17 +358,17 @@ export function ProductSearch({ activeSessionId, onProductSelect }: ProductSearc
           {hasActiveFilters && (
             <div className="mt-4 flex justify-between items-center">
               <div className="flex space-x-2">
-                {selectedCategoryId && (
+                {selectedCategoryId !== 'all' && (
                   <Badge variant="outline">
                     Category: {categories.find(c => c.id === selectedCategoryId)?.name}
                   </Badge>
                 )}
-                {stockFilter && (
+                {stockFilter !== 'all' && (
                   <Badge variant="outline">
                     Stock: {stockFilter.replace('_', ' ')}
                   </Badge>
                 )}
-                {priceRange && (
+                {priceRange !== 'all' && (
                   <Badge variant="outline">
                     Price: {priceRange.replace('_', ' - $')}
                   </Badge>
