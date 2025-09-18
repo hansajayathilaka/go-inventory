@@ -98,7 +98,9 @@
       "mcp__playwright__browser_tabs",
       "Bash(killall:*)",
       "Bash(awk:*)",
-      "Bash(xargs -r kill -9)"
+      "Bash(xargs -r kill -9)",
+      "Bash(sqlite3:*)",
+      "Bash(jq:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,13 +4,13 @@ export interface LoginCredentials {
 }
 
 export interface User {
-  id: number;
+  id: string; // UUID from backend
   username: string;
   email: string;
   role: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string; // Backend uses snake_case
+  updated_at: string; // Backend uses snake_case
+  last_login?: string; // Optional field from backend
 }
 
 export interface AuthResponse {

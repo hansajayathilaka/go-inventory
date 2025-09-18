@@ -678,39 +678,299 @@ export function usePurchaseReceipts(params?: {
   return useQuery({
     queryKey: [...QUERY_KEYS.purchaseReceipts, params],
     queryFn: async (): Promise<PaginatedResponse<PurchaseReceipt>> => {
-      const queryString = params ? '?' + new URLSearchParams(
-        Object.entries(params).reduce((acc, [key, value]) => {
-          if (value !== undefined && value !== null) {
-            acc[key] = value.toString();
+      console.log('📋 [usePurchaseReceipts] Starting query with params:', params);
+
+      try {
+        const queryString = params ? '?' + new URLSearchParams(
+          Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== undefined && value !== null) {
+              acc[key] = value.toString();
+            }
+            return acc;
+          }, {} as Record<string, string>)
+        ).toString() : '';
+
+        console.log('🔗 [usePurchaseReceipts] Query string:', queryString);
+        console.log('📡 [usePurchaseReceipts] Making parallel API calls...');
+
+        // Fetch purchase receipts and suppliers in parallel
+        const [receiptsResponse, suppliersResponse] = await Promise.all([
+          apiClient.get(`/purchase-receipts${queryString}`).catch((error) => {
+            console.error('❌ [usePurchaseReceipts] Purchase receipts API call failed:', {
+              url: `/purchase-receipts${queryString}`,
+              error: error.response?.data || error.message,
+              status: error.response?.status,
+              statusText: error.response?.statusText
+            });
+            throw error;
+          }),
+          apiClient.get('/suppliers?limit=1000').catch((error) => {
+            console.warn('⚠️ [usePurchaseReceipts] Suppliers API call failed, using fallback:', error.message);
+            return { data: [] };
+          })
+        ]);
+
+        console.log('✅ [usePurchaseReceipts] API calls completed:', {
+          receiptsStatus: receiptsResponse.status,
+          suppliersStatus: suppliersResponse.status || 'fallback'
+        });
+
+        // Handle different response structures
+        const receiptsData = Array.isArray(receiptsResponse.data)
+          ? receiptsResponse.data
+          : ((receiptsResponse.data as any)?.data || []);
+        const suppliersData = Array.isArray(suppliersResponse.data)
+          ? suppliersResponse.data
+          : ((suppliersResponse.data as any)?.data || []);
+
+        console.log('📊 [usePurchaseReceipts] Data structure analysis:', {
+          receiptsIsArray: Array.isArray(receiptsResponse.data),
+          receiptsDataLength: receiptsData.length,
+          suppliersDataLength: suppliersData.length,
+          receiptsSample: receiptsData[0] ? Object.keys(receiptsData[0]) : 'No receipts',
+          paginationData: (receiptsResponse.data as any)?.pagination
+        });
+
+        // Create supplier lookup map
+        const supplierMap = new Map();
+        suppliersData.forEach((supplier: any) => {
+          supplierMap.set(supplier.id, supplier);
+        });
+
+        console.log('🏢 [usePurchaseReceipts] Supplier map created:', {
+          supplierCount: supplierMap.size,
+          supplierIds: Array.from(supplierMap.keys()).slice(0, 5) // Show first 5
+        });
+
+        // Join purchase receipts with suppliers and transform field names
+        const receiptsWithSuppliers = receiptsData.map((receipt: any, index: number) => {
+          const supplier = receipt.supplier_id ? supplierMap.get(receipt.supplier_id) : null;
+
+          if (index < 3) { // Log first 3 receipts for debugging
+            console.log(`📄 [usePurchaseReceipts] Processing receipt ${index + 1}:`, {
+              id: receipt.id,
+              supplier_id: receipt.supplier_id,
+              supplierFound: !!supplier,
+              supplierName: supplier?.name || 'None',
+              purchase_date: receipt.purchase_date,
+              status: receipt.status
+            });
           }
-          return acc;
-        }, {} as Record<string, string>)
-      ).toString() : '';
-      
-      // Fetch purchase receipts and suppliers in parallel
-      const [receiptsResponse, suppliersResponse] = await Promise.all([
-        apiClient.get<PaginatedResponse<PurchaseReceipt>>(`/purchase-receipts${queryString}`),
-        apiClient.get<Supplier[]>('/suppliers?limit=1000') // Get all suppliers for lookup
-      ]);
-      
-      // Create supplier lookup map
-      const supplierMap = new Map();
-      suppliersResponse.data.forEach((supplier: Supplier) => {
-        supplierMap.set(supplier.id, supplier);
-      });
-      
-      // Join purchase receipts with suppliers
-      const receiptsWithSuppliers = receiptsResponse.data.data.map((receipt: PurchaseReceipt) => ({
-        ...receipt,
-        supplier: receipt.supplier_id ? supplierMap.get(receipt.supplier_id) : null
-      }));
-      
-      return {
-        data: receiptsWithSuppliers,
-        pagination: receiptsResponse.data.pagination
-      };
+
+          return {
+            ...receipt,
+            // Transform field names to match expected interface
+            purchase_date: receipt.purchase_date,
+            order_date: receipt.purchase_date || receipt.order_date,
+            expected_date: receipt.expected_date,
+            supplier: supplier
+          };
+        });
+
+        const result = {
+          data: receiptsWithSuppliers,
+          pagination: (receiptsResponse.data as any)?.pagination || {
+            page: 1,
+            total: receiptsWithSuppliers.length,
+            total_pages: 1
+          }
+        };
+
+        console.log('🎯 [usePurchaseReceipts] Query completed successfully:', {
+          totalReceipts: result.data.length,
+          currentPage: result.pagination.page,
+          totalPages: result.pagination.total_pages,
+          totalCount: result.pagination.total
+        });
+
+        return result;
+      } catch (error: any) {
+        console.error('💥 [usePurchaseReceipts] Query failed:', {
+          error: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          stack: error.stack
+        });
+        throw error;
+      }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - purchase receipts change more frequently
+    onError: (error: any) => {
+      console.error('🔥 [usePurchaseReceipts] React Query onError triggered:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+    },
+    onSuccess: (data: PaginatedResponse<PurchaseReceipt>) => {
+      console.log('🎉 [usePurchaseReceipts] React Query onSuccess triggered:', {
+        receiptsCount: data.data.length,
+        pagination: data.pagination
+      });
+    }
+  });
+}
+
+export function useCreatePurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/purchase-receipts', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      addNotification({
+        type: 'success',
+        title: 'Purchase receipt created',
+        message: 'Purchase receipt has been created successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to create purchase receipt',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useUpdatePurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/purchase-receipts/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      addNotification({
+        type: 'success',
+        title: 'Purchase receipt updated',
+        message: 'Purchase receipt has been updated successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to update purchase receipt',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useDeletePurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/purchase-receipts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      addNotification({
+        type: 'success',
+        title: 'Purchase receipt deleted',
+        message: 'Purchase receipt has been deleted successfully',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to delete purchase receipt',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useReceivePurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post(`/purchase-receipts/${id}/receive`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      addNotification({
+        type: 'success',
+        title: 'Goods received',
+        message: 'Purchase receipt marked as received',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to receive goods',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useCompletePurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post(`/purchase-receipts/${id}/complete`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.products });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      addNotification({
+        type: 'success',
+        title: 'Purchase receipt completed',
+        message: 'Purchase receipt completed and inventory updated',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to complete purchase receipt',
+        message: error.response?.data?.message || error.message,
+      });
+    },
+  });
+}
+
+export function useCancelPurchaseReceipt() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useUiStore();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post(`/purchase-receipts/${id}/cancel`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.purchaseReceipts });
+      addNotification({
+        type: 'success',
+        title: 'Purchase receipt cancelled',
+        message: 'Purchase receipt has been cancelled',
+      });
+    },
+    onError: (error: any) => {
+      addNotification({
+        type: 'error',
+        title: 'Failed to cancel purchase receipt',
+        message: error.response?.data?.message || error.message,
+      });
+    },
   });
 }
 
@@ -718,10 +978,149 @@ export function usePurchaseReceipt(id: string) {
   return useQuery({
     queryKey: QUERY_KEYS.purchaseReceipt(id),
     queryFn: async (): Promise<PurchaseReceipt> => {
-      const response = await apiClient.get<PurchaseReceipt>(`/purchase-receipts/${id}`);
-      return response.data;
+      console.log('🔍 [usePurchaseReceipt] Starting query for ID:', id);
+
+      if (!id) {
+        console.error('❌ [usePurchaseReceipt] No ID provided');
+        throw new Error('Purchase receipt ID is required');
+      }
+
+      try {
+        console.log('📡 [usePurchaseReceipt] Making API calls...');
+
+        const [receiptResponse, suppliersResponse, productsResponse] = await Promise.all([
+          apiClient.get(`/purchase-receipts/${id}`).catch((error) => {
+            console.error('❌ [usePurchaseReceipt] Receipt API call failed:', {
+              url: `/purchase-receipts/${id}`,
+              error: error.response?.data || error.message,
+              status: error.response?.status,
+              statusText: error.response?.statusText
+            });
+            throw error;
+          }),
+          apiClient.get('/suppliers?limit=1000').catch((error) => {
+            console.warn('⚠️ [usePurchaseReceipt] Suppliers API call failed, using fallback:', error.message);
+            return { data: [] };
+          }),
+          apiClient.get('/products?limit=1000').catch((error) => {
+            console.warn('⚠️ [usePurchaseReceipt] Products API call failed, using fallback:', error.message);
+            return { data: [] };
+          })
+        ]);
+
+        console.log('✅ [usePurchaseReceipt] API calls completed:', {
+          receiptStatus: receiptResponse.status,
+          suppliersCount: Array.isArray(suppliersResponse.data) ? suppliersResponse.data.length : 'unknown',
+          productsCount: Array.isArray(productsResponse.data) ? productsResponse.data.length : 'unknown'
+        });
+
+        // Handle both wrapped and direct response formats
+        const data = (receiptResponse.data as any)?.data || receiptResponse.data;
+        console.log('📦 [usePurchaseReceipt] Raw receipt data:', {
+          hasData: !!data,
+          dataKeys: data ? Object.keys(data) : [],
+          id: data?.id,
+          supplier_id: data?.supplier_id,
+          itemsCount: data?.items?.length || 0
+        });
+
+        if (!data || !data.id) {
+          console.error('❌ [usePurchaseReceipt] Invalid receipt data received:', data);
+          throw new Error('Purchase receipt not found');
+        }
+
+        // Get suppliers and products data
+        const suppliers = Array.isArray(suppliersResponse.data)
+          ? suppliersResponse.data
+          : ((suppliersResponse.data as any)?.data || []);
+        const products = Array.isArray(productsResponse.data)
+          ? productsResponse.data
+          : ((productsResponse.data as any)?.data || []);
+
+        console.log('📊 [usePurchaseReceipt] Processing reference data:', {
+          suppliersCount: suppliers.length,
+          productsCount: products.length,
+          receiptSupplierId: data.supplier_id
+        });
+
+        // Find the supplier for this receipt
+        const supplier = suppliers.find((s: any) => s.id === data.supplier_id);
+        console.log('🏢 [usePurchaseReceipt] Supplier lookup:', {
+          found: !!supplier,
+          supplierName: supplier?.name || 'Not found'
+        });
+
+        // Transform the response to match the interface
+        const transformedReceipt: PurchaseReceipt = {
+          ...data,
+          // Map purchase_date to order_date for compatibility
+          purchase_date: data.purchase_date,
+          order_date: data.purchase_date || data.order_date,
+          // Add supplier data
+          supplier: supplier || null,
+          // Transform items to match interface
+          items: (data.items || []).map((item: any, index: number) => {
+            const product = products.find((p: any) => p.id === item.product_id);
+            console.log(`🛍️ [usePurchaseReceipt] Processing item ${index + 1}:`, {
+              productId: item.product_id,
+              productFound: !!product,
+              productName: product?.name || 'Not found',
+              quantity: item.quantity,
+              unitCost: item.unit_cost,
+              lineTotal: item.line_total
+            });
+
+            return {
+              ...item,
+              // Map backend fields to frontend interface
+              quantity: item.quantity,
+              unit_cost: item.unit_cost,
+              line_total: item.line_total,
+              // Add aliases for backward compatibility
+              quantity_ordered: item.quantity,
+              quantity_received: item.quantity,
+              total_cost: item.line_total,
+              product: product || null
+            };
+          })
+        };
+
+        console.log('🎯 [usePurchaseReceipt] Transformation complete:', {
+          id: transformedReceipt.id,
+          purchase_date: transformedReceipt.purchase_date,
+          order_date: transformedReceipt.order_date,
+          supplier: transformedReceipt.supplier?.name || 'None',
+          itemsCount: transformedReceipt.items?.length || 0,
+          status: transformedReceipt.status
+        });
+
+        return transformedReceipt;
+      } catch (error: any) {
+        console.error('💥 [usePurchaseReceipt] Query failed:', {
+          error: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          stack: error.stack
+        });
+        throw error;
+      }
     },
     enabled: !!id,
+    retry: 2, // Retry failed requests 2 times
+    staleTime: 1 * 60 * 1000, // 1 minute
+    onError: (error: any) => {
+      console.error('🔥 [usePurchaseReceipt] React Query onError triggered:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+    },
+    onSuccess: (data: PurchaseReceipt) => {
+      console.log('🎉 [usePurchaseReceipt] React Query onSuccess triggered:', {
+        id: data.id,
+        itemsCount: data.items?.length || 0
+      });
+    }
   });
 }
 

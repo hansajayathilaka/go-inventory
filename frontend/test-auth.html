@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <button onclick="login()">Login as Admin</button>
+    <button onclick="testAPI()">Test Purchase Receipts API</button>
+    <button onclick="clearAuth()">Clear Auth</button>
+    <div id="result"></div>
+
+    <script>
+        async function login() {
+            try {
+                const response = await fetch('http://localhost:9090/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store token in localStorage like the real app
+                    localStorage.setItem('auth_token', data.data.token);
+
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: green;">Login successful!</p>
+                        <p>Token stored in localStorage</p>
+                        <p>User: ${data.data.user.username} (${data.data.user.role})</p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Login failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testAPI() {
+            const token = localStorage.getItem('auth_token');
+
+            if (!token) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">No token found. Please login first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:9090/api/v1/purchase-receipts?page=1&limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: green;">API call successful!</p>
+                        <p>Found ${data.data.length} purchase receipts</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">API call failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            document.getElementById('result').innerHTML = '<p>Authentication cleared.</p>';
+        }
+
+        // Check auth on load
+        window.onload = function() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                document.getElementById('result').innerHTML = '<p style="color: blue;">Found existing token in localStorage</p>';
+            } else {
+                document.getElementById('result').innerHTML = '<p>No token found. Please login.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

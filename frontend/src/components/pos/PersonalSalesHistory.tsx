@@ -56,7 +56,7 @@ export function PersonalSalesHistory({
   })
   const [searchTerm, setSearchTerm] = useState('')
 
-  const effectiveCashierId = cashierId || user?.id
+  const effectiveCashierId = cashierId || (user?.id ? Number(user.id) : undefined)
 
   // Predefined date filters
   const dateFilters: DateFilter[] = [

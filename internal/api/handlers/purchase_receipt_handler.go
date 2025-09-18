@@ -46,15 +46,22 @@ func (h *PurchaseReceiptHandler) CreatePurchaseReceipt(c *gin.Context) {
 	}
 
 	// Get user ID from context
-	userID, exists := c.Get("userID")
+	userIDStr, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "User not authenticated"})
 		return
 	}
 
+	// Parse user ID string to UUID
+	userID, err := uuid.Parse(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid user ID"})
+		return
+	}
+
 	// Convert DTO to model
 	pr := req.ToPurchaseReceiptModel()
-	pr.CreatedByID = userID.(uuid.UUID)
+	pr.CreatedByID = userID
 
 	// Create purchase receipt
 	createdPR, err := h.service.CreatePurchaseReceipt(c.Request.Context(), pr)

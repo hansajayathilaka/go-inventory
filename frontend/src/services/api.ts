@@ -28,7 +28,16 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('auth_token');
-    
+    const requestId = Math.random().toString(36).substr(2, 8);
+
+    console.log(`🌐 [ApiClient:${requestId}] Starting request:`, {
+      method: options.method || 'GET',
+      endpoint,
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 10)}...` : 'none',
+      hasBody: !!options.body
+    });
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -39,17 +48,51 @@ class ApiClient {
     };
 
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     try {
+      console.log(`📤 [ApiClient:${requestId}] Making fetch request to:`, url);
+      const startTime = Date.now();
       const response = await fetch(url, config);
+      const endTime = Date.now();
+
+      console.log(`📡 [ApiClient:${requestId}] Response received:`, {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        duration: `${endTime - startTime}ms`,
+        contentType: response.headers.get('content-type')
+      });
+
       const data = await response.json();
 
+      console.log(`📦 [ApiClient:${requestId}] Response data parsed:`, {
+        hasData: !!data,
+        dataKeys: typeof data === 'object' ? Object.keys(data) : 'not object',
+        success: data?.success,
+        message: data?.message,
+        dataLength: Array.isArray(data?.data) ? data.data.length : 'not array'
+      });
+
       if (!response.ok) {
+        console.error(`❌ [ApiClient:${requestId}] Request failed:`, {
+          status: response.status,
+          statusText: response.statusText,
+          errorMessage: data.message || 'Request failed',
+          errorData: data
+        });
         throw new ApiError(response.status, data.message || 'Request failed');
       }
 
+      console.log(`✅ [ApiClient:${requestId}] Request successful`);
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      console.error(`💥 [ApiClient:${requestId}] Request error:`, {
+        error: error.message,
+        isApiError: error instanceof ApiError,
+        status: error.status,
+        stack: error.stack
+      });
+
       if (error instanceof ApiError) {
         throw error;
       }

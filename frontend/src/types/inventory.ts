@@ -120,40 +120,45 @@ export interface PurchaseReceipt {
   receipt_number: string;
   supplier_id?: string;
   status: PurchaseReceiptStatus;
-  order_date: string;
+  purchase_date: string; // Backend uses purchase_date, not order_date
   expected_date?: string;
   received_date?: string;
   total_amount: number;
   notes?: string;
   created_at: string;
   updated_at: string;
-  
+
   // Relationships
   supplier?: Supplier;
   items: PurchaseReceiptItem[];
+
+  // Computed/Alias fields for backward compatibility
+  order_date?: string; // Alias for purchase_date
 }
 
 export interface PurchaseReceiptItem {
   id: string; // UUID from API
   purchase_receipt_id: string;
   product_id: string;
-  quantity_ordered: number;
-  quantity_received: number;
+  quantity: number; // Backend uses quantity, not quantity_ordered/quantity_received
   unit_cost: number;
-  total_cost: number;
-  
+  line_total: number; // Backend uses line_total, not total_cost
+
   // Relationships
-  product: Product;
-  purchase_receipt: PurchaseReceipt;
+  product?: Product; // Optional since it may not be populated
+  purchase_receipt?: PurchaseReceipt; // Optional since it may not be populated
+
+  // Computed/Alias fields for backward compatibility
+  quantity_ordered?: number; // Alias for quantity
+  quantity_received?: number; // Alias for quantity
+  total_cost?: number; // Alias for line_total
 }
 
-export type PurchaseReceiptStatus = 
-  | 'draft'
-  | 'ordered'
-  | 'partially_received'
-  | 'received'
-  | 'completed'
-  | 'cancelled';
+export type PurchaseReceiptStatus =
+  | 'pending'     // Initial state when created
+  | 'received'    // Goods received from supplier
+  | 'completed'   // Stock integrated, final state
+  | 'cancelled';  // Order cancelled
 
 export interface StockMovement {
   id: string; // UUID from API

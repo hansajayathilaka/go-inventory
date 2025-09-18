@@ -98,8 +98,8 @@ export function POSManagerInterface({ className }: POSManagerInterfaceProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PersonalSalesHistory 
-                  cashierId={user?.id}
+                <PersonalSalesHistory
+                  cashierId={user?.id ? Number(user.id) : undefined}
                   maxRecords={1000} // Managers can see more records
                 />
               </CardContent>

@@ -21,12 +21,22 @@ export const authService = {
   },
 
   async validateToken(): Promise<AuthResponse> {
-    const response = await apiClient.get<AuthResponse['data']>('/auth/me');
-    return {
-      success: response.success,
-      message: response.message,
-      data: response.data,
-    };
+    try {
+      const response = await apiClient.get<any>('/auth/me');
+      console.log('Validate token API response:', response);
+
+      return {
+        success: true,
+        message: 'Token validated',
+        data: {
+          user: response.data || response, // Handle different response structures
+          token: this.getToken() || '' // Use existing token
+        }
+      };
+    } catch (error) {
+      console.error('Token validation error:', error);
+      throw error;
+    }
   },
 
   // Token management

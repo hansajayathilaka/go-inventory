@@ -6,6 +6,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Products } from './pages/Products';
 import { Categories } from './pages/Categories';
 import { PurchaseReceipts } from './pages/PurchaseReceipts';
+import { CreatePurchaseReceipt } from './pages/CreatePurchaseReceipt';
+import { ViewPurchaseReceipt } from './pages/ViewPurchaseReceipt';
 import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
 import { Users } from './pages/Users';
@@ -21,9 +23,9 @@ import { useAuthStore } from './stores/authStore';
 import { initializeAuth } from './stores/authStore';
 
 function AuthenticatedApp() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Login />;
   }
 
@@ -35,6 +37,9 @@ function AuthenticatedApp() {
           <Route path="/products" element={<Products />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/purchase-receipts" element={<PurchaseReceipts />} />
+          <Route path="/purchase-receipts/create" element={<CreatePurchaseReceipt />} />
+          <Route path="/purchase-receipts/:id/edit" element={<CreatePurchaseReceipt />} />
+          <Route path="/purchase-receipts/:id/view" element={<ViewPurchaseReceipt />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/users" element={<Users />} />

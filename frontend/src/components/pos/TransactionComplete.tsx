@@ -81,7 +81,7 @@ export function TransactionComplete({
             discount,
             total
           },
-          cashierId: user?.id || 0
+          cashierId: user?.id ? Number(user.id) : 0
         }
 
         // Validate transaction
