@@ -4,11 +4,11 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCart,
-  Search,
   CreditCard,
   X
 } from 'lucide-react';
 import { SessionManager } from './SessionManager';
+import { ProductSelection } from './ProductSelection/ProductSelection';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 
@@ -19,14 +19,9 @@ interface POSLayoutProps {
 
 export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const { getSession } = usePOSSessionStore();
-  const { getCartItems, getCartSummary, addItem, removeItem, updateItem } = usePOSCartStore();
+  const { getCartItems, getCartSummary, removeItem, updateItem } = usePOSCartStore();
 
   const currentSession = activeSession ? getSession(activeSession) : null;
-
-  const handleAddToCart = (productId: string, productName: string, productSku: string, price: number) => {
-    if (!activeSession) return;
-    addItem(activeSession, { productId, productName, productSku, price });
-  };
 
   const handleRemoveFromCart = (itemId: string) => {
     if (!activeSession) return;
@@ -65,53 +60,13 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
 
                 {/* Product Selection Area */}
                 <div className="col-span-8 border-r bg-background">
-                  <div className="h-full flex flex-col">
-
-                    {/* Search and Filters */}
-                    <div className="p-4 border-b bg-card">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-1 relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <input
-                            type="text"
-                            placeholder="Search products, SKU, or scan barcode..."
-                            className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background"
-                          />
-                        </div>
-                        <Button variant="outline">
-                          Categories
-                        </Button>
-                        <Button variant="outline">
-                          Barcode
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Product Grid */}
-                    <div className="flex-1 p-4">
-                      <div className="grid grid-cols-4 gap-4">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <Card
-                            key={i}
-                            className="p-4 cursor-pointer hover:bg-accent transition-colors"
-                            onClick={() => handleAddToCart(
-                              `product-${i + 1}`,
-                              `Sample Product ${i + 1}`,
-                              `SKU-${i + 1}`,
-                              29.99 + i * 10
-                            )}
-                          >
-                            <div className="aspect-square bg-muted rounded-md mb-2 flex items-center justify-center">
-                              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                            <h3 className="font-medium text-sm mb-1">Sample Product {i + 1}</h3>
-                            <p className="text-xs text-muted-foreground mb-2">SKU-{i + 1}</p>
-                            <p className="font-semibold text-primary">${(29.99 + i * 10).toFixed(2)}</p>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  <ProductSelection
+                    activeSessionId={activeSession}
+                    onProductSelect={(product) => {
+                      // Product is already added to cart by ProductSelection
+                      console.log('Product selected:', product.name);
+                    }}
+                  />
                 </div>
 
                 {/* Shopping Cart and Payment Area */}
