@@ -50,7 +50,7 @@ export function ProductGrid({
 
       const response = await productService.searchProducts(params);
 
-      setProducts(prev => reset ? response.products : [...prev, ...response.products]);
+      setProducts(prev => reset ? (response.products || []) : [...(prev || []), ...(response.products || [])]);
       setHasMore(response.has_more);
       setCurrentPage(page);
     } catch (err) {
@@ -213,7 +213,7 @@ export function ProductGrid({
     return { label: 'In Stock', variant: 'outline' as const };
   };
 
-  if (error && products.length === 0) {
+  if (error && (!products || products.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
@@ -226,7 +226,7 @@ export function ProductGrid({
     );
   }
 
-  if (isLoading && products.length === 0) {
+  if (isLoading && (!products || products.length === 0)) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -241,7 +241,7 @@ export function ProductGrid({
     );
   }
 
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <Package className="h-12 w-12 text-muted-foreground mb-4" />
@@ -261,7 +261,7 @@ export function ProductGrid({
     <div className="space-y-4">
       {/* Products Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product) => {
+        {(products || []).map((product) => {
           const stockStatus = getStockStatus(product.quantity || product.stock_quantity || 0);
           const price = product.retail_price || product.price || 0;
 
@@ -325,7 +325,7 @@ export function ProductGrid({
       )}
 
       {/* Loading indicator for additional products */}
-      {isLoading && products.length > 0 && (
+      {isLoading && products && products.length > 0 && (
         <div className="flex justify-center">
           <div className="text-sm text-muted-foreground">Loading more products...</div>
         </div>
