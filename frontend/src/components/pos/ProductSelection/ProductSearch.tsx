@@ -25,25 +25,68 @@ export function ProductSearch({ onSearchChange }: ProductSearchProps) {
 
   const loadCategories = async () => {
     try {
-      const hierarchy = await categoryService.getCategoryHierarchy();
-      // Flatten the hierarchy to get all categories
-      const flatCategories = flattenCategories(hierarchy);
-      setCategories(flatCategories);
+      console.log('Loading categories...');
+
+      // Try hierarchy first
+      try {
+        const hierarchy = await categoryService.getCategoryHierarchy();
+        console.log('Received hierarchy:', hierarchy);
+
+        const flatCategories = flattenCategories(hierarchy);
+        console.log('Flattened categories:', flatCategories);
+
+        if (flatCategories.length > 0) {
+          setCategories(flatCategories);
+          return;
+        }
+      } catch (hierarchyError) {
+        console.warn('Hierarchy failed, trying list approach:', hierarchyError);
+      }
+
+      // Fallback to list categories
+      const categoriesResponse = await categoryService.listCategories({ page_size: 100 });
+      console.log('Received categories list:', categoriesResponse);
+
+      if (categoriesResponse.data && Array.isArray(categoriesResponse.data)) {
+        setCategories(categoriesResponse.data);
+      } else {
+        console.warn('Categories response has no data array');
+        setCategories([]);
+      }
     } catch (error) {
       console.error('Failed to load categories:', error);
+      setCategories([]);
     }
   };
 
-  const flattenCategories = (category: any): Category[] => {
+  const flattenCategories = (categoryData: any): Category[] => {
     const result: Category[] = [];
-    if (category.id) {
+
+    // Handle different response structures
+    let category = categoryData;
+
+    // If the response is wrapped in a data property
+    if (categoryData && categoryData.data && !categoryData.id) {
+      category = categoryData.data;
+    }
+
+    // If category is an array (flat list)
+    if (Array.isArray(category)) {
+      return category.filter(cat => cat && cat.id);
+    }
+
+    // Handle single category with potential children
+    if (category && category.id) {
       result.push(category);
     }
-    if (category.children) {
+
+    // Process children recursively
+    if (category && category.children && Array.isArray(category.children)) {
       category.children.forEach((child: any) => {
         result.push(...flattenCategories(child));
       });
     }
+
     return result;
   };
 
