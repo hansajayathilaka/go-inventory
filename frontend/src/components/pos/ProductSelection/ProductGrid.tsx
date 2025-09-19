@@ -30,24 +30,36 @@ export function ProductGrid({
       setIsLoading(true);
       setError(null);
 
-      const params: ProductSearchParams = {
-        page: 1,
-        limit: 50,
-        is_active: true
-      };
+      let products: Product[] = [];
 
-      // Add search query if provided
       if (searchQuery.trim()) {
-        params.search = searchQuery.trim();
+        // Use POS lookup for search queries
+        products = await productService.posLookup(searchQuery.trim(), 50);
+
+        // Apply category filter client-side if both search and category are specified
+        if (selectedCategoryId) {
+          products = products.filter(product =>
+            (product as any).category_id === selectedCategoryId
+          );
+        }
+      } else {
+        // Use regular product search for category filtering or loading all products
+        const params: ProductSearchParams = {
+          page: 1,
+          limit: 50,
+          is_active: true
+        };
+
+        // Add category filter if selected
+        if (selectedCategoryId) {
+          params.category_id = parseInt(selectedCategoryId);
+        }
+
+        const response = await productService.searchProducts(params);
+        products = response.products || [];
       }
 
-      // Add category filter if selected
-      if (selectedCategoryId) {
-        params.category_id = parseInt(selectedCategoryId);
-      }
-
-      const response = await productService.searchProducts(params);
-      setProducts(response.products || []);
+      setProducts(products);
     } catch (error) {
       console.error('Failed to load products:', error);
       setError('Failed to load products');
