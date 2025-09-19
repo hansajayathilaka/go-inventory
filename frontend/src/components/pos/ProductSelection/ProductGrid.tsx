@@ -37,7 +37,7 @@ export function ProductGrid({
         products = await productService.posLookup(searchQuery.trim(), 50);
 
         // Apply category filter client-side if both search and category are specified
-        if (selectedCategoryId) {
+        if (selectedCategoryId && selectedCategoryId !== 'all') {
           products = products.filter(product =>
             (product as any).category_id === selectedCategoryId
           );
@@ -50,8 +50,8 @@ export function ProductGrid({
           is_active: true
         };
 
-        // Add category filter if selected
-        if (selectedCategoryId) {
+        // Add category filter if selected (but not 'all')
+        if (selectedCategoryId && selectedCategoryId !== 'all') {
           params.category_id = parseInt(selectedCategoryId);
         }
 
@@ -70,7 +70,7 @@ export function ProductGrid({
     }
   }, [searchQuery, selectedCategoryId]);
 
-  // Load products when search/filter changes
+  // Load products when search/filter changes or on initial mount
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);

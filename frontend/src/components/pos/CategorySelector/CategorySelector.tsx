@@ -53,6 +53,10 @@ export function CategorySelector({
         // Also create flat list for searching
         const flat = flattenCategoryTree(treeData);
         setFlatCategories(flat);
+
+        // Auto-expand first level categories
+        const firstLevelIds = treeData.map(category => category.id);
+        setExpandedNodes(new Set(firstLevelIds));
       } catch (hierarchyError) {
         console.warn('Hierarchy failed, using flat list:', hierarchyError);
 
@@ -64,6 +68,10 @@ export function CategorySelector({
         // Convert flat list to simple tree structure
         const treeFromFlat = buildTreeFromFlatList(flatList);
         setCategories(treeFromFlat);
+
+        // Auto-expand first level categories for flat list too
+        const firstLevelIds = treeFromFlat.map(category => category.id);
+        setExpandedNodes(new Set(firstLevelIds));
       }
     } catch (error) {
       console.error('Failed to load categories:', error);
@@ -159,54 +167,57 @@ export function CategorySelector({
 
   // Filter categories based on search
   const filterCategories = useCallback((query: string) => {
-    if (!query.trim()) {
-      // Reset visibility and search matches
-      const resetVisibility = (nodes: CategoryNode[]): CategoryNode[] => {
-        return nodes.map(node => ({
-          ...node,
-          visible: true,
-          matchesSearch: false,
-          children: node.children ? resetVisibility(node.children) : []
-        }));
-      };
-      setCategories(resetVisibility(categories));
-      return;
-    }
-
-    const searchLower = query.toLowerCase();
-
-    const markMatches = (nodes: CategoryNode[]): CategoryNode[] => {
-      return nodes.map(node => {
-        const matches = node.name.toLowerCase().includes(searchLower);
-        const childResults = node.children ? markMatches(node.children) : [];
-        const hasMatchingChildren = childResults.some(child => child.visible);
-
-        return {
-          ...node,
-          matchesSearch: matches,
-          visible: matches || hasMatchingChildren,
-          children: childResults
+    setCategories(prevCategories => {
+      if (!query.trim()) {
+        // Reset visibility and search matches
+        const resetVisibility = (nodes: CategoryNode[]): CategoryNode[] => {
+          return nodes.map(node => ({
+            ...node,
+            visible: true,
+            matchesSearch: false,
+            children: node.children ? resetVisibility(node.children) : []
+          }));
         };
-      });
-    };
+        return resetVisibility(prevCategories);
+      }
 
-    setCategories(markMatches(categories));
+      const searchLower = query.toLowerCase();
 
-    // Auto-expand nodes with matches
-    const newExpanded = new Set(expandedNodes);
-    const expandMatches = (nodes: CategoryNode[], parentMatches = false) => {
-      nodes.forEach(node => {
-        if (node.matchesSearch || parentMatches) {
-          newExpanded.add(node.id);
-        }
-        if (node.children) {
-          expandMatches(node.children, node.matchesSearch || parentMatches);
-        }
-      });
-    };
-    expandMatches(categories);
-    setExpandedNodes(newExpanded);
-  }, [categories, expandedNodes]);
+      const markMatches = (nodes: CategoryNode[]): CategoryNode[] => {
+        return nodes.map(node => {
+          const matches = node.name.toLowerCase().includes(searchLower);
+          const childResults = node.children ? markMatches(node.children) : [];
+          const hasMatchingChildren = childResults.some(child => child.visible);
+
+          return {
+            ...node,
+            matchesSearch: matches,
+            visible: matches || hasMatchingChildren,
+            children: childResults
+          };
+        });
+      };
+
+      const updatedCategories = markMatches(prevCategories);
+
+      // Auto-expand nodes with matches
+      const newExpanded = new Set(expandedNodes);
+      const expandMatches = (nodes: CategoryNode[], parentMatches = false) => {
+        nodes.forEach(node => {
+          if (node.matchesSearch || parentMatches) {
+            newExpanded.add(node.id);
+          }
+          if (node.children) {
+            expandMatches(node.children, node.matchesSearch || parentMatches);
+          }
+        });
+      };
+      expandMatches(updatedCategories);
+      setExpandedNodes(newExpanded);
+
+      return updatedCategories;
+    });
+  }, [expandedNodes]);
 
   // Debounced search
   useEffect(() => {
