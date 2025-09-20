@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { SessionManager } from './SessionManager';
 import { ProductSelection } from './ProductSelection/ProductSelection';
+import { LineItemDiscount } from './Discounts/LineItemDiscount';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 
@@ -31,6 +32,11 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     if (!activeSession) return;
     updateItem(activeSession, itemId, { quantity });
+  };
+
+  const handleApplyLineDiscount = (itemId: string, discountAmount: number) => {
+    if (!activeSession) return;
+    updateItem(activeSession, itemId, { lineDiscount: discountAmount });
   };
 
   return (
@@ -106,24 +112,30 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                                     <div className="flex-1">
                                       <h4 className="font-medium text-sm">{item.productName}</h4>
                                       <p className="text-xs text-muted-foreground">{item.productSku}</p>
-                                      <div className="flex items-center space-x-2 mt-1">
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-6 w-6 p-0"
-                                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                        >
-                                          -
-                                        </Button>
-                                        <span className="text-sm">{item.quantity}</span>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-6 w-6 p-0"
-                                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                        >
-                                          +
-                                        </Button>
+                                      <div className="flex items-center justify-between mt-2">
+                                        <div className="flex items-center space-x-2">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0"
+                                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                          >
+                                            -
+                                          </Button>
+                                          <span className="text-sm">{item.quantity}</span>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0"
+                                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                          >
+                                            +
+                                          </Button>
+                                        </div>
+                                        <LineItemDiscount
+                                          item={item}
+                                          onApplyDiscount={handleApplyLineDiscount}
+                                        />
                                       </div>
                                     </div>
                                     <div className="text-right">

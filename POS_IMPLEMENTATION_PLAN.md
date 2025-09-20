@@ -144,8 +144,8 @@ src/types/pos/
 - [x] Implement real-time total calculations
 
 ### Phase 3: Discount System
-**Status**: ⏳ Pending
-- [ ] Build line-item discount controls
+**Status**: 🚧 In Progress
+- [x] Build line-item discount controls
 - [ ] Implement bill-level discount system
 - [ ] Create discount calculation engine
 - [ ] Add discount preview and confirmation
@@ -212,7 +212,7 @@ src/types/pos/
 ---
 
 **Created**: 2025-09-18
-**Last Updated**: 2025-09-18
+**Last Updated**: 2025-09-20
 **Implementation Notes**:
 - Session management system fully implemented with Zustand stores
 - Multi-session support with persistent state management
@@ -227,5 +227,9 @@ src/types/pos/
 - Barcode validation for UPC-A, EAN-13, EAN-8, Code 128, and Code 39 formats
 - Product lookup integration with automatic cart addition for scanned items
 - Sample barcode generation for testing and development
+- Line-item discount controls with percentage and fixed amount options
+- Discount validation and preview functionality
+- Per-item discount management integrated into cart items
+- Discount calculation service with comprehensive validation
 **Project**: Hardware Store Inventory Management System
 **Phase**: Planning Complete - Ready for Implementation
