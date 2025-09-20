@@ -148,7 +148,7 @@ src/types/pos/
 - [x] Build line-item discount controls
 - [x] Implement bill-level discount system
 - [x] Create discount calculation engine
-- [ ] Add discount preview and confirmation
+- [x] Add discount preview and confirmation
 - [ ] Integrate discount validation
 
 ### Phase 4: Payment Processing

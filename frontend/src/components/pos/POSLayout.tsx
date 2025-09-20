@@ -12,6 +12,7 @@ import { ProductSelection } from './ProductSelection/ProductSelection';
 import { LineItemDiscount } from './Discounts/LineItemDiscount';
 import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { DiscountPanel } from './Discounts/DiscountPanel';
+import { DiscountSummary } from './Discounts/DiscountSummary';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 import { isPOSFeatureEnabled } from '@/config/posFeatures';
@@ -185,6 +186,15 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                           );
                         })()}
                       </div>
+                    </div>
+
+                    {/* Discount Summary */}
+                    <div className="border-t">
+                      <DiscountSummary
+                        sessionId={activeSession}
+                        cartItems={getCartItems(activeSession)}
+                        className="border-0 rounded-none"
+                      />
                     </div>
 
                     {/* Totals and Payment */}
