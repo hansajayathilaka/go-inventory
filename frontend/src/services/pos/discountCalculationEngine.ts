@@ -1,4 +1,4 @@
-import type { CartItem, CartSummary } from '@/types/pos/cart';
+import type { CartItem } from '@/types/pos/cart';
 import type {
   DiscountType,
   DiscountCalculation,

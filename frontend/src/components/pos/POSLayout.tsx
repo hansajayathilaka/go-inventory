@@ -14,6 +14,7 @@ import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { DiscountPanel } from './Discounts/DiscountPanel';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
+import { isPOSFeatureEnabled } from '@/config/posFeatures';
 
 interface POSLayoutProps {
   activeSession: string | null;
@@ -110,13 +111,15 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                     </div>
 
                     {/* Discount Engine Panel */}
-                    <div className="border-b">
-                      <DiscountPanel
-                        sessionId={activeSession}
-                        cartItems={getCartItems(activeSession)}
-                        className="border-0 rounded-none"
-                      />
-                    </div>
+                    {isPOSFeatureEnabled('discountEngine') && (
+                      <div className="border-b">
+                        <DiscountPanel
+                          sessionId={activeSession}
+                          cartItems={getCartItems(activeSession)}
+                          className="border-0 rounded-none"
+                        />
+                      </div>
+                    )}
 
                     {/* Cart Items */}
                     <div className="flex-1 flex flex-col p-4 min-h-0">
