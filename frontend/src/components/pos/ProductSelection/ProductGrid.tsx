@@ -39,7 +39,7 @@ export function ProductGrid({
         // Apply category filter client-side if both search and category are specified
         if (selectedCategoryId && selectedCategoryId !== 'all') {
           products = products.filter(product =>
-            (product as any).category_id === selectedCategoryId
+            product.category_id === selectedCategoryId
           );
         }
       } else {
@@ -52,7 +52,7 @@ export function ProductGrid({
 
         // Add category filter if selected (but not 'all')
         if (selectedCategoryId && selectedCategoryId !== 'all') {
-          params.category_id = parseInt(selectedCategoryId);
+          params.category_id = selectedCategoryId;
         }
 
         const response = await productService.searchProducts(params);

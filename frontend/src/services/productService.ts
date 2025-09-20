@@ -12,6 +12,8 @@ export interface Product {
   tax_category?: string
   quick_sale?: boolean
   is_active: boolean
+  category_id?: string
+  brand_id?: string
   // Legacy fields for compatibility
   price?: number // Maps to retail_price
   stock_quantity?: number // Maps to quantity
@@ -39,8 +41,8 @@ export interface FullProduct {
 
 export interface ProductSearchParams {
   search?: string
-  category_id?: number
-  brand_id?: number
+  category_id?: string
+  brand_id?: string
   is_active?: boolean
   limit?: number
   page?: number
@@ -52,6 +54,35 @@ export interface ProductSearchResponse {
   page: number
   limit: number
   has_more: boolean
+}
+
+
+// Backend product structure matching actual API response
+interface BackendProduct {
+  id: string
+  sku: string
+  name: string
+  description?: string
+  category_id: string
+  supplier_id?: string
+  brand_id?: string
+  cost_price: number
+  retail_price: number
+  wholesale_price?: number
+  barcode?: string
+  weight?: number
+  dimensions?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  total_stock?: number
+  inventory?: Array<{
+    quantity: number
+    reserved_quantity: number
+    available_quantity: number
+    reorder_level: number
+    max_level: number
+  }>
 }
 
 export const productService = {
@@ -72,8 +103,45 @@ export const productService = {
       ? `/products/search?${queryParams.toString()}`
       : `/products?${queryParams.toString()}`
 
-    const response = await apiClient.get<ProductSearchResponse>(endpoint)
-    return response.data
+    const response = await apiClient.get<any>(endpoint) as any
+
+    console.log('🔍 ProductService Debug - Raw response:', response)
+    console.log('🔍 ProductService Debug - response.data:', response.data)
+    console.log('🔍 ProductService Debug - response.data:', response.data)
+
+    // Map backend products to frontend interface
+    const products: Product[] = (response.data || []).map((backendProduct: BackendProduct) => {
+      // Get stock quantity from total_stock or inventory array
+      const stockQuantity = backendProduct.total_stock ||
+                           (backendProduct.inventory && backendProduct.inventory[0]?.quantity) ||
+                           0;
+
+      return {
+        id: backendProduct.id,
+        name: backendProduct.name,
+        sku: backendProduct.sku,
+        barcode: backendProduct.barcode,
+        retail_price: backendProduct.retail_price,
+        cost_price: backendProduct.cost_price,
+        quantity: stockQuantity,
+        tax_category: undefined,
+        quick_sale: false,
+        is_active: backendProduct.is_active,
+        category_id: backendProduct.category_id,
+        brand_id: backendProduct.brand_id,
+        // Legacy compatibility fields
+        price: backendProduct.retail_price,
+        stock_quantity: stockQuantity
+      };
+    })
+
+    return {
+      products,
+      total: response.pagination?.total || 0,
+      page: response.pagination?.page || 1,
+      limit: response.pagination?.limit || 20,
+      has_more: (response.pagination?.page || 1) < (response.pagination?.total_pages || 1)
+    }
   },
 
   /**
@@ -87,13 +155,30 @@ export const productService = {
    * Get POS-ready products (active products with stock)
    */
   async getPOSReadyProducts(limit = 100): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>(`/products/pos-ready?limit=${limit}`)
-    return response.data.map((product: any) => ({
-      ...product,
-      // Add compatibility fields
-      price: product.retail_price,
-      stock_quantity: product.quantity
-    }))
+    const response = await apiClient.get<BackendProduct[]>(`/products/pos-ready?limit=${limit}`)
+    return response.data.map((backendProduct: BackendProduct) => {
+      const stockQuantity = backendProduct.total_stock ||
+                           (backendProduct.inventory && backendProduct.inventory[0]?.quantity) ||
+                           0;
+
+      return {
+        id: backendProduct.id,
+        name: backendProduct.name,
+        sku: backendProduct.sku,
+        barcode: backendProduct.barcode,
+        retail_price: backendProduct.retail_price,
+        cost_price: backendProduct.cost_price,
+        quantity: stockQuantity,
+        tax_category: undefined,
+        quick_sale: false,
+        is_active: backendProduct.is_active,
+        category_id: backendProduct.category_id,
+        brand_id: backendProduct.brand_id,
+        // Legacy compatibility fields
+        price: backendProduct.retail_price,
+        stock_quantity: stockQuantity
+      };
+    })
   },
 
   /**
@@ -108,13 +193,30 @@ export const productService = {
    * Search products for POS (optimized for quick lookup)
    */
   async posLookup(query: string, limit = 10): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>(`/pos/lookup?q=${encodeURIComponent(query)}&limit=${limit}`)
-    return response.data.map((product: any) => ({
-      ...product,
-      // Add compatibility fields
-      price: product.retail_price,
-      stock_quantity: product.quantity
-    }))
+    const response = await apiClient.get<BackendProduct[]>(`/pos/lookup?q=${encodeURIComponent(query)}&limit=${limit}`)
+    return response.data.map((backendProduct: BackendProduct) => {
+      const stockQuantity = backendProduct.total_stock ||
+                           (backendProduct.inventory && backendProduct.inventory[0]?.quantity) ||
+                           0;
+
+      return {
+        id: backendProduct.id,
+        name: backendProduct.name,
+        sku: backendProduct.sku,
+        barcode: backendProduct.barcode,
+        retail_price: backendProduct.retail_price,
+        cost_price: backendProduct.cost_price,
+        quantity: stockQuantity,
+        tax_category: undefined,
+        quick_sale: false,
+        is_active: backendProduct.is_active,
+        category_id: backendProduct.category_id,
+        brand_id: backendProduct.brand_id,
+        // Legacy compatibility fields
+        price: backendProduct.retail_price,
+        stock_quantity: stockQuantity
+      };
+    })
   },
 
   /**

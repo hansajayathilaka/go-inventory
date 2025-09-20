@@ -579,7 +579,58 @@ func (h *CategoryHandler) GetCategoryHierarchy(c *gin.Context) {
 		return
 	}
 
-	response := dto.ToCategoryHierarchyResponse(hierarchyTree)
+	// Collect all category IDs for bulk product count retrieval
+	var categoryIDs []uuid.UUID
+	var collectCategoryIDs func(*hierarchy.CategoryNode)
+	collectCategoryIDs = func(node *hierarchy.CategoryNode) {
+		if node != nil && node.Category != nil {
+			categoryIDs = append(categoryIDs, node.Category.ID)
+			for _, child := range node.Children {
+				collectCategoryIDs(child)
+			}
+		}
+	}
+	collectCategoryIDs(hierarchyTree)
+
+	// Get product counts for all categories efficiently
+	productCounts, _ := h.categoryService.GetCategoryProductCountsBulk(c.Request.Context(), categoryIDs)
+
+	// Build response with product counts
+	var buildHierarchyResponse func(*hierarchy.CategoryNode) *dto.CategoryHierarchyResponse
+	buildHierarchyResponse = func(node *hierarchy.CategoryNode) *dto.CategoryHierarchyResponse {
+		if node == nil || node.Category == nil {
+			return nil
+		}
+
+		productCount := int64(0)
+		if count, exists := productCounts[node.Category.ID]; exists {
+			productCount = count
+		}
+
+		response := &dto.CategoryHierarchyResponse{
+			Category: &dto.CategoryResponse{
+				ID:            node.Category.ID,
+				Name:          node.Category.Name,
+				Description:   node.Category.Description,
+				ParentID:      node.Category.ParentID,
+				Level:         node.Category.Level,
+				Path:          node.Category.Path,
+				ChildrenCount: len(node.Children),
+				ProductCount:  productCount,
+				CreatedAt:     node.Category.CreatedAt,
+				UpdatedAt:     node.Category.UpdatedAt,
+			},
+			Children: make([]*dto.CategoryHierarchyResponse, len(node.Children)),
+		}
+
+		for i, child := range node.Children {
+			response.Children[i] = buildHierarchyResponse(child)
+		}
+
+		return response
+	}
+
+	response := buildHierarchyResponse(hierarchyTree)
 
 	c.JSON(http.StatusOK, dto.CreateSimpleSuccessResponse(
 		response,

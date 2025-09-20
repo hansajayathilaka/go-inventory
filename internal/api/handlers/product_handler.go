@@ -615,6 +615,26 @@ func (h *ProductHandler) convertToResponse(product *models.Product) dto.ProductR
 		UpdatedAt:      product.UpdatedAt,
 	}
 
+	// Include inventory info if loaded
+	if len(product.Inventory) > 0 {
+		inventory := product.Inventory[0] // Take the first inventory record
+		response.TotalStock = &inventory.Quantity
+		response.Inventory = []dto.ProductInventoryResponse{
+			{
+				Quantity:          inventory.Quantity,
+				ReservedQuantity:  inventory.ReservedQuantity,
+				AvailableQuantity: inventory.AvailableQuantity(),
+				ReorderLevel:      inventory.ReorderLevel,
+				MaxLevel:          inventory.MaxLevel,
+			},
+		}
+	} else {
+		// Default to 0 stock if no inventory record exists
+		defaultStock := 0
+		response.TotalStock = &defaultStock
+		response.Inventory = []dto.ProductInventoryResponse{}
+	}
+
 	// Include category info if loaded
 	if product.Category.ID != uuid.Nil {
 		response.Category = &dto.CategoryResponse{

@@ -48,6 +48,7 @@ export function CategorySelector({
         console.log('Category hierarchy:', hierarchy);
 
         const treeData = buildCategoryTree(hierarchy);
+        console.log('Built tree data:', treeData);
         setCategories(treeData);
 
         // Also create flat list for searching
@@ -88,6 +89,18 @@ export function CategorySelector({
     // If data is wrapped
     if (data.data && !data.id) {
       return buildCategoryTree(data.data);
+    }
+
+    // Handle the API response structure {category: {...}, children: [...]}
+    if (data.category && data.children) {
+      // Return the children array directly, not the root category
+      return data.children.map((item: any) => ({
+        ...item.category,
+        children: item.children ? buildCategoryTree(item) : [],
+        expanded: false,
+        visible: true,
+        matchesSearch: false
+      }));
     }
 
     // If data is array
