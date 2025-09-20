@@ -10,6 +10,7 @@ import {
 import { SessionManager } from './SessionManager';
 import { ProductSelection } from './ProductSelection/ProductSelection';
 import { LineItemDiscount } from './Discounts/LineItemDiscount';
+import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 
@@ -20,7 +21,7 @@ interface POSLayoutProps {
 
 export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const { getSession } = usePOSSessionStore();
-  const { getCartItems, getCartSummary, removeItem, updateItem } = usePOSCartStore();
+  const { getCartItems, getCartSummary, removeItem, updateItem, applyBillDiscount, sessionDiscounts } = usePOSCartStore();
 
   const currentSession = activeSession ? getSession(activeSession) : null;
 
@@ -37,6 +38,15 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const handleApplyLineDiscount = (itemId: string, discountAmount: number) => {
     if (!activeSession) return;
     updateItem(activeSession, itemId, { lineDiscount: discountAmount });
+  };
+
+  const handleApplyBillDiscount = (discountAmount: number, reason?: string) => {
+    if (!activeSession) return;
+    applyBillDiscount(activeSession, discountAmount);
+    // Note: reason can be stored for audit purposes in future implementation
+    if (reason) {
+      console.log(`Bill discount applied: $${discountAmount.toFixed(2)} - Reason: ${reason}`);
+    }
   };
 
   return (
@@ -188,6 +198,13 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                                 <span>${summary.total.toFixed(2)}</span>
                               </div>
                             </div>
+
+                            {/* Bill Discount */}
+                            <BillDiscountDialog
+                              cartSummary={summary}
+                              currentBillDiscount={activeSession ? (sessionDiscounts[activeSession] || 0) : 0}
+                              onApplyDiscount={handleApplyBillDiscount}
+                            />
 
                             <Button
                               className="w-full"

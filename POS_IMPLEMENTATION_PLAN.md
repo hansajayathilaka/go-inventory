@@ -146,7 +146,7 @@ src/types/pos/
 ### Phase 3: Discount System
 **Status**: 🚧 In Progress
 - [x] Build line-item discount controls
-- [ ] Implement bill-level discount system
+- [x] Implement bill-level discount system
 - [ ] Create discount calculation engine
 - [ ] Add discount preview and confirmation
 - [ ] Integrate discount validation
@@ -231,5 +231,9 @@ src/types/pos/
 - Discount validation and preview functionality
 - Per-item discount management integrated into cart items
 - Discount calculation service with comprehensive validation
+- Bill-level discount system with percentage and fixed amount support
+- Quick discount presets (5%, 10%, 15%, 20%) for rapid application
+- Comprehensive discount preview with transaction summary
+- Discount reason tracking for audit purposes
 **Project**: Hardware Store Inventory Management System
 **Phase**: Planning Complete - Ready for Implementation
