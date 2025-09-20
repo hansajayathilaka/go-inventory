@@ -33,3 +33,37 @@ export interface DiscountPreview {
   totalSavings: number;
   finalTotal: number;
 }
+
+export interface DiscountRule {
+  id: string;
+  name: string;
+  type: DiscountType;
+  value: number;
+  priority: number; // Higher priority applies first
+  isActive: boolean;
+  conditions?: DiscountCondition[];
+}
+
+export interface DiscountCondition {
+  type: 'min_amount' | 'max_amount' | 'category' | 'product' | 'quantity';
+  value: number | string;
+  operator: 'equals' | 'greater_than' | 'less_than' | 'contains';
+}
+
+export interface TransactionDiscountSummary {
+  subtotal: number;
+  lineItemDiscounts: number;
+  billLevelDiscounts: number;
+  totalDiscounts: number;
+  discountedSubtotal: number;
+  taxAmount: number;
+  finalTotal: number;
+  appliedRules: DiscountRule[];
+}
+
+export interface DiscountEngineOptions {
+  maxDiscountPercentage: number; // Maximum total discount allowed (e.g., 95%)
+  allowStacking: boolean; // Whether multiple discounts can be stacked
+  taxAfterDiscount: boolean; // Whether tax is calculated after discounts
+  roundingPrecision: number; // Decimal places for rounding
+}

@@ -147,7 +147,7 @@ src/types/pos/
 **Status**: 🚧 In Progress
 - [x] Build line-item discount controls
 - [x] Implement bill-level discount system
-- [ ] Create discount calculation engine
+- [x] Create discount calculation engine
 - [ ] Add discount preview and confirmation
 - [ ] Integrate discount validation
 

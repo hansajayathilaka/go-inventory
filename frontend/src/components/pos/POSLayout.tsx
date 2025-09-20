@@ -11,6 +11,7 @@ import { SessionManager } from './SessionManager';
 import { ProductSelection } from './ProductSelection/ProductSelection';
 import { LineItemDiscount } from './Discounts/LineItemDiscount';
 import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
+import { DiscountPanel } from './Discounts/DiscountPanel';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 
@@ -106,6 +107,15 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                           </p>
                         );
                       })()}
+                    </div>
+
+                    {/* Discount Engine Panel */}
+                    <div className="border-b">
+                      <DiscountPanel
+                        sessionId={activeSession}
+                        cartItems={getCartItems(activeSession)}
+                        className="border-0 rounded-none"
+                      />
                     </div>
 
                     {/* Cart Items */}
