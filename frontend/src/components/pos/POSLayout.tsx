@@ -53,13 +53,13 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex">
-          <Tabs value={activeSession} onValueChange={onSessionChange} className="flex-1">
-            <TabsContent value={activeSession} className="h-full m-0">
-              <div className="grid grid-cols-12 h-full">
+        <div className="flex-1 flex min-h-0">
+          <Tabs value={activeSession} onValueChange={onSessionChange} className="flex-1 flex flex-col">
+            <TabsContent value={activeSession} className="flex-1 m-0 min-h-0">
+              <div className="grid grid-cols-12 h-full min-h-0">
 
                 {/* Product Selection Area */}
-                <div className="col-span-8 border-r bg-background">
+                <div className="col-span-8 border-r bg-background flex flex-col min-h-0">
                   <ProductSelection
                     activeSessionId={activeSession}
                     onProductSelect={(product) => {
@@ -70,8 +70,8 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                 </div>
 
                 {/* Shopping Cart and Payment Area */}
-                <div className="col-span-4 bg-card">
-                  <div className="h-full flex flex-col">
+                <div className="col-span-4 bg-card flex flex-col min-h-0">
+                  <div className="h-full flex flex-col min-h-0">
                     {/* Session Info */}
                     <div className="p-4 border-b">
                       <div className="flex items-center justify-between">
@@ -93,61 +93,63 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                     </div>
 
                     {/* Cart Items */}
-                    <div className="flex-1 p-4">
+                    <div className="flex-1 flex flex-col p-4 min-h-0">
                       <h3 className="font-medium mb-3">Cart Items</h3>
-                      {(() => {
-                        const cartItems = getCartItems(activeSession);
-                        return cartItems.length > 0 ? (
-                          <div className="space-y-3">
-                            {cartItems.map((item) => (
-                              <Card key={item.id} className="p-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <h4 className="font-medium text-sm">{item.productName}</h4>
-                                    <p className="text-xs text-muted-foreground">{item.productSku}</p>
-                                    <div className="flex items-center space-x-2 mt-1">
+                      <div className="flex-1 overflow-y-auto min-h-0">
+                        {(() => {
+                          const cartItems = getCartItems(activeSession);
+                          return cartItems.length > 0 ? (
+                            <div className="space-y-3 pr-2">
+                              {cartItems.map((item) => (
+                                <Card key={item.id} className="p-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <h4 className="font-medium text-sm">{item.productName}</h4>
+                                      <p className="text-xs text-muted-foreground">{item.productSku}</p>
+                                      <div className="flex items-center space-x-2 mt-1">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                        >
+                                          -
+                                        </Button>
+                                        <span className="text-sm">{item.quantity}</span>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                        >
+                                          +
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="font-semibold text-sm">${item.lineTotal.toFixed(2)}</p>
                                       <Button
                                         size="sm"
-                                        variant="outline"
-                                        className="h-6 w-6 p-0"
-                                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                        variant="ghost"
+                                        className="text-destructive p-0"
+                                        onClick={() => handleRemoveFromCart(item.id)}
                                       >
-                                        -
-                                      </Button>
-                                      <span className="text-sm">{item.quantity}</span>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-6 w-6 p-0"
-                                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                      >
-                                        +
+                                        <X className="h-3 w-3" />
                                       </Button>
                                     </div>
                                   </div>
-                                  <div className="text-right">
-                                    <p className="font-semibold text-sm">${item.lineTotal.toFixed(2)}</p>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="text-destructive p-0"
-                                      onClick={() => handleRemoveFromCart(item.id)}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p>No items in cart</p>
-                            <p className="text-xs">Add products to start a transaction</p>
-                          </div>
-                        );
-                      })()}
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                              <p>No items in cart</p>
+                              <p className="text-xs">Add products to start a transaction</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
 
                     {/* Totals and Payment */}

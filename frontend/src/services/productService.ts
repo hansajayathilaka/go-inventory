@@ -193,30 +193,14 @@ export const productService = {
    * Search products for POS (optimized for quick lookup)
    */
   async posLookup(query: string, limit = 10): Promise<Product[]> {
-    const response = await apiClient.get<BackendProduct[]>(`/pos/lookup?q=${encodeURIComponent(query)}&limit=${limit}`)
-    return response.data.map((backendProduct: BackendProduct) => {
-      const stockQuantity = backendProduct.total_stock ||
-                           (backendProduct.inventory && backendProduct.inventory[0]?.quantity) ||
-                           0;
-
-      return {
-        id: backendProduct.id,
-        name: backendProduct.name,
-        sku: backendProduct.sku,
-        barcode: backendProduct.barcode,
-        retail_price: backendProduct.retail_price,
-        cost_price: backendProduct.cost_price,
-        quantity: stockQuantity,
-        tax_category: undefined,
-        quick_sale: false,
-        is_active: backendProduct.is_active,
-        category_id: backendProduct.category_id,
-        brand_id: backendProduct.brand_id,
-        // Legacy compatibility fields
-        price: backendProduct.retail_price,
-        stock_quantity: stockQuantity
-      };
-    })
+    const response = await apiClient.get<Product[]>(`/pos/lookup?q=${encodeURIComponent(query)}&limit=${limit}`)
+    // POS lookup returns already formatted Product objects, no mapping needed
+    return response.data.map((product: Product) => ({
+      ...product,
+      // Ensure compatibility fields are set
+      price: product.retail_price,
+      stock_quantity: product.quantity
+    }));
   },
 
   /**
