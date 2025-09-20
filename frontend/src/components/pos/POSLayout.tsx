@@ -159,6 +159,7 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                                         <LineItemDiscount
                                           item={item}
                                           onApplyDiscount={handleApplyLineDiscount}
+                                          sessionId={activeSession}
                                         />
                                       </div>
                                     </div>

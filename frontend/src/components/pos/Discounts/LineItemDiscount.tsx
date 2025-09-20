@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Percent, DollarSign, Tag, AlertCircle } from 'lucide-react';
 import { POSDiscountService } from '@/services/pos/posDiscountService';
+import { useDiscountValidation } from '@/hooks/useDiscountValidation';
 import type { DiscountType } from '@/types/pos/discount';
 import type { CartItem } from '@/types/pos/cart';
 
@@ -22,13 +23,20 @@ interface LineItemDiscountProps {
   item: CartItem;
   onApplyDiscount: (itemId: string, discountAmount: number) => void;
   disabled?: boolean;
+  sessionId: string;
 }
 
-export function LineItemDiscount({ item, onApplyDiscount, disabled = false }: LineItemDiscountProps) {
+export function LineItemDiscount({ item, onApplyDiscount, disabled = false, sessionId }: LineItemDiscountProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [discountType, setDiscountType] = useState<DiscountType>('percentage');
   const [discountValue, setDiscountValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Enhanced validation
+  const { validateSingleDiscount, getMaxAllowedDiscount, requiresReason } = useDiscountValidation(sessionId, {
+    userRole: 'cashier', // This would come from auth context in real app
+    customerType: 'regular'
+  });
 
   const lineTotal = item.price * item.quantity;
   const hasDiscount = item.lineDiscount > 0;
@@ -49,9 +57,17 @@ export function LineItemDiscount({ item, onApplyDiscount, disabled = false }: Li
     const value = parseFloat(discountValue);
     if (isNaN(value)) return null;
 
-    const validation = POSDiscountService.validateDiscount(discountType, value, lineTotal);
+    // Use enhanced validation
+    const validation = validateSingleDiscount(discountType, value, lineTotal);
     if (!validation.isValid) {
       setError(validation.errorMessage || 'Invalid discount');
+      return null;
+    }
+
+    // Check if reason is required
+    const discountPercentage = discountType === 'percentage' ? value : (value / lineTotal) * 100;
+    if (requiresReason(discountPercentage)) {
+      setError('Discount reason required for discounts above 15%');
       return null;
     }
 
@@ -163,7 +179,7 @@ export function LineItemDiscount({ item, onApplyDiscount, disabled = false }: Li
               id="discount-value"
               type="number"
               min="0"
-              max={discountType === 'percentage' ? 100 : lineTotal}
+              max={getMaxAllowedDiscount(discountType, lineTotal)}
               step={discountType === 'percentage' ? 1 : 0.01}
               value={discountValue}
               onChange={(e) => handleDiscountValueChange(e.target.value)}

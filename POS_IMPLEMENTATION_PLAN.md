@@ -144,12 +144,12 @@ src/types/pos/
 - [x] Implement real-time total calculations
 
 ### Phase 3: Discount System
-**Status**: 🚧 In Progress
+**Status**: ✅ Complete
 - [x] Build line-item discount controls
 - [x] Implement bill-level discount system
 - [x] Create discount calculation engine
 - [x] Add discount preview and confirmation
-- [ ] Integrate discount validation
+- [x] Integrate discount validation
 
 ### Phase 4: Payment Processing
 **Status**: ⏳ Pending
