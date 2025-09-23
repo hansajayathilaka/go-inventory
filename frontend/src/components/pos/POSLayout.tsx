@@ -13,6 +13,8 @@ import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { DiscountPanel } from './Discounts/DiscountPanel';
 import { DiscountSummary } from './Discounts/DiscountSummary';
 import { PaymentPanel } from './Payment/PaymentPanel';
+import { CustomerSelect } from './Customer/CustomerSelect';
+import { CustomerInfo } from './Customer/CustomerInfo';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 import { isPOSFeatureEnabled } from '@/config/posFeatures';
@@ -121,6 +123,16 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                           </p>
                         );
                       })()}
+                    </div>
+
+                    {/* Customer Selection */}
+                    <div className="p-4 border-b">
+                      <CustomerSelect sessionId={activeSession} />
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="px-4">
+                      <CustomerInfo sessionId={activeSession} />
                     </div>
 
                     {/* Discount Engine Panel */}
