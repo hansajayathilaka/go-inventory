@@ -115,7 +115,7 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
     clearCustomer(sessionId);
   };
 
-  const formatCustomerDisplay = (customer: Customer | { id: string; name: string; isQuickCustomer?: boolean; code?: string }) => {
+  const formatCustomerDisplay = (customer: Customer | { id: string | number; name: string; isQuickCustomer?: boolean; code?: string }) => {
     if (customer.id === 'walk-in') {
       return customer.name;
     }
@@ -125,7 +125,7 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
     return `${customer.name} (${customer.code || ''})`;
   };
 
-  const getCustomerIcon = (customer: Customer | { id: string; isQuickCustomer?: boolean }) => {
+  const getCustomerIcon = (customer: Customer | { id: string | number; isQuickCustomer?: boolean }) => {
     if (customer.id === 'walk-in') {
       return <User className="h-4 w-4" />;
     }
