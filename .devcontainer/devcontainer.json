@@ -19,7 +19,6 @@
         "bradlc.vscode-tailwindcss",
         "ms-vscode.hexeditor",
         "ms-vscode-remote.remote-containers",
-        "ms-ossdata.vscode-pgsql",
         "qwtel.sqlite-viewer"
       ],
       "settings": {
@@ -48,7 +47,7 @@
 
   "runArgs": ["-p", "5434:5432"],
 
-  "postCreateCommand": "go version && sudo service postgresql start",
+  "postCreateCommand": "go version && npm install -g @anthropic-ai/claude-code",
   
   "remoteUser": "vscode"
 }

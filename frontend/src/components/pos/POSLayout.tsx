@@ -4,7 +4,6 @@ import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCart,
-  CreditCard,
   X
 } from 'lucide-react';
 import { SessionManager } from './SessionManager';
@@ -13,6 +12,7 @@ import { LineItemDiscount } from './Discounts/LineItemDiscount';
 import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { DiscountPanel } from './Discounts/DiscountPanel';
 import { DiscountSummary } from './Discounts/DiscountSummary';
+import { PaymentPanel } from './Payment/PaymentPanel';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 import { isPOSFeatureEnabled } from '@/config/posFeatures';
@@ -50,6 +50,18 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
     if (reason) {
       console.log(`Bill discount applied: $${discountAmount.toFixed(2)} - Reason: ${reason}`);
     }
+  };
+
+  const handlePaymentComplete = () => {
+    if (!activeSession) return;
+    // Clear the cart after successful payment
+    // For now, just log the completion - in a real system, this would:
+    // 1. Create a transaction record
+    // 2. Update inventory
+    // 3. Generate receipt
+    // 4. Clear the session cart
+    console.log(`Payment completed for session ${activeSession}`);
+    // clearCart(activeSession); // Uncomment when ready to clear cart after payment
   };
 
   return (
@@ -230,13 +242,12 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                               onApplyDiscount={handleApplyBillDiscount}
                             />
 
-                            <Button
-                              className="w-full"
-                              disabled={summary.itemCount === 0}
-                            >
-                              <CreditCard className="h-4 w-4 mr-2" />
-                              Process Payment
-                            </Button>
+                            {/* Payment Panel */}
+                            <PaymentPanel
+                              sessionId={activeSession}
+                              cartSummary={summary}
+                              onPaymentComplete={handlePaymentComplete}
+                            />
                           </>
                         );
                       })()}

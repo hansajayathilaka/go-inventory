@@ -100,7 +100,8 @@
       "Bash(awk:*)",
       "Bash(xargs -r kill -9)",
       "Bash(sqlite3:*)",
-      "Bash(jq:*)"
+      "Bash(jq:*)",
+      "mcp__playwright__browser_evaluate"
     ],
     "deny": [],
     "ask": []
