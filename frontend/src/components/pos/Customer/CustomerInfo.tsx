@@ -151,7 +151,13 @@ export function CustomerInfo({ sessionId, className }: CustomerInfoProps) {
 
           {/* Customer Info */}
           <div className="space-y-2 text-sm">
-            {!isWalkIn && 'code' in selectedCustomer && (
+            {isWalkIn && (
+              <div className="text-muted-foreground text-center py-2">
+                <span>No customer details required for walk-in purchases</span>
+              </div>
+            )}
+
+            {!isWalkIn && 'code' in selectedCustomer && selectedCustomer.code && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <span>Code: {selectedCustomer.code}</span>
               </div>
