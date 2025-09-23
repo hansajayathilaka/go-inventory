@@ -13,6 +13,13 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { usePOSPaymentStore } from '@/stores/pos/posPaymentStore';
+import {
+  roundToTwoDecimals,
+  parseMonetaryAmount,
+  formatMoney,
+  calculateChange,
+  isPaymentSufficient
+} from '@/utils/paymentUtils';
 
 interface CashPaymentProps {
   sessionId: string;
@@ -57,27 +64,28 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
     };
   }, [sessionId, totalAmount, initiateCashPayment, cancelPayment, activePayment?.status]);
 
-  // Calculate change amount
+  // Calculate change amount with proper rounding
   const changeAmount = useMemo(() => {
-    const tendered = parseFloat(amountTendered) || 0;
-    return Math.max(0, tendered - totalAmount);
+    const tendered = parseMonetaryAmount(amountTendered);
+    return calculateChange(tendered, totalAmount);
   }, [amountTendered, totalAmount]);
 
-  // Validation
+  // Validation with proper rounding
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
-    const tendered = parseFloat(amountTendered) || 0;
+    const tendered = parseMonetaryAmount(amountTendered);
 
     if (tendered <= 0) {
       errors.push('Please enter an amount');
-    } else if (tendered < totalAmount) {
-      errors.push(`Amount is $${(totalAmount - tendered).toFixed(2)} short`);
+    } else if (!isPaymentSufficient(tendered, totalAmount)) {
+      const shortfall = roundToTwoDecimals(totalAmount - tendered);
+      errors.push(`Amount is $${formatMoney(shortfall)} short`);
     }
 
     return errors;
   }, [amountTendered, totalAmount]);
 
-  const isValid = validationErrors.length === 0 && parseFloat(amountTendered) > 0;
+  const isValid = validationErrors.length === 0 && parseMonetaryAmount(amountTendered) > 0;
 
   const handleAmountChange = (value: string) => {
     // Allow only numbers and decimal point
@@ -98,20 +106,21 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
 
     // Update payment store with the amount
     if (paymentId && numericValue) {
-      const amount = parseFloat(numericValue);
-      if (!isNaN(amount)) {
+      const amount = parseMonetaryAmount(numericValue);
+      if (amount > 0) {
         setCashAmountTendered(paymentId, amount);
       }
     }
   };
 
   const handleQuickAmountClick = (amount: number) => {
-    const newAmount = (parseFloat(amountTendered) || 0) + amount;
+    const currentAmount = parseMonetaryAmount(amountTendered);
+    const newAmount = roundToTwoDecimals(currentAmount + amount);
     handleAmountChange(newAmount.toString());
   };
 
   const handleExactAmountClick = () => {
-    handleAmountChange(totalAmount.toFixed(2));
+    handleAmountChange(formatMoney(totalAmount));
   };
 
   const handleProcessPayment = () => {
@@ -187,7 +196,7 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
             className="text-sm col-span-3"
           >
             <Calculator className="h-3 w-3 mr-1" />
-            Exact Amount (${totalAmount.toFixed(2)})
+            Exact Amount (${formatMoney(totalAmount)})
           </Button>
         </div>
       </div>
@@ -197,19 +206,19 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Total Amount:</span>
-            <span className="font-medium">${totalAmount.toFixed(2)}</span>
+            <span className="font-medium">${formatMoney(totalAmount)}</span>
           </div>
           <div className="flex justify-between">
             <span>Amount Tendered:</span>
             <span className="font-medium">
-              ${parseFloat(amountTendered || '0').toFixed(2)}
+              ${formatMoney(parseMonetaryAmount(amountTendered))}
             </span>
           </div>
           <Separator />
           <div className="flex justify-between text-base">
             <span>Change Due:</span>
             <span className={`font-semibold ${changeAmount > 0 ? 'text-green-600' : ''}`}>
-              ${changeAmount.toFixed(2)}
+              ${formatMoney(changeAmount)}
             </span>
           </div>
         </div>
@@ -238,7 +247,7 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Large change amount: ${changeAmount.toFixed(2)}. Please confirm with customer.
+            Large change amount: ${formatMoney(changeAmount)}. Please confirm with customer.
           </AlertDescription>
         </Alert>
       )}
@@ -276,7 +285,7 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
               Change Due
             </div>
             <div className="text-2xl font-bold text-green-900">
-              ${changeAmount.toFixed(2)}
+              ${formatMoney(changeAmount)}
             </div>
           </div>
         </Card>

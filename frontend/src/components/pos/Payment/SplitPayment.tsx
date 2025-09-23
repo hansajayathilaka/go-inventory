@@ -26,6 +26,13 @@ import {
 } from 'lucide-react';
 import { usePOSPaymentStore } from '@/stores/pos/posPaymentStore';
 import type { PaymentMethod } from '@/types/pos/payment';
+import {
+  roundToTwoDecimals,
+  parseMonetaryAmount,
+  formatMoney,
+  calculateRemainingAmount,
+  isSplitPaymentComplete
+} from '@/utils/paymentUtils';
 
 interface SplitPaymentProps {
   sessionId: string;
@@ -91,8 +98,9 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
         if (entry.id === id) {
           const updated = { ...entry, [field]: value };
           if (field === 'amount') {
-            const amount = parseFloat(value as string) || 0;
-            updated.isValid = amount > 0 && amount <= getRemainingAmount() + getCurrentEntryAmount(id);
+            const amount = parseMonetaryAmount(value as string);
+            const maxAllowed = roundToTwoDecimals(getRemainingAmount() + getCurrentEntryAmount(id));
+            updated.isValid = amount > 0 && amount <= maxAllowed;
           }
           return updated;
         }
@@ -103,33 +111,36 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
 
   const getCurrentEntryAmount = (entryId: string): number => {
     const entry = paymentEntries.find(e => e.id === entryId);
-    return entry ? (parseFloat(entry.amount) || 0) : 0;
+    return entry ? parseMonetaryAmount(entry.amount) : 0;
   };
 
   const getTotalEnteredAmount = (): number => {
-    return paymentEntries.reduce((sum, entry) => sum + (parseFloat(entry.amount) || 0), 0);
+    return roundToTwoDecimals(
+      paymentEntries.reduce((sum, entry) => sum + parseMonetaryAmount(entry.amount), 0)
+    );
   };
 
   const getRemainingAmount = (): number => {
     const appliedAmount = splitPayment?.transactions.reduce((sum, t) => sum + t.amount, 0) || 0;
-    return totalAmount - appliedAmount;
+    return calculateRemainingAmount(totalAmount, appliedAmount);
   };
 
   const getUnprocessedAmount = (): number => {
-    return getRemainingAmount() - getTotalEnteredAmount();
+    return roundToTwoDecimals(getRemainingAmount() - getTotalEnteredAmount());
   };
 
   const isReadyToProcess = (): boolean => {
     const hasValidEntries = paymentEntries.some(entry => entry.isValid);
     const totalEntered = getTotalEnteredAmount();
-    return hasValidEntries && totalEntered > 0 && totalEntered <= getRemainingAmount();
+    const remaining = getRemainingAmount();
+    return hasValidEntries && totalEntered > 0 && totalEntered <= remaining;
   };
 
   const processCurrentEntries = () => {
     const validEntries = paymentEntries.filter(entry => entry.isValid);
 
     validEntries.forEach(entry => {
-      const amount = parseFloat(entry.amount);
+      const amount = parseMonetaryAmount(entry.amount);
       addSplitPayment(sessionId, entry.method, amount);
     });
 
@@ -141,6 +152,12 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
     if (splitPayment?.isComplete) {
       completeSplitPayment(sessionId);
       onComplete();
+    } else if (splitPayment) {
+      const paidAmount = (splitPayment.totalAmount || 0) - (splitPayment.remainingAmount || 0);
+      if (isSplitPaymentComplete(totalAmount, paidAmount)) {
+        completeSplitPayment(sessionId);
+        onComplete();
+      }
     }
   };
 
@@ -179,12 +196,12 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Total Amount:</span>
-            <span className="font-medium">${totalAmount.toFixed(2)}</span>
+            <span className="font-medium">${formatMoney(totalAmount)}</span>
           </div>
           <div className="flex justify-between">
             <span>Remaining:</span>
             <span className={`font-medium ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-              ${remainingAmount.toFixed(2)}
+              ${formatMoney(remainingAmount)}
             </span>
           </div>
           {splitPayment?.transactions.length ? (
@@ -203,7 +220,7 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
                         </span>
                       </div>
                       <span className="text-xs font-medium">
-                        ${transaction.amount.toFixed(2)}
+                        ${formatMoney(transaction.amount)}
                       </span>
                     </div>
                   );
@@ -294,7 +311,7 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
 
               {entry.amount && !entry.isValid && (
                 <div className="text-xs text-destructive">
-                  Amount exceeds remaining balance (${remainingAmount.toFixed(2)})
+                  Amount exceeds remaining balance (${formatMoney(remainingAmount)})
                 </div>
               )}
             </div>
@@ -308,8 +325,8 @@ export function SplitPayment({ sessionId, totalAmount, onComplete, onCancel }: S
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {unprocessedAmount < 0
-              ? `Entries exceed remaining amount by $${Math.abs(unprocessedAmount).toFixed(2)}`
-              : `$${unprocessedAmount.toFixed(2)} still needed to complete payment`
+              ? `Entries exceed remaining amount by $${formatMoney(Math.abs(unprocessedAmount))}`
+              : `$${formatMoney(unprocessedAmount)} still needed to complete payment`
             }
           </AlertDescription>
         </Alert>

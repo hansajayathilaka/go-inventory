@@ -10,6 +10,12 @@ import type {
   PaymentValidationResult,
   PaymentValidationRules
 } from '@/types/pos/payment';
+import {
+  roundToTwoDecimals,
+  isPaymentSufficient,
+  calculateChange,
+  calculateRemainingAmount
+} from '@/utils/paymentUtils';
 
 interface POSPaymentStore extends PaymentState, PaymentActions {}
 
@@ -36,8 +42,8 @@ const validateCashPayment = (
   }
 
   // Check if payment covers the total
-  if (amountTendered < totalAmount) {
-    errors.push(`Amount tendered ($${amountTendered.toFixed(2)}) is less than total ($${totalAmount.toFixed(2)})`);
+  if (!isPaymentSufficient(amountTendered, totalAmount)) {
+    errors.push(`Amount tendered ($${roundToTwoDecimals(amountTendered).toFixed(2)}) is less than total ($${roundToTwoDecimals(totalAmount).toFixed(2)})`);
   }
 
   // Check for exact change requirement
@@ -46,9 +52,9 @@ const validateCashPayment = (
   }
 
   // Warn about large overpayment
-  const overpayment = amountTendered - totalAmount;
+  const overpayment = calculateChange(amountTendered, totalAmount);
   if (overpayment > 100) {
-    warnings.push(`Large overpayment: $${overpayment.toFixed(2)} change required`);
+    warnings.push(`Large overpayment: $${roundToTwoDecimals(overpayment).toFixed(2)} change required`);
   }
 
   return {
@@ -96,7 +102,7 @@ export const usePOSPaymentStore = create<POSPaymentStore>()(
               return { error: 'Payment not found or not active' };
             }
 
-            const changeAmount = Math.max(0, amount - state.activePayment.amount);
+            const changeAmount = calculateChange(amount, state.activePayment.amount);
 
             return {
               ...state,
@@ -121,8 +127,11 @@ export const usePOSPaymentStore = create<POSPaymentStore>()(
               return { error: 'Amount tendered not set' };
             }
 
-            // Validate payment
-            const validation = validateCashPayment(payment.amount, payment.amountTendered);
+            // Validate payment with proper rounding
+            const validation = validateCashPayment(
+              roundToTwoDecimals(payment.amount),
+              roundToTwoDecimals(payment.amountTendered)
+            );
             if (!validation.isValid) {
               return { error: validation.errors.join(', ') };
             }
@@ -211,7 +220,10 @@ export const usePOSPaymentStore = create<POSPaymentStore>()(
               return { error: 'Split payment not initiated' };
             }
 
-            if (amount > splitPayment.remainingAmount) {
+            const roundedAmount = roundToTwoDecimals(amount);
+            const roundedRemaining = roundToTwoDecimals(splitPayment.remainingAmount);
+
+            if (roundedAmount > roundedRemaining) {
               return { error: 'Payment amount exceeds remaining balance' };
             }
 
@@ -219,17 +231,18 @@ export const usePOSPaymentStore = create<POSPaymentStore>()(
               id: paymentId,
               sessionId,
               method,
-              amount,
+              amount: roundedAmount,
               status: 'completed',
               timestamp: new Date(),
             };
 
-            const newRemainingAmount = splitPayment.remainingAmount - amount;
+            const newRemainingAmount = calculateRemainingAmount(splitPayment.totalAmount,
+              splitPayment.totalAmount - splitPayment.remainingAmount + roundedAmount);
             const updatedSplitPayment: SplitPayment = {
               ...splitPayment,
               transactions: [...splitPayment.transactions, payment],
               remainingAmount: newRemainingAmount,
-              isComplete: newRemainingAmount <= 0,
+              isComplete: newRemainingAmount <= 0.01, // Allow for small rounding differences
             };
 
             return {
