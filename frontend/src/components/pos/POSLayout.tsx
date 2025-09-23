@@ -17,6 +17,7 @@ import { CustomerSelect } from './Customer/CustomerSelect';
 import { CustomerInfo } from './Customer/CustomerInfo';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
+import { usePOSCustomerStore } from '@/stores/pos/posCustomerStore';
 import { isPOSFeatureEnabled } from '@/config/posFeatures';
 
 interface POSLayoutProps {
@@ -27,6 +28,7 @@ interface POSLayoutProps {
 export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const { getSession } = usePOSSessionStore();
   const { getCartItems, getCartSummary, removeItem, updateItem, applyBillDiscount, sessionDiscounts } = usePOSCartStore();
+  const { getSessionCustomer } = usePOSCustomerStore();
 
   const currentSession = activeSession ? getSession(activeSession) : null;
 
@@ -130,10 +132,16 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                       <CustomerSelect sessionId={activeSession} />
                     </div>
 
-                    {/* Customer Info */}
-                    <div className="px-4">
-                      <CustomerInfo sessionId={activeSession} />
-                    </div>
+                    {/* Customer Info - Only show for non-walk-in customers */}
+                    {(() => {
+                      const selectedCustomer = getSessionCustomer(activeSession);
+                      const isWalkIn = selectedCustomer?.id === 'walk-in';
+                      return !isWalkIn && selectedCustomer && (
+                        <div className="px-4">
+                          <CustomerInfo sessionId={activeSession} />
+                        </div>
+                      );
+                    })()}
 
                     {/* Discount Engine Panel */}
                     {isPOSFeatureEnabled('discountEngine') && (

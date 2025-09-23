@@ -49,6 +49,7 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
     clearSearch,
     createQuickCustomer,
     selectWalkInCustomer,
+    loadRecentCustomers,
   } = usePOSCustomerStore();
 
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
@@ -63,6 +64,13 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const selectedCustomer = getSessionCustomer(sessionId);
+
+  // Load recent customers on component mount
+  useEffect(() => {
+    if (recentCustomers.length === 0) {
+      loadRecentCustomers();
+    }
+  }, [loadRecentCustomers, recentCustomers.length]);
 
   // Debounced search
   useEffect(() => {

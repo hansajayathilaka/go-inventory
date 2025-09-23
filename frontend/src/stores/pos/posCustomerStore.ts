@@ -68,12 +68,13 @@ interface CustomerActions {
   searchCustomers: (query: string) => Promise<void>;
   clearSearch: () => void;
 
-  // Quick customer creation
-  createQuickCustomer: (sessionId: string, name: string, phone?: string, email?: string) => void;
-
   // Recent customers management
   addToRecent: (customer: Customer) => void;
   clearRecent: () => void;
+  loadRecentCustomers: () => Promise<void>;
+
+  // Quick customer creation
+  createQuickCustomer: (sessionId: string, name: string, phone?: string, email?: string) => void;
 
   // Walk-in customer
   selectWalkInCustomer: (sessionId: string) => void;
@@ -222,6 +223,23 @@ export const usePOSCustomerStore = create<POSCustomerStore>()(
 
         clearRecent: () => {
           set({ recentCustomers: [] });
+        },
+
+        // Load recent customers from API
+        loadRecentCustomers: async () => {
+          try {
+            // Import here to avoid circular dependencies
+            const { customerService } = await import('@/services/customerService');
+
+            const customers = await customerService.getActiveCustomers(10);
+
+            set({
+              recentCustomers: customers,
+            });
+          } catch (error) {
+            console.error('Failed to load recent customers:', error);
+            // Don't set error state for recent customers, just keep empty array
+          }
         },
 
         // Walk-in customer
