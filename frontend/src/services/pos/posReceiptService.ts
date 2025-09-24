@@ -162,9 +162,6 @@ export class POSReceiptService {
             font-size: 10px;
           }
 
-          .discount-text {
-            color: #d32f2f;
-          }
 
           .total-row {
             font-weight: bold;
@@ -268,11 +265,11 @@ export class POSReceiptService {
                 <div class="item-quantity">
                   ${item.quantity} × ${formatCurrency(item.price)}
                   ${item.lineDiscount && item.lineDiscount > 0 ? `
-                    <span class="discount-text"> -${formatCurrency(item.lineDiscount)}</span>
+                    <span> -${formatCurrency(item.lineDiscount)}</span>
                   ` : ''}
                 </div>
                 ${receipt.printOptions.showDiscountReasons && item.discountReason ? `
-                  <div class="item-details discount-text" style="font-style: italic;">
+                  <div class="item-details" style="font-style: italic;">
                     Discount: ${item.discountReason}
                   </div>
                 ` : ''}
@@ -290,21 +287,21 @@ export class POSReceiptService {
             </div>
 
             ${receipt.summary.lineDiscountAmount > 0 ? `
-              <div class="row discount-text">
+              <div class="row">
                 <span>Item Discounts:</span>
                 <span>-${formatCurrency(receipt.summary.lineDiscountAmount)}</span>
               </div>
             ` : ''}
 
             ${receipt.summary.billDiscountAmount > 0 ? `
-              <div class="row discount-text">
+              <div class="row">
                 <span>Bill Discount:</span>
                 <span>-${formatCurrency(receipt.summary.billDiscountAmount)}</span>
               </div>
             ` : ''}
 
             ${receipt.summary.discountAmount > 0 ? `
-              <div class="row discount-text" style="font-weight: bold;">
+              <div class="row" style="font-weight: bold;">
                 <span>Total Discounts:</span>
                 <span>-${formatCurrency(receipt.summary.discountAmount)}</span>
               </div>
@@ -379,7 +376,11 @@ export class POSReceiptService {
         throw new Error('Unable to open print window for PDF download.');
       }
 
-      const printHTML = this.generatePrintHTML(receipt);
+      // Set the document title to the receipt number for filename
+      const printHTML = this.generatePrintHTML(receipt).replace(
+        `<title>Receipt - ${receipt.receiptNumber}</title>`,
+        `<title>${receipt.receiptNumber}</title>`
+      );
 
       printWindow.document.write(printHTML);
       printWindow.document.close();

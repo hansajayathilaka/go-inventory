@@ -106,21 +106,21 @@ export const ReceiptPreview = forwardRef<HTMLDivElement, ReceiptPreviewProps>(
                 <span>{formatCurrency(item.price * item.quantity)}</span>
               </div>
               {receipt.printOptions.showItemCodes && item.productCode && (
-                <div className="text-xs text-gray-600">SKU: {item.productCode}</div>
+                <div className="text-xs">SKU: {item.productCode}</div>
               )}
               {receipt.printOptions.showCategories && item.categoryName && (
-                <div className="text-xs text-gray-600">Category: {item.categoryName}</div>
+                <div className="text-xs">Category: {item.categoryName}</div>
               )}
               <div className="text-xs">
                 {item.quantity} × {formatCurrency(item.price)}
                 {item.lineDiscount && item.lineDiscount > 0 && (
-                  <span className="text-red-600 ml-2">
+                  <span className="ml-2">
                     -{formatCurrency(item.lineDiscount)}
                   </span>
                 )}
               </div>
               {receipt.printOptions.showDiscountReasons && item.discountReason && (
-                <div className="text-xs text-red-600 italic">
+                <div className="text-xs italic">
                   Discount: {item.discountReason}
                 </div>
               )}
@@ -138,21 +138,21 @@ export const ReceiptPreview = forwardRef<HTMLDivElement, ReceiptPreviewProps>(
           </div>
 
           {receipt.summary.lineDiscountAmount > 0 && (
-            <div className="flex justify-between text-red-600">
+            <div className="flex justify-between">
               <span>Item Discounts:</span>
               <span>-{formatCurrency(receipt.summary.lineDiscountAmount)}</span>
             </div>
           )}
 
           {receipt.summary.billDiscountAmount > 0 && (
-            <div className="flex justify-between text-red-600">
+            <div className="flex justify-between">
               <span>Bill Discount:</span>
               <span>-{formatCurrency(receipt.summary.billDiscountAmount)}</span>
             </div>
           )}
 
           {receipt.summary.discountAmount > 0 && (
-            <div className="flex justify-between text-red-600 font-semibold">
+            <div className="flex justify-between font-semibold">
               <span>Total Discounts:</span>
               <span>-{formatCurrency(receipt.summary.discountAmount)}</span>
             </div>
@@ -207,10 +207,10 @@ export const ReceiptPreview = forwardRef<HTMLDivElement, ReceiptPreviewProps>(
           <div className="mb-2">Thank you for your business!</div>
           <div className="mb-1">Return Policy: 30 days with receipt</div>
           <div className="mb-1">Visit us: {receipt.businessInfo.address[0]}</div>
-          <div className="text-xs text-gray-500 mt-3">
+          <div className="text-xs mt-3">
             Transaction ID: {receipt.transactionId.slice(-12).toUpperCase()}
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs">
             Generated: {format(new Date(), 'MM/dd/yyyy hh:mm:ss a')}
           </div>
         </div>

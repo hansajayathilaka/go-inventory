@@ -7,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Banknote,
-  Calculator,
   CheckCircle,
   AlertCircle,
   ArrowLeft
@@ -28,14 +27,6 @@ interface CashPaymentProps {
   onCancel: () => void;
 }
 
-// Quick amount buttons for common cash denominations
-const quickAmounts = [
-  { label: '$5', value: 5 },
-  { label: '$10', value: 10 },
-  { label: '$20', value: 20 },
-  { label: '$50', value: 50 },
-  { label: '$100', value: 100 },
-];
 
 export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: CashPaymentProps) {
   const {
@@ -118,15 +109,6 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
     }
   };
 
-  const handleQuickAmountClick = (amount: number) => {
-    const currentAmount = parseMonetaryAmount(amountTendered);
-    const newAmount = roundToTwoDecimals(currentAmount + amount);
-    handleAmountChange(newAmount.toString());
-  };
-
-  const handleExactAmountClick = () => {
-    handleAmountChange(formatMoney(totalAmount));
-  };
 
   const handleProcessPayment = () => {
     if (!paymentId || !isValid) return;
@@ -179,32 +161,6 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
         </div>
       </div>
 
-      {/* Quick Amount Buttons */}
-      <div className="space-y-2">
-        <Label>Quick Add</Label>
-        <div className="grid grid-cols-3 gap-2">
-          {quickAmounts.map((quick) => (
-            <Button
-              key={quick.value}
-              variant="outline"
-              size="sm"
-              onClick={() => handleQuickAmountClick(quick.value)}
-              className="text-sm"
-            >
-              {quick.label}
-            </Button>
-          ))}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExactAmountClick}
-            className="text-sm col-span-3"
-          >
-            <Calculator className="h-3 w-3 mr-1" />
-            Exact Amount (${formatMoney(totalAmount)})
-          </Button>
-        </div>
-      </div>
 
       {/* Calculation Summary */}
       <Card className="p-3">
