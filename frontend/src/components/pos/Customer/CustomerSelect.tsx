@@ -65,12 +65,17 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
 
   const selectedCustomer = getSessionCustomer(sessionId);
 
-  // Load recent customers on component mount
+  // Load recent customers on component mount and set walk-in as default
   useEffect(() => {
     if (recentCustomers.length === 0) {
       loadRecentCustomers();
     }
-  }, [loadRecentCustomers, recentCustomers.length]);
+
+    // Set walk-in as default customer if no customer is selected
+    if (!selectedCustomer) {
+      selectWalkInCustomer(sessionId);
+    }
+  }, [loadRecentCustomers, recentCustomers.length, selectedCustomer, selectWalkInCustomer, sessionId]);
 
   // Debounced search
   useEffect(() => {

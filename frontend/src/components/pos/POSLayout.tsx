@@ -1,19 +1,25 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   ShoppingCart,
   X,
-  Receipt
+  Receipt,
+  Info
 } from 'lucide-react';
 import { SessionManager } from './SessionManager';
 import { ProductSelection } from './ProductSelection/ProductSelection';
 import { LineItemDiscount } from './Discounts/LineItemDiscount';
-import { BillDiscountDialog } from './Discounts/BillDiscountDialog';
 import { DiscountPanel } from './Discounts/DiscountPanel';
-import { DiscountSummary } from './Discounts/DiscountSummary';
 import { PaymentPanel } from './Payment/PaymentPanel';
 import { CustomerSelect } from './Customer/CustomerSelect';
 import { TransactionDialog } from './Transaction/TransactionDialog';
@@ -39,6 +45,8 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
 
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [currentTransactionId, setCurrentTransactionId] = useState<string | null>(null);
+  const [discountBreakdownOpen, setDiscountBreakdownOpen] = useState(false);
+  const [billDiscountInput, setBillDiscountInput] = useState('');
 
   const currentSession = activeSession ? getSession(activeSession) : null;
 
@@ -156,25 +164,6 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                 {/* Shopping Cart and Payment Area */}
                 <div className="col-span-4 bg-card flex flex-col min-h-0">
                   <div className="h-full flex flex-col min-h-0">
-                    {/* Session Info */}
-                    <div className="p-4 border-b">
-                      <div className="flex items-center justify-between">
-                        <h2 className="font-semibold">{currentSession.name}</h2>
-                        <Badge
-                          variant={currentSession.status === 'active' ? 'default' : 'secondary'}
-                        >
-                          {currentSession.status}
-                        </Badge>
-                      </div>
-                      {(() => {
-                        const summary = getCartSummary(activeSession);
-                        return (
-                          <p className="text-sm text-muted-foreground">
-                            {summary.itemCount} items • ${summary.total.toFixed(2)}
-                          </p>
-                        );
-                      })()}
-                    </div>
 
                     {/* Customer Selection */}
                     <div className="p-4 border-b">
@@ -259,14 +248,6 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                       </div>
                     </div>
 
-                    {/* Discount Summary */}
-                    <div className="border-t">
-                      <DiscountSummary
-                        sessionId={activeSession}
-                        cartItems={getCartItems(activeSession)}
-                        className="border-0 rounded-none"
-                      />
-                    </div>
 
                     {/* Totals and Payment */}
                     <div className="border-t p-4 space-y-3">
@@ -279,9 +260,36 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                                 <span>Subtotal:</span>
                                 <span>${summary.subtotal.toFixed(2)}</span>
                               </div>
-                              <div className="flex justify-between text-sm">
+                              <div className="flex justify-between text-sm items-center">
                                 <span>Discount:</span>
-                                <span>-${summary.discountAmount.toFixed(2)}</span>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max={summary.subtotal}
+                                    placeholder="0.00"
+                                    value={billDiscountInput}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setBillDiscountInput(value);
+                                      const discountAmount = parseFloat(value) || 0;
+                                      if (discountAmount >= 0) {
+                                        handleApplyBillDiscount(discountAmount);
+                                      }
+                                    }}
+                                    className="w-16 h-6 text-xs px-1"
+                                  />
+                                  {summary.discountAmount > 0 && (
+                                    <button
+                                      onClick={() => setDiscountBreakdownOpen(true)}
+                                      className="text-red-600 hover:text-red-700 hover:underline flex items-center gap-1"
+                                    >
+                                      -${summary.discountAmount.toFixed(2)}
+                                      <Info className="h-3 w-3" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span>Tax:</span>
@@ -293,12 +301,6 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                               </div>
                             </div>
 
-                            {/* Bill Discount */}
-                            <BillDiscountDialog
-                              cartSummary={summary}
-                              currentBillDiscount={activeSession ? (sessionDiscounts[activeSession] || 0) : 0}
-                              onApplyDiscount={handleApplyBillDiscount}
-                            />
 
                             {/* Review Transaction Button */}
                             <Button
@@ -361,6 +363,58 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
         onOpenChange={setTransactionDialogOpen}
         transactionId={currentTransactionId}
       />
+
+      {/* Discount Breakdown Dialog */}
+      <Dialog open={discountBreakdownOpen} onOpenChange={setDiscountBreakdownOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Discount Breakdown</DialogTitle>
+          </DialogHeader>
+
+          {activeSession && (() => {
+            const cartItems = getCartItems(activeSession);
+            const summary = getCartSummary(activeSession);
+            const billDiscount = sessionDiscounts[activeSession] || 0;
+
+            const lineDiscounts = cartItems.filter(item => (item.lineDiscount || 0) > 0);
+
+            return (
+              <div className="space-y-4">
+                {lineDiscounts.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-2">Item Discounts</h4>
+                    <div className="space-y-2">
+                      {lineDiscounts.map(item => (
+                        <div key={item.id} className="flex justify-between text-sm">
+                          <span className="truncate flex-1 mr-2">{item.productName}</span>
+                          <span className="text-red-600">-${(item.lineDiscount || 0).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {billDiscount > 0 && (
+                  <div>
+                    {lineDiscounts.length > 0 && <Separator />}
+                    <h4 className="font-medium mb-2">Bill Discount</h4>
+                    <div className="flex justify-between text-sm">
+                      <span>Total Bill Discount</span>
+                      <span className="text-red-600">-${billDiscount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+
+                <Separator />
+                <div className="flex justify-between font-medium">
+                  <span>Total Savings</span>
+                  <span className="text-red-600">-${summary.discountAmount.toFixed(2)}</span>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

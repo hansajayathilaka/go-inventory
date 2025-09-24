@@ -1,11 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus,
   X,
-  Pause,
-  Play,
   AlertCircle,
 } from 'lucide-react';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
@@ -18,13 +15,14 @@ interface SessionManagerProps {
 
 export function SessionManager({ activeSessionId, onSessionChange }: SessionManagerProps) {
   const {
-    activeSessions,
     createSession,
     closeSession,
-    holdSession,
-    resumeSession,
     setActiveSession,
+    getActiveSessions,
   } = usePOSSessionStore();
+
+  // Use the store method to get active sessions to ensure reactivity
+  const activeSessionsList = getActiveSessions();
 
   const { getCartSummary } = usePOSCartStore();
 
@@ -47,24 +45,13 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
     closeSession(sessionId);
   };
 
-  const handleToggleHold = (sessionId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    const session = activeSessions.find(s => s.id === sessionId);
-    if (!session) return;
-
-    if (session.status === 'on-hold') {
-      resumeSession(sessionId);
-    } else {
-      holdSession(sessionId);
-    }
-  };
 
   const handleSessionClick = (sessionId: string) => {
     setActiveSession(sessionId);
     onSessionChange(sessionId);
   };
 
-  if (activeSessions.length === 0) {
+  if (activeSessionsList.length === 0) {
     return (
       <div className="flex items-center justify-between px-6 py-2">
         <div className="flex items-center space-x-2">
@@ -90,28 +77,26 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
         <Badge variant="secondary">Multi-Session POS</Badge>
       </div>
 
-      <Tabs
-        value={activeSessionId || ''}
-        onValueChange={handleSessionClick}
-        className="flex-1 max-w-4xl mx-4"
-      >
+      <div className="flex-1 max-w-4xl mx-4">
         <div className="flex items-center space-x-2">
-          <TabsList className="grid w-full grid-cols-fit">
-            {activeSessions.map((session) => {
+          <div className="flex bg-muted p-1 rounded-md">
+            {activeSessionsList.map((session) => {
               const summary = getCartSummary(session.id);
+              const isActive = session.id === activeSessionId;
               return (
-                <TabsTrigger
+                <div
                   key={session.id}
-                  value={session.id}
-                  className="relative group min-w-[120px]"
+                  className={`relative min-w-[140px] px-3 py-1.5 text-sm font-medium rounded-sm transition-colors border flex items-center justify-between ${
+                    isActive
+                      ? 'bg-background text-foreground shadow-sm border-border'
+                      : 'bg-muted/20 text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent'
+                  }`}
                 >
-                  <div className="flex items-center space-x-2">
-                    <span className="truncate max-w-20">{session.name}</span>
-
-                    {/* Session Status Indicators */}
-                    {session.status === 'on-hold' && (
-                      <Pause className="h-3 w-3 text-orange-500" />
-                    )}
+                  <button
+                    onClick={() => handleSessionClick(session.id)}
+                    className="flex items-center space-x-2 flex-1"
+                  >
+                    <span className="truncate max-w-16">{session.name}</span>
 
                     {/* Item Count Badge */}
                     {summary.itemCount > 0 && (
@@ -124,39 +109,20 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
                     {summary.total < 0 && (
                       <AlertCircle className="h-3 w-3 text-destructive" />
                     )}
-                  </div>
+                  </button>
 
-                  {/* Session Action Buttons */}
-                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="flex space-x-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-5 w-5 p-0 hover:bg-secondary"
-                        onClick={(e) => handleToggleHold(session.id, e)}
-                        title={session.status === 'on-hold' ? 'Resume Session' : 'Hold Session'}
-                      >
-                        {session.status === 'on-hold' ? (
-                          <Play className="h-3 w-3" />
-                        ) : (
-                          <Pause className="h-3 w-3" />
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-5 w-5 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={(e) => handleCloseSession(session.id, e)}
-                        title="Close Session"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </TabsTrigger>
+                  {/* Close Button - Separate button element */}
+                  <button
+                    className="h-4 w-4 p-0 ml-2 rounded hover:bg-destructive hover:text-destructive-foreground opacity-60 hover:opacity-100 transition-colors flex items-center justify-center"
+                    onClick={(e) => handleCloseSession(session.id, e)}
+                    title="Close Session"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
               );
             })}
-          </TabsList>
+          </div>
 
           <Button
             size="sm"
@@ -168,12 +134,12 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
             <span>New Session</span>
           </Button>
         </div>
-      </Tabs>
+      </div>
 
       {/* Session Summary Info */}
       {activeSessionId && (
         <div className="text-sm text-muted-foreground">
-          {activeSessions.length} session{activeSessions.length !== 1 ? 's' : ''} active
+          {activeSessionsList.length} session{activeSessionsList.length !== 1 ? 's' : ''} active
         </div>
       )}
     </div>
