@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCart,
-  X
+  X,
+  Receipt
 } from 'lucide-react';
 import { SessionManager } from './SessionManager';
 import { ProductSelection } from './ProductSelection/ProductSelection';
@@ -15,10 +17,14 @@ import { DiscountSummary } from './Discounts/DiscountSummary';
 import { PaymentPanel } from './Payment/PaymentPanel';
 import { CustomerSelect } from './Customer/CustomerSelect';
 import { CustomerInfo } from './Customer/CustomerInfo';
+import { TransactionDialog } from './Transaction/TransactionDialog';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
 import { usePOSCustomerStore } from '@/stores/pos/posCustomerStore';
+import { usePOSTransactionStore } from '@/stores/pos/posTransactionStore';
+import { usePOSPaymentStore } from '@/stores/pos/posPaymentStore';
 import { isPOSFeatureEnabled } from '@/config/posFeatures';
+import { toast } from 'sonner';
 
 interface POSLayoutProps {
   activeSession: string | null;
@@ -27,8 +33,13 @@ interface POSLayoutProps {
 
 export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
   const { getSession } = usePOSSessionStore();
-  const { getCartItems, getCartSummary, removeItem, updateItem, applyBillDiscount, sessionDiscounts } = usePOSCartStore();
+  const { getCartItems, getCartSummary, removeItem, updateItem, applyBillDiscount, sessionDiscounts, clearCart } = usePOSCartStore();
   const { getSessionCustomer } = usePOSCustomerStore();
+  const { buildTransactionFromSession, updateTransactionStatus } = usePOSTransactionStore();
+  const { getSessionPayments } = usePOSPaymentStore();
+
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [currentTransactionId, setCurrentTransactionId] = useState<string | null>(null);
 
   const currentSession = activeSession ? getSession(activeSession) : null;
 
@@ -58,14 +69,53 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
 
   const handlePaymentComplete = () => {
     if (!activeSession) return;
-    // Clear the cart after successful payment
-    // For now, just log the completion - in a real system, this would:
-    // 1. Create a transaction record
-    // 2. Update inventory
-    // 3. Generate receipt
-    // 4. Clear the session cart
-    console.log(`Payment completed for session ${activeSession}`);
-    // clearCart(activeSession); // Uncomment when ready to clear cart after payment
+
+    try {
+      // Get all the data needed for the transaction
+      const cartItems = getCartItems(activeSession);
+      const cartSummary = getCartSummary(activeSession);
+      const customer = getSessionCustomer(activeSession);
+      const payments = getSessionPayments(activeSession);
+      const session = getSession(activeSession);
+
+      if (cartItems.length === 0) {
+        toast.error('Cannot complete payment: No items in cart');
+        return;
+      }
+
+      // Create the transaction record
+      const transaction = buildTransactionFromSession(
+        activeSession,
+        session?.name || `Session ${activeSession}`,
+        cartItems,
+        cartSummary,
+        customer,
+        payments
+      );
+
+      // Update transaction status to completed
+      updateTransactionStatus(transaction.id, 'completed');
+
+      // Clear the cart
+      clearCart(activeSession);
+
+      // Show transaction summary
+      setCurrentTransactionId(transaction.id);
+      setTransactionDialogOpen(true);
+
+      toast.success('Payment completed successfully!');
+
+      // Log for debugging
+      console.log(`Payment completed for session ${activeSession}`, {
+        transactionId: transaction.id,
+        total: cartSummary.total,
+        paymentMethods: payments.map(p => p.method)
+      });
+
+    } catch (error) {
+      console.error('Error completing payment:', error);
+      toast.error('Failed to complete payment. Please try again.');
+    }
   };
 
   return (
@@ -262,6 +312,43 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                               onApplyDiscount={handleApplyBillDiscount}
                             />
 
+                            {/* Review Transaction Button */}
+                            <Button
+                              variant="outline"
+                              className="w-full mb-2"
+                              disabled={summary.itemCount === 0}
+                              onClick={() => {
+                                // Create a preview transaction (draft status)
+                                try {
+                                  const cartItems = getCartItems(activeSession);
+                                  const customer = getSessionCustomer(activeSession);
+                                  const session = getSession(activeSession);
+                                  const payments = getSessionPayments(activeSession);
+
+                                  const previewTransaction = buildTransactionFromSession(
+                                    activeSession,
+                                    session?.name || `Session ${activeSession}`,
+                                    cartItems,
+                                    summary,
+                                    customer,
+                                    payments
+                                  );
+
+                                  // Set status to draft for preview
+                                  previewTransaction.status = 'draft';
+
+                                  setCurrentTransactionId(previewTransaction.id);
+                                  setTransactionDialogOpen(true);
+                                } catch (error) {
+                                  console.error('Error creating transaction preview:', error);
+                                  toast.error('Failed to create transaction preview');
+                                }
+                              }}
+                            >
+                              <Receipt className="h-4 w-4 mr-2" />
+                              Review Transaction
+                            </Button>
+
                             {/* Payment Panel */}
                             <PaymentPanel
                               sessionId={activeSession}
@@ -279,6 +366,13 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
           </Tabs>
         </div>
       )}
+
+      {/* Transaction Summary Dialog */}
+      <TransactionDialog
+        open={transactionDialogOpen}
+        onOpenChange={setTransactionDialogOpen}
+        transactionId={currentTransactionId}
+      />
     </div>
   );
 }
