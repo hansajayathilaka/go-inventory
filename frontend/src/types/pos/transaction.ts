@@ -6,6 +6,7 @@ export interface TransactionItem extends CartItem {
   categoryName?: string;
   brandName?: string;
   originalPrice: number; // Before any discounts
+  discountReason?: string; // Reason for any line discount applied
 }
 
 export interface TransactionSummary extends CartSummary {

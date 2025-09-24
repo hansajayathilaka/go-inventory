@@ -28,6 +28,7 @@ export interface PaymentTransaction {
   amount: number;
   amountTendered?: number; // For cash payments
   changeAmount?: number; // For cash payments
+  changeDue?: number; // For cash payments - alias for receipt display
   cardData?: CardPaymentData;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   timestamp: Date;

@@ -101,7 +101,11 @@
       "Bash(xargs -r kill -9)",
       "Bash(sqlite3:*)",
       "Bash(jq:*)",
-      "mcp__playwright__browser_evaluate"
+      "mcp__playwright__browser_evaluate",
+      "Bash(if [ -f \"POS_IMPLEMENTATION_PLAN.md\" ])",
+      "Bash(then echo \"Plan file exists, proceeding...\")",
+      "Bash(else echo \"❌ POS_IMPLEMENTATION_PLAN.md not found. Creating basic POS plan first...\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []
