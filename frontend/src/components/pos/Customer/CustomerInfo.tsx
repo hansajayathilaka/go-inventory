@@ -13,10 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import {
   User,
-  Phone,
-  Mail,
-  MapPin,
-  ShoppingBag,
   Calendar,
   Info
 } from 'lucide-react';
@@ -149,52 +145,18 @@ export function CustomerInfo({ sessionId, className }: CustomerInfoProps) {
             </div>
           </div>
 
-          {/* Customer Info */}
-          <div className="space-y-2 text-sm">
-            {isWalkIn && (
-              <div className="text-muted-foreground text-center py-2">
-                <span>No customer details required for walk-in purchases</span>
-              </div>
-            )}
+          {/* Customer Info - Minimal display */}
+          {isWalkIn && (
+            <div className="text-xs text-muted-foreground text-center">
+              Walk-in customer
+            </div>
+          )}
 
-            {!isWalkIn && 'code' in selectedCustomer && selectedCustomer.code && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <span>Code: {selectedCustomer.code}</span>
-              </div>
-            )}
-
-            {'phone' in selectedCustomer && selectedCustomer.phone && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-3 w-3" />
-                <span>{selectedCustomer.phone}</span>
-              </div>
-            )}
-
-            {'email' in selectedCustomer && selectedCustomer.email && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-3 w-3" />
-                <span className="truncate">{selectedCustomer.email}</span>
-              </div>
-            )}
-
-            {!isWalkIn && !isQuickCustomer && (
-              <>
-                {(selectedCustomer as Customer).city && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    <span>{(selectedCustomer as Customer).city}</span>
-                  </div>
-                )}
-
-                {(selectedCustomer as Customer).total_purchases !== undefined && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ShoppingBag className="h-3 w-3" />
-                    <span>Total: {formatCurrency((selectedCustomer as Customer).total_purchases || 0)}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          {!isWalkIn && 'code' in selectedCustomer && selectedCustomer.code && (
+            <div className="text-xs text-muted-foreground text-center">
+              Code: {selectedCustomer.code}
+            </div>
+          )}
         </div>
       </Card>
     </div>

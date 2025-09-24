@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -140,58 +136,34 @@ export function PaymentPanel({ sessionId, cartSummary, onPaymentComplete, classN
 
     // Payment method selection
     return (
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Select Payment Method</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Choose how the customer wants to pay for this transaction.
-          </p>
-        </div>
-
-        <div className="grid gap-3">
-          {paymentMethods.map((method) => {
+      <div className="space-y-3">
+        <div className="grid gap-2">
+          {paymentMethods.filter(method => method.enabled).map((method) => {
             const Icon = method.icon;
             return (
               <Button
                 key={method.id}
                 variant={method.primary ? "default" : "outline"}
-                className="h-auto p-4 justify-start"
-                disabled={!method.enabled}
+                className="justify-start h-12"
                 onClick={() => handlePaymentSelect(method.id)}
               >
-                <Icon className="h-5 w-5 mr-3" />
-                <div className="text-left flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{method.name}</span>
-                    {!method.enabled && (
-                      <Badge variant="secondary" className="text-xs">
-                        Coming Soon
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {method.description}
-                  </p>
-                </div>
+                <Icon className="h-4 w-4 mr-3" />
+                <span>{method.name}</span>
+                <span className="ml-auto text-sm font-medium">
+                  ${cartSummary.total.toFixed(2)}
+                </span>
               </Button>
             );
           })}
         </div>
 
-        <Separator />
-
         <Button
           variant="outline"
-          className="w-full h-auto p-4"
+          className="w-full h-10"
           onClick={handleSplitPaymentToggle}
         >
-          <Split className="h-5 w-5 mr-3" />
-          <div className="text-left flex-1">
-            <div className="font-medium">Split Payment</div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Use multiple payment methods for this transaction
-            </p>
-          </div>
+          <Split className="h-4 w-4 mr-2" />
+          Split Payment
         </Button>
       </div>
     );
@@ -212,40 +184,13 @@ export function PaymentPanel({ sessionId, cartSummary, onPaymentComplete, classN
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Process Payment</DialogTitle>
-            <DialogDescription>
-              Total amount: <span className="font-semibold">${cartSummary.total.toFixed(2)}</span>
-            </DialogDescription>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Process Payment</span>
+              <span className="text-lg font-bold">${cartSummary.total.toFixed(2)}</span>
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Transaction Summary */}
-            <Card className="p-3">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Items ({cartSummary.itemCount}):</span>
-                  <span>${cartSummary.subtotal.toFixed(2)}</span>
-                </div>
-                {cartSummary.discountAmount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount:</span>
-                    <span>-${cartSummary.discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span>Tax:</span>
-                  <span>${cartSummary.taxAmount.toFixed(2)}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-semibold text-base">
-                  <span>Total:</span>
-                  <span>${cartSummary.total.toFixed(2)}</span>
-                </div>
-              </div>
-            </Card>
-
-            {renderPaymentContent()}
-          </div>
+          {renderPaymentContent()}
         </DialogContent>
       </Dialog>
     </div>

@@ -56,13 +56,18 @@ export function CashPayment({ sessionId, totalAmount, onComplete, onCancel }: Ca
     const id = initiateCashPayment(sessionId, totalAmount);
     setPaymentId(id);
 
+    // Set exact amount as default
+    const exactAmount = formatMoney(totalAmount);
+    setAmountTendered(exactAmount);
+    setCashAmountTendered(id, totalAmount);
+
     return () => {
       // Cleanup: cancel payment if component unmounts without completion
       if (id && activePayment?.status === 'pending') {
         cancelPayment(id);
       }
     };
-  }, [sessionId, totalAmount, initiateCashPayment, cancelPayment, activePayment?.status]);
+  }, [sessionId, totalAmount, initiateCashPayment, cancelPayment, activePayment?.status, setCashAmountTendered]);
 
   // Calculate change amount with proper rounding
   const changeAmount = useMemo(() => {
