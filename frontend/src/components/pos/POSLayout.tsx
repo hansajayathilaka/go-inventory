@@ -16,7 +16,6 @@ import { DiscountPanel } from './Discounts/DiscountPanel';
 import { DiscountSummary } from './Discounts/DiscountSummary';
 import { PaymentPanel } from './Payment/PaymentPanel';
 import { CustomerSelect } from './Customer/CustomerSelect';
-import { CustomerInfo } from './Customer/CustomerInfo';
 import { TransactionDialog } from './Transaction/TransactionDialog';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
@@ -181,17 +180,6 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                     <div className="p-4 border-b">
                       <CustomerSelect sessionId={activeSession} />
                     </div>
-
-                    {/* Customer Info - Only show for non-walk-in customers */}
-                    {(() => {
-                      const selectedCustomer = getSessionCustomer(activeSession);
-                      const isWalkIn = selectedCustomer?.id === 'walk-in';
-                      return !isWalkIn && selectedCustomer && (
-                        <div className="px-4">
-                          <CustomerInfo sessionId={activeSession} />
-                        </div>
-                      );
-                    })()}
 
                     {/* Discount Engine Panel */}
                     {isPOSFeatureEnabled('discountEngine') && (
