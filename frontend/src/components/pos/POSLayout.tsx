@@ -89,7 +89,7 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
         session?.name || `Session ${activeSession}`,
         cartItems,
         cartSummary,
-        customer,
+        customer as Record<string, unknown> | null,
         payments
       );
 
@@ -330,7 +330,7 @@ export function POSLayout({ activeSession, onSessionChange }: POSLayoutProps) {
                                     session?.name || `Session ${activeSession}`,
                                     cartItems,
                                     summary,
-                                    customer,
+                                    customer as Record<string, unknown> | null,
                                     payments
                                   );
 

@@ -89,7 +89,7 @@ export interface TransactionActions {
     sessionName: string,
     cartItems: CartItem[],
     cartSummary: CartSummary,
-    customer: unknown,
+    customer: Record<string, unknown> | null,
     payments: PaymentTransaction[]
   ) => TransactionReview;
 }

@@ -171,8 +171,8 @@ export const usePOSTransactionStore = create<TransactionStore>()(
         sessionId: string,
         sessionName: string,
         cartItems: CartItem[],
-        cartSummary: unknown,
-        customer: unknown,
+        cartSummary: any,
+        customer: Record<string, unknown> | null,
         payments: PaymentTransaction[]
       ): TransactionReview => {
         const transactionItems: TransactionItem[] = cartItems.map(item => ({
@@ -186,13 +186,17 @@ export const usePOSTransactionStore = create<TransactionStore>()(
         const lineDiscountAmount = cartItems.reduce((sum, item) => sum + (item.lineDiscount || 0), 0);
 
         const summary: TransactionSummary = {
-          ...cartSummary,
           sessionId,
           sessionName,
-          customerId: customer?.id,
-          customerName: customer?.name,
-          customerType: customer?.type || 'walk-in',
-          billDiscountAmount: cartSummary.discountAmount - lineDiscountAmount,
+          itemCount: cartSummary?.itemCount || 0,
+          subtotal: cartSummary?.subtotal || 0,
+          discountAmount: cartSummary?.discountAmount || 0,
+          taxAmount: cartSummary?.taxAmount || 0,
+          total: cartSummary?.total || 0,
+          customerId: customer?.id as string,
+          customerName: customer?.name as string,
+          customerType: (customer?.type as 'customer' | 'walk-in' | 'quick') || 'walk-in',
+          billDiscountAmount: (cartSummary?.discountAmount || 0) - lineDiscountAmount,
           lineDiscountAmount,
           taxRate: 0.08, // Default 8% tax rate
           itemDiscountsBreakdown: cartItems
