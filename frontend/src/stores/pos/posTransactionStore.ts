@@ -287,7 +287,40 @@ export const usePOSTransactionStore = create<TransactionStore>()(
       name: 'pos-transaction-store',
       partialize: (state) => ({
         transactions: state.transactions
-      })
+      }),
+      // Proper date serialization/deserialization for persistence
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+
+          try {
+            const data = JSON.parse(str);
+            if (data.state?.transactions) {
+              // Convert date strings back to Date objects
+              data.state.transactions = data.state.transactions.map((txn: any) => ({
+                ...txn,
+                createdAt: new Date(txn.createdAt),
+                updatedAt: new Date(txn.updatedAt),
+                completedAt: txn.completedAt ? new Date(txn.completedAt) : undefined,
+                voidedAt: txn.voidedAt ? new Date(txn.voidedAt) : undefined
+              }));
+            }
+            return data;
+          } catch (error) {
+            console.error('Error parsing transaction store data:', error);
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value));
+          } catch (error) {
+            console.error('Error saving transaction store data:', error);
+          }
+        },
+        removeItem: (name) => localStorage.removeItem(name)
+      }
     }
   )
 );

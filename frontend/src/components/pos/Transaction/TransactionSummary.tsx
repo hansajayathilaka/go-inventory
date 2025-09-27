@@ -68,7 +68,16 @@ export function TransactionSummary({
   const statusInfo = statusConfig[transaction.status];
   const StatusIcon = statusInfo.icon;
 
-  const formatDateTime = (date: Date) => {
+  const formatDateTime = (date: Date | string | undefined) => {
+    if (!date) return 'N/A';
+
+    const dateObj = date instanceof Date ? date : new Date(date);
+
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return 'Invalid Date';
+    }
+
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
@@ -76,7 +85,7 @@ export function TransactionSummary({
       hour: '2-digit',
       minute: '2-digit',
       hour12: true
-    }).format(date);
+    }).format(dateObj);
   };
 
   const getPaymentMethodDisplay = (method: string) => {
