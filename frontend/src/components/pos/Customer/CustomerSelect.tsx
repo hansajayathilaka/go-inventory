@@ -294,9 +294,9 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
                       <Clock className="h-4 w-4" />
                       Recent Customers
                     </div>
-                    {recentCustomers.map((customer) => (
+                    {recentCustomers.map((customer, index) => (
                       <CustomerCard
-                        key={`recent-${customer.id}`}
+                        key={`recent-${customer.id}-${index}`}
                         customer={customer}
                         onSelect={handleCustomerSelect}
                       />
@@ -319,9 +319,9 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
                       </div>
                     )}
 
-                    {searchResults.map((customer) => (
+                    {searchResults.map((customer, index) => (
                       <CustomerCard
-                        key={`search-${customer.id}`}
+                        key={`search-${customer.id}-${index}`}
                         customer={customer}
                         onSelect={handleCustomerSelect}
                       />

@@ -203,7 +203,8 @@ export const usePOSCustomerStore = create<POSCustomerStore>()(
         // Recent customers management
         addToRecent: (customer: Customer) => {
           set((state) => {
-            const existingIndex = state.recentCustomers.findIndex(c => Number(c.id) === Number(customer.id));
+            // Fix: Compare IDs as strings to handle both numeric and UUID IDs
+            const existingIndex = state.recentCustomers.findIndex(c => String(c.id) === String(customer.id));
             let updatedRecent = [...state.recentCustomers];
 
             if (existingIndex !== -1) {
