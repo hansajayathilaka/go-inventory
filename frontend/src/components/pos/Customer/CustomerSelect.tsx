@@ -38,8 +38,8 @@ interface QuickCustomerFormData {
 
 export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
   const {
-    recentCustomers,
-    searchResults,
+    recentCustomers: rawRecentCustomers,
+    searchResults: rawSearchResults,
     isSearching,
     searchError,
     selectCustomer,
@@ -51,6 +51,15 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
     selectWalkInCustomer,
     loadRecentCustomers,
   } = usePOSCustomerStore();
+
+  // Deduplicate customers to prevent duplicate rows in UI
+  const recentCustomers = rawRecentCustomers.filter((customer, index, array) =>
+    array.findIndex(c => String(c.id) === String(customer.id)) === index
+  );
+
+  const searchResults = rawSearchResults.filter((customer, index, array) =>
+    array.findIndex(c => String(c.id) === String(customer.id)) === index
+  );
 
   const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false);
   const [isQuickCustomerDialogOpen, setIsQuickCustomerDialogOpen] = useState(false);

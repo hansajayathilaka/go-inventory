@@ -254,6 +254,36 @@ export const usePOSCustomerStore = create<POSCustomerStore>()(
           sessionCustomers: state.sessionCustomers,
           recentCustomers: state.recentCustomers,
         }),
+        // Add custom storage to handle deduplication on rehydration
+        storage: {
+          getItem: (name) => {
+            const str = localStorage.getItem(name);
+            if (!str) return null;
+
+            try {
+              const data = JSON.parse(str);
+              if (data.state?.recentCustomers) {
+                // Deduplicate recent customers on rehydration
+                const uniqueCustomers = data.state.recentCustomers.filter((customer: any, index: number, array: any[]) =>
+                  array.findIndex((c: any) => String(c.id) === String(customer.id)) === index
+                );
+                data.state.recentCustomers = uniqueCustomers;
+              }
+              return data;
+            } catch (error) {
+              console.error('Error parsing customer store data:', error);
+              return null;
+            }
+          },
+          setItem: (name, value) => {
+            try {
+              localStorage.setItem(name, JSON.stringify(value));
+            } catch (error) {
+              console.error('Error saving customer store data:', error);
+            }
+          },
+          removeItem: (name) => localStorage.removeItem(name)
+        }
       }
     ),
     {
