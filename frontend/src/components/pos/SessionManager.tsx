@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Plus,
   X,
   AlertCircle,
+  History,
 } from 'lucide-react';
 import { usePOSSessionStore } from '@/stores/pos/posSessionStore';
 import { usePOSCartStore } from '@/stores/pos/posCartStore';
+import { TransactionHistory } from './Transaction/TransactionHistory';
 
 interface SessionManagerProps {
   activeSessionId: string | null;
@@ -25,6 +28,7 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
   const activeSessionsList = getActiveSessions();
 
   const { getCartSummary } = usePOSCartStore();
+  const [transactionHistoryOpen, setTransactionHistoryOpen] = useState(false);
 
   const handleNewSession = () => {
     const sessionId = createSession();
@@ -58,14 +62,31 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
           <h1 className="text-xl font-semibold">Point of Sale</h1>
           <Badge variant="secondary">Multi-Session POS</Badge>
         </div>
-        <Button
-          size="sm"
-          onClick={handleNewSession}
-          className="flex items-center space-x-1"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Start New Session</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setTransactionHistoryOpen(true)}
+            title="View Transaction History"
+          >
+            <History className="h-4 w-4 mr-1" />
+            History
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleNewSession}
+            className="flex items-center space-x-1"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Start New Session</span>
+          </Button>
+        </div>
+
+        {/* Transaction History Dialog */}
+        <TransactionHistory
+          open={transactionHistoryOpen}
+          onOpenChange={setTransactionHistoryOpen}
+        />
       </div>
     );
   }
@@ -136,12 +157,31 @@ export function SessionManager({ activeSessionId, onSessionChange }: SessionMana
         </div>
       </div>
 
-      {/* Session Summary Info */}
-      {activeSessionId && (
-        <div className="text-sm text-muted-foreground">
-          {activeSessionsList.length} session{activeSessionsList.length !== 1 ? 's' : ''} active
-        </div>
-      )}
+      {/* Action Buttons */}
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setTransactionHistoryOpen(true)}
+          title="View Transaction History"
+        >
+          <History className="h-4 w-4 mr-1" />
+          History
+        </Button>
+
+        {/* Session Summary Info */}
+        {activeSessionId && (
+          <div className="text-sm text-muted-foreground">
+            {activeSessionsList.length} session{activeSessionsList.length !== 1 ? 's' : ''} active
+          </div>
+        )}
+      </div>
+
+      {/* Transaction History Dialog */}
+      <TransactionHistory
+        open={transactionHistoryOpen}
+        onOpenChange={setTransactionHistoryOpen}
+      />
     </div>
   );
 }

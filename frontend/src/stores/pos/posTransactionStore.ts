@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { TransactionReview, TransactionSummary, TransactionItem, TransactionReceipt, TransactionActions } from '@/types/pos/transaction';
-import type { CartItem } from '@/types/pos/cart';
+import type { TransactionReview, TransactionSummary, TransactionItem, TransactionReceipt, TransactionActions, TransactionSearchFilters } from '@/types/pos/transaction';
+import type { CartItem, CartSummary } from '@/types/pos/cart';
 import type { PaymentTransaction } from '@/types/pos/payment';
 
 interface TransactionState {
@@ -108,6 +108,59 @@ export const usePOSTransactionStore = create<TransactionStore>()(
         );
       },
 
+      searchTransactions: (filters: TransactionSearchFilters): TransactionReview[] => {
+        const state = get();
+        let filtered = [...state.transactions];
+
+        // Apply filters
+        if (filters.status) {
+          filtered = filtered.filter(txn => txn.status === filters.status);
+        }
+
+        if (filters.customerId) {
+          filtered = filtered.filter(txn => txn.summary.customerId === filters.customerId);
+        }
+
+        if (filters.cashierId) {
+          // Note: Would need to add cashier info to transaction
+          filtered = filtered.filter(txn =>
+            'cashierId' in txn && (txn as { cashierId?: string }).cashierId === filters.cashierId
+          );
+        }
+
+        if (filters.dateFrom) {
+          filtered = filtered.filter(txn =>
+            new Date(txn.createdAt) >= filters.dateFrom!
+          );
+        }
+
+        if (filters.dateTo) {
+          const endOfDay = new Date(filters.dateTo);
+          endOfDay.setHours(23, 59, 59, 999);
+          filtered = filtered.filter(txn =>
+            new Date(txn.createdAt) <= endOfDay
+          );
+        }
+
+        if (filters.amountMin !== undefined) {
+          filtered = filtered.filter(txn => txn.summary.total >= filters.amountMin!);
+        }
+
+        if (filters.amountMax !== undefined) {
+          filtered = filtered.filter(txn => txn.summary.total <= filters.amountMax!);
+        }
+
+        if (filters.receiptNumber) {
+          filtered = filtered.filter(txn =>
+            txn.id.toLowerCase().includes(filters.receiptNumber!.toLowerCase())
+          );
+        }
+
+        return filtered.sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      },
+
       generateReceipt: (transactionId: string, printOptions?: Partial<TransactionReceipt['printOptions']>): TransactionReceipt => {
         const transaction = get().getTransactionById(transactionId);
         if (!transaction) {
@@ -171,7 +224,7 @@ export const usePOSTransactionStore = create<TransactionStore>()(
         sessionId: string,
         sessionName: string,
         cartItems: CartItem[],
-        cartSummary: any,
+        cartSummary: CartSummary,
         customer: Record<string, unknown> | null,
         payments: PaymentTransaction[]
       ): TransactionReview => {

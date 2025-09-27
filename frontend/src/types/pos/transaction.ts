@@ -84,6 +84,7 @@ export interface TransactionActions {
   getTransactionById: (transactionId: string) => TransactionReview | null;
   getSessionTransactions: (sessionId: string) => TransactionReview[];
   getAllTransactions: () => TransactionReview[];
+  searchTransactions: (filters: TransactionSearchFilters) => TransactionReview[];
   generateReceipt: (transactionId: string, printOptions?: Partial<TransactionReceipt['printOptions']>) => TransactionReceipt;
   buildTransactionFromSession: (
     sessionId: string,
