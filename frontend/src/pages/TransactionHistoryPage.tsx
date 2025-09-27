@@ -307,14 +307,14 @@ export function TransactionHistoryPage() {
                 <div className="space-y-2">
                   <Label htmlFor="status-filter">Transaction Status</Label>
                   <Select
-                    value={filters.status || ''}
-                    onValueChange={(value) => setFilters(prev => ({ ...prev, status: value as TransactionReview['status'] || undefined }))}
+                    value={filters.status || 'all'}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? undefined : value as TransactionReview['status'] }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All statuses</SelectItem>
+                      <SelectItem value="all">All statuses</SelectItem>
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="pending_payment">Pending Payment</SelectItem>
                       <SelectItem value="paid">Paid</SelectItem>
