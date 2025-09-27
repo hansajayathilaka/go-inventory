@@ -296,7 +296,7 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
                     </div>
                     {recentCustomers.map((customer) => (
                       <CustomerCard
-                        key={customer.id}
+                        key={`recent-${customer.id}`}
                         customer={customer}
                         onSelect={handleCustomerSelect}
                       />
@@ -321,7 +321,7 @@ export function CustomerSelect({ sessionId, className }: CustomerSelectProps) {
 
                     {searchResults.map((customer) => (
                       <CustomerCard
-                        key={customer.id}
+                        key={`search-${customer.id}`}
                         customer={customer}
                         onSelect={handleCustomerSelect}
                       />
