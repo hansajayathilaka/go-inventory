@@ -12,7 +12,8 @@ import {
   UserCog,
   LogOut,
   User,
-  Store
+  Store,
+  History
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -29,6 +30,11 @@ const navigation = [
     name: 'POS System',
     href: '/pos',
     icon: Store,
+  },
+  {
+    name: 'Transaction History',
+    href: '/transaction-history',
+    icon: History,
   },
   {
     name: 'Products',

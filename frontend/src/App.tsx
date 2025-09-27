@@ -11,6 +11,7 @@ import { Suppliers } from './pages/Suppliers';
 import { Customers } from './pages/Customers';
 import { Users } from './pages/Users';
 import { POS } from './pages/POS';
+import { TransactionHistoryPage } from './pages/TransactionHistoryPage';
 import { Login } from './pages/Login';
 import { QueryProvider } from './providers/QueryProvider';
 import { useAuthStore } from './stores/authStore';
@@ -37,6 +38,7 @@ function AuthenticatedApp() {
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/transaction-history" element={<TransactionHistoryPage />} />
         </Route>
         <Route path="/pos" element={<POS />} />
         <Route path="/login" element={<Login />} />
